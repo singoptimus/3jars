@@ -516,6 +516,7 @@ function doLogin() {
 
   // Login success!
   sessionStorage.setItem('km_currentAccount', email);
+  localStorage.setItem('km_currentAccount_backup', email);
   window.location.href = 'index.html';
 }
 
@@ -532,6 +533,7 @@ function quickLogin(accountKey) {
   }
 
   sessionStorage.setItem('km_currentAccount', accountKey);
+  localStorage.setItem('km_currentAccount_backup', accountKey);
   window.location.href = 'index.html';
 }
 
@@ -595,6 +597,7 @@ function doSignup() {
 
   // Auto-login
   sessionStorage.setItem('km_currentAccount', email);
+  localStorage.setItem('km_currentAccount_backup', email);
   window.location.href = 'index.html';
 }
 

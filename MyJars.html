@@ -486,8 +486,12 @@
 
     <script>
         // Auth check — same pattern as all game files
+        if (!sessionStorage.getItem('km_currentAccount')) {
+          const backup = localStorage.getItem('km_currentAccount_backup');
+          if (backup) { sessionStorage.setItem('km_currentAccount', backup); }
+          else { window.location.href = 'login.html'; }
+        }
         const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
-        if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
 
         const currentPlayer = new URLSearchParams(window.location.search).get('player') || '';
         if (!currentPlayer) { window.location.href = 'index.html'; }

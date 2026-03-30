@@ -252,8 +252,12 @@
 <div class="game-container" id="app"></div>
 
 <script>
+if (!sessionStorage.getItem('km_currentAccount')) {
+  const backup = localStorage.getItem('km_currentAccount_backup');
+  if (backup) { sessionStorage.setItem('km_currentAccount', backup); }
+  else { window.location.href = 'login.html'; }
+}
 const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
-if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
 
 // ---- Player & score management ----
 function getPlayerFromURL() {

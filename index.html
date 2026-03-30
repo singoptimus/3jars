@@ -350,7 +350,11 @@
 <script>
   // ---- Account check ----
   let currentAccountId = sessionStorage.getItem('km_currentAccount');
-  if (!currentAccountId) { window.location.href = 'login.html'; throw new Error('No account'); }
+  if (!currentAccountId) {
+    const backup = localStorage.getItem('km_currentAccount_backup');
+    if (backup) { sessionStorage.setItem('km_currentAccount', backup); currentAccountId = backup; }
+    else { window.location.href = 'login.html'; throw new Error('No account'); }
+  }
   let selectedPlayer = '';
 
   // ---- Account-scoped data layer ----
