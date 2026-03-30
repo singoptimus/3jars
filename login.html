@@ -5,6 +5,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kids Games — Login</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -439,6 +440,17 @@ function doSignup() {
     createdAt: Date.now()
   };
   saveAccounts(accounts);
+
+  // Send email notification about new signup
+  try {
+    emailjs.send('service_oam7ctc', 'template_pxktrcf', {
+      user_name: name,
+      user_email: email,
+      signup_time: new Date().toLocaleString()
+    }, 'wlauNCpdFNdFs-izM');
+  } catch (e) {
+    console.log('Email notification failed:', e);
+  }
 
   // Auto-login
   sessionStorage.setItem('km_currentAccount', email);
