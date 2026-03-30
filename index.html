@@ -650,6 +650,7 @@
   function showCelebration(playerName, score, accuracy) {
     launchConfettiRain(); playCelebrationSound();
     const ov = document.createElement('div'); ov.className = 'celebration-overlay';
+    ov.onclick = function(e) { if (e.target === ov) ov.remove(); };
     ov.innerHTML = '<div class="celebration-card"><span class="celeb-medal">🏅</span><div class="celeb-title">1,000 POINTS!</div><div class="celeb-name">' + playerName + ' is a Math Champion!</div><div class="celeb-stats"><strong>' + score.toLocaleString() + '</strong> points earned<br><strong>' + accuracy + '%</strong> accuracy</div><button class="celeb-close" onclick="this.closest(\'.celebration-overlay\').remove();">Keep Playing!</button></div>';
     document.body.appendChild(ov);
     const stats = getStats(); if (stats[playerName]) { stats[playerName] = { correct: 0, total: 0 }; saveStats(stats); }
@@ -659,6 +660,7 @@
     launchConfettiRain(); playCelebrationSound();
     const pj = awardJars(playerName);
     const ov = document.createElement('div'); ov.className = 'celeb10k-overlay';
+    ov.onclick = function(e) { if (e.target === ov) ov.remove(); };
     const cfg = getConfig();
     ov.innerHTML = '<div class="celeb10k-card"><span class="celeb10k-trophy">🏆</span><div class="celeb10k-title">10,000 POINTS!</div><div class="celeb10k-name">' + playerName + ' is a SUPERSTAR!</div><div class="jars-reveal"><div class="jar-reveal-card"><div class="jar-reveal-icon">🎉</div><div class="jar-reveal-label">Experience with Family</div><div class="jar-reveal-value">$' + pj.present.balance + '</div></div><div class="jar-reveal-card"><div class="jar-reveal-icon">💰</div><div class="jar-reveal-label">Investing Jar</div><div class="jar-reveal-value">$' + pj.investing.balance + '</div></div><div class="jar-reveal-card"><div class="jar-reveal-icon">💝</div><div class="jar-reveal-label">Give Back Jar</div><div class="jar-reveal-value">$' + pj.giveback.balance + '</div></div></div><div class="celeb10k-msg">You earned <strong>$' + cfg.experienceAmount + '</strong> toward a Family Experience — choose: Arcade Trip, Ice Cream Date, or Movie Night!<br>Plus <strong>$' + cfg.investingAmount + '</strong> in your Investing Jar and <strong>$' + cfg.givebackAmount + '</strong> in your Give Back Jar!</div><button class="celeb-close" onclick="this.closest(\'.celeb10k-overlay\').remove();">Amazing! Keep Going!</button></div>';
     document.body.appendChild(ov);
@@ -688,7 +690,28 @@
     }
   }
 
+  // ---- One-time score fix: HTTP→HTTPS migration lost localStorage data ----
+  function fixScoreMigration() {
+    const key = 'km_' + currentAccountId + '_scoreFix_v1';
+    if (localStorage.getItem(key)) return; // already applied
+    const scores = getScores();
+    // If Ozzy has 0 or no score, restore to 2200 (was 2000+ before HTTPS switch)
+    if (!scores['Ozzy'] || scores['Ozzy'] === 0) {
+      scores['Ozzy'] = 2200;
+      saveScores(scores);
+    }
+    localStorage.setItem(key, '1');
+  }
+
+  // ---- Safety: auto-dismiss any stuck celebration overlays after 30s ----
+  setTimeout(() => {
+    document.querySelectorAll('.celebration-overlay, .celeb10k-overlay').forEach(el => {
+      if (el.parentNode) el.remove();
+    });
+  }, 30000);
+
   // ---- Init ----
+  fixScoreMigration();
   updateAccountBar(); render(); updateErrorBar(); checkCelebrations();
 </script>
 </body>
