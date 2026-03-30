@@ -724,17 +724,15 @@ function renderPlay() {
         <input type="text" dir="ltr" class="answer-input ${inputClass}" id="answerInput"
           value="${state.userAnswer}"
           oninput="onInput(this.value)"
-          onkeydown="if(event.key==='Enter'){event.preventDefault(); ${state.checked ? 'nextQuestion()' : 'checkAnswer()'}; }"
+          onkeydown="if(event.key==='Enter'){event.preventDefault(); if(!state.checked) checkAnswer(); }"
           ${state.checked ? 'disabled' : ''}
           placeholder="Answer">
       </div>
     </div>
 
     ${!state.checked ? `
-      <button class="check-btn" onclick="checkAnswer()">Check ✓</button>
-    ` : `
-      <button class="next-btn" onclick="nextQuestion()">Next Question →</button>
-    `}
+      <button class="check-btn" onclick="checkAnswer()">Submit →</button>
+    ` : ``}
 
     <div class="result ${state.resultClass}">${state.resultMsg}</div>
     <div class="points-earned">${state.pointsMsg}</div>
@@ -918,6 +916,8 @@ function checkAnswer() {
     state.showCorrect = `Answer: ${state.currentQuestion.answer}`;
   }
   render();
+  // Auto-advance to next question after a brief pause
+  setTimeout(() => { if (state.checked && state.timerRunning) nextQuestion(); }, state.isCorrect ? 1000 : 2000);
 }
 
 function nextQuestion() {
