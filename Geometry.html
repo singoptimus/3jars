@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geometry</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px 20px 20px;
+  }
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 620px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+  h1 { font-size: 2.2em; color: #5b21b6; margin-bottom: 8px; }
+  .subtitle { color: #888; font-size: 1.1em; margin-bottom: 24px; }
+
+  /* Player banner */
+  .player-banner {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #f3e8ff, #ede9fe);
+    border: 2px solid #c4b5fd;
+    border-radius: 50px; padding: 8px 20px 8px 10px;
+    margin-bottom: 20px; font-size: 1em;
+  }
+  .pb-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9em; color: white;
+  }
+  .pb-avatar.ozzy { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .pb-avatar.elinor { background: linear-gradient(135deg, #f472b6, #e94560); }
+  .pb-avatar.adam { background: linear-gradient(135deg, #34d399, #059669); }
+  .pb-name { font-weight: 700; color: #5b21b6; }
+  .pb-pts { color: #f59e0b; font-weight: 700; }
+
+  /* Score bar */
+  .score-bar {
+    display: flex; justify-content: center; gap: 30px;
+    margin-bottom: 24px; font-size: 1.05em; color: #6b7280;
+  }
+  .score-bar span { font-weight: 700; color: #5b21b6; }
+
+  /* Setup */
+  .setup { margin-bottom: 30px; }
+  .setup label { font-size: 1.2em; color: #555; display: block; margin-bottom: 12px; }
+  .difficulty-toggle {
+    display: flex; gap: 8px; justify-content: center;
+    margin-top: 12px; margin-bottom: 6px;
+  }
+  .diff-btn {
+    padding: 8px 18px; border-radius: 20px;
+    border: 2px solid #c4b5fd; background: white;
+    color: #5b21b6; font-weight: 600; cursor: pointer;
+    font-size: 0.9em; transition: all 0.2s;
+  }
+  .diff-btn:hover { background: #f3e8ff; }
+  .diff-btn.active { background: #7c3aed; color: white; border-color: #7c3aed; }
+  .go-btn {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white; border: none;
+    padding: 14px 48px; font-size: 1.3em;
+    border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 16px;
+  }
+  .go-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+
+  /* Shape display area */
+  .shape-area {
+    background: linear-gradient(135deg, #faf5ff, #f3e8ff);
+    border: 3px solid #c4b5fd;
+    border-radius: 20px;
+    padding: 28px 24px;
+    margin: 20px 0 24px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .shape-display {
+    margin-bottom: 16px;
+  }
+  .shape-display svg {
+    max-width: 220px;
+    max-height: 180px;
+  }
+  .shape-question {
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #5b21b6;
+    line-height: 1.5;
+    margin-top: 8px;
+  }
+  .shape-hint {
+    font-size: 0.95em;
+    color: #7c3aed;
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* Answer area */
+  .answer-area {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-top: 20px;
+  }
+  .answer-input {
+    font-size: 2em; font-weight: 700; text-align: center;
+    width: 220px; padding: 10px 16px;
+    border: 3px solid #fbbf24; border-radius: 16px;
+    background: #fffbeb; color: #92400e; outline: none; transition: all 0.2s;
+  }
+  .answer-input::-webkit-outer-spin-button,
+  .answer-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .answer-input { -moz-appearance: textfield; }
+  .answer-input:focus { border-color: #f59e0b; box-shadow: 0 0 0 4px rgba(251,191,36,0.3); }
+  .answer-input.correct { border-color: #34d399; background: #ecfdf5; color: #065f46; }
+  .answer-input.incorrect {
+    border-color: #f87171; background: #fef2f2; color: #991b1b;
+    animation: shake 0.4s ease;
+  }
+
+  /* Multiple choice */
+  .choices {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; margin-top: 20px;
+  }
+  .choice-btn {
+    padding: 12px 24px; border-radius: 16px;
+    border: 3px solid #c4b5fd; background: white;
+    color: #5b21b6; font-weight: 700; font-size: 1.1em;
+    cursor: pointer; transition: all 0.2s; min-width: 140px;
+  }
+  .choice-btn:hover { background: #f3e8ff; transform: scale(1.05); }
+  .choice-btn.selected { border-color: #7c3aed; background: #ede9fe; }
+  .choice-btn.correct-choice { border-color: #34d399; background: #ecfdf5; color: #065f46; }
+  .choice-btn.wrong-choice { border-color: #f87171; background: #fef2f2; color: #991b1b; }
+  .choice-btn:disabled { cursor: default; }
+  .choice-btn:disabled:hover { transform: none; }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .check-btn {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white; border: none; padding: 14px 48px; font-size: 1.2em;
+    border-radius: 50px; cursor: pointer; font-weight: 700;
+    transition: all 0.2s; margin-top: 20px;
+  }
+  .check-btn:hover { transform: scale(1.05); }
+  .next-btn {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: white; border: none; padding: 14px 48px; font-size: 1.2em;
+    border-radius: 50px; cursor: pointer; font-weight: 700;
+    transition: all 0.2s; margin-top: 12px;
+  }
+  .next-btn:hover { transform: scale(1.05); }
+
+  .result { margin-top: 16px; font-size: 1.4em; font-weight: 700; min-height: 44px; }
+  .result.success { color: #059669; }
+  .result.tryagain { color: #dc2626; }
+  .points-earned { font-size: 1.05em; color: #f59e0b; font-weight: 700; margin-top: 4px; min-height: 22px; }
+  .correct-answer { font-size: 1em; color: #6b7280; margin-top: 6px; min-height: 20px; }
+
+  .controls {
+    margin-top: 20px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .secondary-btn {
+    background: #f3f4f6; color: #6b7280;
+    border: 2px solid #e5e7eb; padding: 10px 28px;
+    font-size: 1em; border-radius: 50px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  .secondary-btn:hover { background: #e5e7eb; }
+  .home-btn { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+  .home-btn:hover { background: #fde68a; }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+
+  /* Error rate bar */
+  .error-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    background: rgba(30,30,60,0.95);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8em;
+    backdrop-filter: blur(8px);
+  }
+  .error-bar-label {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .error-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    position: relative;
+    overflow: visible;
+  }
+  .error-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .error-bar-threshold {
+    position: absolute;
+    left: 75%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #fbbf24;
+    border-radius: 1px;
+  }
+  .error-bar-threshold::after {
+    content: '75%';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+  .error-bar-pct {
+    color: white;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: right;
+  }
+  .error-bar-pts {
+    color: #fbbf24;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+<div class="game-container" id="app"></div>
+
+<script>
+const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
+
+// ---- Player & score management ----
+function getPlayerFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('player') || '';
+}
+function getScores() {
+  try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
+  return {};
+}
+function saveScores(scores) { localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores)); }
+function addPoints(pts) {
+  if (!currentPlayer) return;
+  const scores = getScores();
+  scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
+  saveScores(scores);
+}
+function getTotalPoints() {
+  if (!currentPlayer) return 0;
+  return getScores()[currentPlayer] || 0;
+}
+function getStats() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_stats');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+function saveStats(stats) { localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats)); }
+function recordAttempt(isCorrect) {
+  if (!currentPlayer) return;
+  const stats = getStats();
+  if (!stats[currentPlayer]) stats[currentPlayer] = { correct: 0, total: 0 };
+  stats[currentPlayer].total++;
+  if (isCorrect) stats[currentPlayer].correct++;
+  saveStats(stats);
+  updateErrorBar();
+}
+
+function updateErrorBar() {
+  if (!currentPlayer) { document.getElementById('errorBar').style.display = 'none'; return; }
+  const stats = getStats();
+  const s = stats[currentPlayer] || { correct: 0, total: 0 };
+  const totalPts = getTotalPoints();
+  const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+  const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+  const bar = document.getElementById('errorBar');
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="error-bar-label">Accuracy</span>' +
+    '<div class="error-bar-track">' +
+    '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+    '<div class="error-bar-threshold"></div>' +
+    '</div>' +
+    '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+    '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' pts</span>';
+}
+
+const currentPlayer = getPlayerFromURL();
+const app = document.getElementById('app');
+
+function randBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ---- Shape definitions ----
+const shapes = [
+  { name: 'Triangle', sides: 3, svg: (w,h,clr) => `<svg viewBox="0 0 200 180" width="${w}" height="${h}"><polygon points="100,10 10,170 190,170" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Square', sides: 4, svg: (w,h,clr) => `<svg viewBox="0 0 180 180" width="${w}" height="${h}"><rect x="10" y="10" width="160" height="160" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Rectangle', sides: 4, svg: (w,h,clr) => `<svg viewBox="0 0 220 140" width="${w}" height="${h}"><rect x="10" y="10" width="200" height="120" fill="${clr}" stroke="#5b21b6" stroke-width="3" rx="2"/></svg>` },
+  { name: 'Pentagon', sides: 5, svg: (w,h,clr) => `<svg viewBox="0 0 200 200" width="${w}" height="${h}"><polygon points="100,10 190,75 155,175 45,175 10,75" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Hexagon', sides: 6, svg: (w,h,clr) => `<svg viewBox="0 0 200 180" width="${w}" height="${h}"><polygon points="50,10 150,10 195,90 150,170 50,170 5,90" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Octagon', sides: 8, svg: (w,h,clr) => `<svg viewBox="0 0 200 200" width="${w}" height="${h}"><polygon points="60,10 140,10 190,60 190,140 140,190 60,190 10,140 10,60" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Circle', sides: 0, svg: (w,h,clr) => `<svg viewBox="0 0 180 180" width="${w}" height="${h}"><circle cx="90" cy="90" r="80" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Oval', sides: 0, svg: (w,h,clr) => `<svg viewBox="0 0 220 140" width="${w}" height="${h}"><ellipse cx="110" cy="70" rx="100" ry="60" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Diamond', sides: 4, svg: (w,h,clr) => `<svg viewBox="0 0 180 200" width="${w}" height="${h}"><polygon points="90,10 170,100 90,190 10,100" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+  { name: 'Star', sides: 10, svg: (w,h,clr) => `<svg viewBox="0 0 200 200" width="${w}" height="${h}"><polygon points="100,10 120,75 190,75 135,115 155,180 100,145 45,180 65,115 10,75 80,75" fill="${clr}" stroke="#5b21b6" stroke-width="3"/></svg>` },
+];
+
+const shapeColors = ['#ddd6fe', '#c4b5fd', '#e9d5ff', '#fbcfe8', '#bae6fd', '#a7f3d0', '#fde68a', '#fecaca'];
+
+// ---- EASY: Shape identification & sides ----
+function generateEasy() {
+  const type = Math.random();
+  const shape = shapes[Math.floor(Math.random() * shapes.length)];
+  const color = shapeColors[Math.floor(Math.random() * shapeColors.length)];
+
+  if (type < 0.5) {
+    // "What shape is this?"
+    const wrongNames = shapes.filter(s => s.name !== shape.name).map(s => s.name);
+    const choices = shuffle([shape.name, ...shuffle(wrongNames).slice(0, 3)]);
+    return {
+      type: 'choice',
+      svg: shape.svg(160, 140, color),
+      question: 'What shape is this?',
+      hint: '',
+      answer: shape.name,
+      choices: choices
+    };
+  } else {
+    // "How many sides?"
+    if (shape.name === 'Circle' || shape.name === 'Oval') {
+      // skip, re-generate with a shape that has sides
+      const sided = shapes.filter(s => s.sides > 0);
+      const s2 = sided[Math.floor(Math.random() * sided.length)];
+      return {
+        type: 'input',
+        svg: s2.svg(160, 140, color),
+        question: `How many sides does this ${s2.name.toLowerCase()} have?`,
+        hint: '',
+        answer: s2.sides
+      };
+    }
+    return {
+      type: 'input',
+      svg: shape.svg(160, 140, color),
+      question: `How many sides does this shape have?`,
+      hint: '',
+      answer: shape.sides
+    };
+  }
+}
+
+// ---- MEDIUM: Angles ----
+function generateMedium() {
+  const type = Math.random();
+
+  if (type < 0.35) {
+    // Identify angle type
+    const angles = [
+      { degrees: randBetween(10, 85), type: 'Acute' },
+      { degrees: 90, type: 'Right' },
+      { degrees: randBetween(95, 170), type: 'Obtuse' }
+    ];
+    const angle = angles[Math.floor(Math.random() * angles.length)];
+    const rad = (angle.degrees * Math.PI) / 180;
+    const len = 70;
+    const x2 = 20 + len * Math.cos(rad);
+    const y2 = 150 - len * Math.sin(rad);
+    const svg = `<svg viewBox="0 0 200 180" width="180" height="160">
+      <line x1="20" y1="150" x2="180" y2="150" stroke="#5b21b6" stroke-width="3"/>
+      <line x1="20" y1="150" x2="${x2}" y2="${y2}" stroke="#5b21b6" stroke-width="3"/>
+      <path d="M 45 150 A 25 25 0 0 1 ${20 + 25*Math.cos(rad)} ${150 - 25*Math.sin(rad)}" fill="none" stroke="#e94560" stroke-width="2"/>
+      <text x="${20 + 35*Math.cos(rad/2)}" y="${150 - 35*Math.sin(rad/2)}" fill="#e94560" font-size="14" font-weight="700">${angle.degrees}°</text>
+    </svg>`;
+    return {
+      type: 'choice',
+      svg: svg,
+      question: `What type of angle is ${angle.degrees}°?`,
+      hint: 'Acute < 90° | Right = 90° | Obtuse > 90°',
+      answer: angle.type,
+      choices: shuffle(['Acute', 'Right', 'Obtuse'])
+    };
+  } else if (type < 0.7) {
+    // Missing angle in triangle
+    const a1 = randBetween(30, 80);
+    const a2 = randBetween(30, 80);
+    const a3 = 180 - a1 - a2;
+    const svg = `<svg viewBox="0 0 200 180" width="180" height="160">
+      <polygon points="100,15 15,165 185,165" fill="#ede9fe" stroke="#5b21b6" stroke-width="3"/>
+      <text x="90" y="45" fill="#5b21b6" font-size="16" font-weight="700">${a1}°</text>
+      <text x="20" y="158" fill="#5b21b6" font-size="16" font-weight="700">${a2}°</text>
+      <text x="150" y="158" fill="#e94560" font-size="18" font-weight="700">?</text>
+    </svg>`;
+    return {
+      type: 'input',
+      svg: svg,
+      question: `Two angles of a triangle are ${a1}° and ${a2}°. What is the third angle?`,
+      hint: 'Hint: All angles in a triangle add up to 180°',
+      answer: a3
+    };
+  } else {
+    // Angles on a straight line
+    const a1 = randBetween(30, 140);
+    const a2 = 180 - a1;
+    const rad = (a1 * Math.PI) / 180;
+    const svg = `<svg viewBox="0 0 220 130" width="200" height="120">
+      <line x1="10" y1="100" x2="210" y2="100" stroke="#5b21b6" stroke-width="3"/>
+      <line x1="110" y1="100" x2="${110 + 70*Math.cos(rad)}" y2="${100 - 70*Math.sin(rad)}" stroke="#5b21b6" stroke-width="3"/>
+      <text x="70" y="92" fill="#5b21b6" font-size="16" font-weight="700">${a1}°</text>
+      <text x="130" y="92" fill="#e94560" font-size="18" font-weight="700">?</text>
+    </svg>`;
+    return {
+      type: 'input',
+      svg: svg,
+      question: `One angle on a straight line is ${a1}°. What is the other angle?`,
+      hint: 'Hint: Angles on a straight line add up to 180°',
+      answer: a2
+    };
+  }
+}
+
+// ---- HARD: Perimeter & Area ----
+function generateHard() {
+  const type = Math.random();
+
+  if (type < 0.3) {
+    // Rectangle perimeter
+    const w = randBetween(3, 15);
+    const h = randBetween(3, 12);
+    const svg = `<svg viewBox="0 0 240 170" width="220" height="150">
+      <rect x="20" y="20" width="200" height="120" fill="#ede9fe" stroke="#5b21b6" stroke-width="3" rx="2"/>
+      <text x="100" y="15" fill="#5b21b6" font-size="16" font-weight="700" text-anchor="middle">${w} cm</text>
+      <text x="235" y="85" fill="#5b21b6" font-size="16" font-weight="700" text-anchor="end">${h} cm</text>
+    </svg>`;
+    return {
+      type: 'input',
+      svg: svg,
+      question: `What is the perimeter of this rectangle?`,
+      hint: 'Perimeter = 2 × (width + height)',
+      answer: 2 * (w + h),
+      unit: 'cm'
+    };
+  } else if (type < 0.6) {
+    // Rectangle area
+    const w = randBetween(3, 12);
+    const h = randBetween(3, 10);
+    const svg = `<svg viewBox="0 0 240 170" width="220" height="150">
+      <rect x="20" y="20" width="200" height="120" fill="#ede9fe" stroke="#5b21b6" stroke-width="3" rx="2"/>
+      <text x="100" y="15" fill="#5b21b6" font-size="16" font-weight="700" text-anchor="middle">${w} cm</text>
+      <text x="235" y="85" fill="#5b21b6" font-size="16" font-weight="700" text-anchor="end">${h} cm</text>
+    </svg>`;
+    return {
+      type: 'input',
+      svg: svg,
+      question: `What is the area of this rectangle?`,
+      hint: 'Area = width × height',
+      answer: w * h,
+      unit: 'cm²'
+    };
+  } else if (type < 0.8) {
+    // Square perimeter
+    const s = randBetween(3, 15);
+    const svg = `<svg viewBox="0 0 200 200" width="170" height="170">
+      <rect x="20" y="20" width="160" height="160" fill="#ede9fe" stroke="#5b21b6" stroke-width="3"/>
+      <text x="100" y="15" fill="#5b21b6" font-size="16" font-weight="700" text-anchor="middle">${s} cm</text>
+    </svg>`;
+    return {
+      type: 'input',
+      svg: svg,
+      question: `What is the perimeter of this square?`,
+      hint: 'Perimeter of a square = 4 × side',
+      answer: 4 * s,
+      unit: 'cm'
+    };
+  } else {
+    // Triangle perimeter
+    const a = randBetween(3, 12);
+    const b = randBetween(3, 12);
+    const c = randBetween(Math.abs(a-b)+1, a+b-1); // valid triangle
+    const svg = `<svg viewBox="0 0 220 190" width="200" height="170">
+      <polygon points="110,15 15,175 205,175" fill="#ede9fe" stroke="#5b21b6" stroke-width="3"/>
+      <text x="50" y="95" fill="#5b21b6" font-size="15" font-weight="700">${a} cm</text>
+      <text x="145" y="95" fill="#5b21b6" font-size="15" font-weight="700">${b} cm</text>
+      <text x="100" y="193" fill="#5b21b6" font-size="15" font-weight="700" text-anchor="middle">${c} cm</text>
+    </svg>`;
+    return {
+      type: 'input',
+      svg: svg,
+      question: `What is the perimeter of this triangle?`,
+      hint: 'Perimeter = add all sides together',
+      answer: a + b + c,
+      unit: 'cm'
+    };
+  }
+}
+
+// ---- Game state ----
+let state = {
+  screen: 'setup',
+  difficulty: 'easy',
+  problem: null,
+  userAnswer: '',
+  selectedChoice: '',
+  checked: false,
+  isCorrect: false,
+  score: 0,
+  streak: 0,
+  round: 0,
+  resultMsg: '',
+  resultClass: '',
+  pointsMsg: '',
+  showCorrect: ''
+};
+
+function getDifficultyPoints() {
+  return state.difficulty === 'easy' ? 2 : state.difficulty === 'medium' ? 3 : 5;
+}
+
+function getDifficultyLabel() {
+  return state.difficulty === 'easy' ? 'shapes' : state.difficulty === 'medium' ? 'angles' : 'perimeter & area';
+}
+
+function generateProblem() {
+  if (state.difficulty === 'easy') state.problem = generateEasy();
+  else if (state.difficulty === 'medium') state.problem = generateMedium();
+  else state.problem = generateHard();
+
+  state.userAnswer = '';
+  state.selectedChoice = '';
+  state.checked = false;
+  state.isCorrect = false;
+  state.resultMsg = '';
+  state.resultClass = '';
+  state.pointsMsg = '';
+  state.showCorrect = '';
+  state.round++;
+}
+
+function renderPlayerBanner() {
+  if (!currentPlayer) return '';
+  const avatarClass = currentPlayer.toLowerCase();
+  const initial = currentPlayer[0];
+  const totalPts = getTotalPoints();
+  return `
+    <div class="player-banner">
+      <div class="pb-avatar ${avatarClass}">${initial}</div>
+      <span class="pb-name">${currentPlayer}</span>
+      <span style="color:#ccc;">|</span>
+      <span class="pb-pts">${totalPts.toLocaleString()} pts</span>
+    </div>
+  `;
+}
+
+function render() {
+  if (state.screen === 'setup') renderSetup();
+  else renderPlay();
+}
+
+function renderSetup() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>Geometry</h1>
+    <p class="subtitle">Learn shapes, angles, and more!</p>
+    <div class="setup">
+      <label>Difficulty:</label>
+      <div class="difficulty-toggle">
+        <button class="diff-btn ${state.difficulty === 'easy' ? 'active' : ''}" onclick="setDifficulty('easy')">Easy <span style="color:#f59e0b;font-size:0.85em;">★★ 2pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'medium' ? 'active' : ''}" onclick="setDifficulty('medium')">Medium <span style="color:#f59e0b;font-size:0.85em;">★★★ 3pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'hard' ? 'active' : ''}" onclick="setDifficulty('hard')">Hard <span style="color:#f59e0b;font-size:0.85em;">★★★★★ 5pts</span></button>
+      </div>
+      <p style="color:#aaa;font-size:0.85em;margin-top:6px;">Easy: shapes & sides &middot; Medium: angles &middot; Hard: perimeter & area</p>
+      <br>
+      <button class="go-btn" onclick="startGame()">Let's Go!</button>
+    </div>
+    <div class="controls">
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+}
+
+function renderPlay() {
+  const p = state.problem;
+  const pts = getDifficultyPoints();
+
+  let answerHTML = '';
+  if (p.type === 'choice') {
+    answerHTML = `<div class="choices">
+      ${p.choices.map(c => {
+        let cls = 'choice-btn';
+        if (state.checked) {
+          if (c === p.answer) cls += ' correct-choice';
+          else if (c === state.selectedChoice && c !== p.answer) cls += ' wrong-choice';
+          cls += ' ';
+        } else if (c === state.selectedChoice) {
+          cls += ' selected';
+        }
+        return `<button class="${cls}" onclick="selectChoice('${c}')" ${state.checked ? 'disabled' : ''}>${c}</button>`;
+      }).join('')}
+    </div>`;
+  } else {
+    const inputClass = state.checked ? (state.isCorrect ? 'correct' : 'incorrect') : '';
+    answerHTML = `<div class="answer-area">
+      <input type="number" class="answer-input ${inputClass}" id="answerInput"
+        value="${state.userAnswer}"
+        oninput="onInput(this.value)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault(); ${state.checked ? 'nextProblem()' : 'checkAnswer()'}; }"
+        ${state.checked ? 'disabled' : ''}
+        placeholder="?">
+      ${p.unit ? `<span style="font-size:1.3em;color:#6b7280;font-weight:700;">${p.unit}</span>` : ''}
+    </div>`;
+  }
+
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>Geometry</h1>
+    <div class="score-bar">
+      <div>Score: <span>${state.score}</span></div>
+      <div>Streak: <span>${state.streak} 🔥</span></div>
+      <div>Round: <span>${state.round}</span></div>
+    </div>
+    <p class="subtitle">Solve the ${getDifficultyLabel()} problem! <span style="color:#f59e0b;">+${pts} points per correct answer</span></p>
+
+    <div class="shape-area">
+      <div class="shape-display">${p.svg}</div>
+      <div class="shape-question">${p.question}</div>
+      ${p.hint ? `<div class="shape-hint">${p.hint}</div>` : ''}
+    </div>
+
+    ${answerHTML}
+
+    ${!state.checked ? `
+      <button class="check-btn" onclick="checkAnswer()">Check ✓</button>
+    ` : `
+      <button class="next-btn" onclick="nextProblem()">Next Problem →</button>
+    `}
+
+    <div class="result ${state.resultClass}">${state.resultMsg}</div>
+    <div class="points-earned">${state.pointsMsg}</div>
+    <div class="correct-answer">${state.showCorrect}</div>
+
+    <div class="controls">
+      <button class="secondary-btn" onclick="changeDifficulty()">Change Difficulty</button>
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+
+  if (!state.checked && p.type === 'input') {
+    const inp = document.getElementById('answerInput');
+    if (inp) inp.focus();
+  }
+  updateErrorBar();
+}
+
+function setDifficulty(d) { state.difficulty = d; render(); }
+
+function startGame() {
+  state.screen = 'play';
+  state.score = 0;
+  state.streak = 0;
+  state.round = 0;
+  generateProblem();
+  render();
+}
+
+function changeDifficulty() { state.screen = 'setup'; render(); }
+function onInput(val) { state.userAnswer = val; }
+
+function selectChoice(c) {
+  if (state.checked) return;
+  state.selectedChoice = c;
+  render();
+}
+
+function checkAnswer() {
+  const p = state.problem;
+  let userAns;
+
+  if (p.type === 'choice') {
+    if (!state.selectedChoice) {
+      state.resultMsg = 'Pick an answer first!';
+      state.resultClass = 'tryagain';
+      render();
+      return;
+    }
+    userAns = state.selectedChoice;
+  } else {
+    userAns = parseInt(state.userAnswer);
+    if (isNaN(userAns) || state.userAnswer.trim() === '') {
+      state.resultMsg = 'Type your answer first!';
+      state.resultClass = 'tryagain';
+      render();
+      return;
+    }
+  }
+
+  state.checked = true;
+  const correct = p.type === 'choice' ? (userAns === p.answer) : (userAns === p.answer);
+
+  if (correct) {
+    recordAttempt(true);
+    state.isCorrect = true;
+    state.streak++;
+    const earnedPts = getDifficultyPoints();
+    state.score += earnedPts;
+    addPoints(earnedPts);
+
+    const cheers = ['Amazing!', 'You got it!', 'Brilliant!', 'Nice one!', 'Superstar!', 'Geometry pro!'];
+    const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+    const stars = state.streak >= 5 ? '🌟🌟🌟' : state.streak >= 3 ? '⭐⭐⭐' : state.streak >= 2 ? '⭐⭐' : '⭐';
+    state.resultMsg = `${cheer} ${stars}`;
+    state.resultClass = 'success';
+    state.pointsMsg = `+${earnedPts} points${currentPlayer ? ' for ' + currentPlayer : ''}!`;
+    launchConfetti();
+  } else {
+    recordAttempt(false);
+    state.isCorrect = false;
+    state.streak = 0;
+    state.resultMsg = 'Not quite! 💪';
+    state.resultClass = 'tryagain';
+    state.pointsMsg = '';
+    const unit = p.unit || '';
+    state.showCorrect = `The answer was ${p.answer}${unit ? ' ' + unit : ''}`;
+  }
+  render();
+}
+
+function nextProblem() { generateProblem(); render(); }
+function goHome() { window.location.href = 'index.html'; }
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['#fbbf24', '#34d399', '#818cf8', '#f472b6', '#0ea5e9', '#e94560'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    piece.style.animationDuration = (1 + Math.random()) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 2500);
+}
+
+// Start
+render();
+</script>
+</body>
+</html>

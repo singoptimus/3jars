@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Jar body -->
+  <rect x="12" y="22" width="40" height="34" rx="6" fill="#fbbf24" stroke="#d97706" stroke-width="2"/>
+  <!-- Jar lid -->
+  <rect x="8" y="16" width="48" height="10" rx="4" fill="#f59e0b" stroke="#d97706" stroke-width="2"/>
+  <!-- Jar shine -->
+  <rect x="17" y="28" width="6" height="18" rx="3" fill="rgba(255,255,255,0.35)"/>
+  <!-- Coins inside -->
+  <circle cx="28" cy="44" r="5" fill="#fde68a" stroke="#d97706" stroke-width="1.5"/>
+  <text x="28" y="47" text-anchor="middle" font-size="7" font-weight="bold" fill="#92400e">$</text>
+  <circle cx="38" cy="40" r="5" fill="#fde68a" stroke="#d97706" stroke-width="1.5"/>
+  <text x="38" y="43" text-anchor="middle" font-size="7" font-weight="bold" fill="#92400e">$</text>
+  <!-- Star sparkle on top -->
+  <polygon points="32,4 34,10 40,10 35,14 37,20 32,16 27,20 29,14 24,10 30,10" fill="#fbbf24" stroke="#d97706" stroke-width="0.8"/>
+  <!-- Number 3 -->
+  <text x="32" y="35" text-anchor="middle" font-size="14" font-weight="900" font-family="sans-serif" fill="#7c2d12">3</text>
+</svg>

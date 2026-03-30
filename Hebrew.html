@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אותיות ומילים בעברית</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px 20px 20px;
+  }
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+    direction: rtl;
+  }
+  h1 { font-size: 2.2em; color: #1e3a5f; margin-bottom: 8px; }
+  .subtitle { color: #888; font-size: 1.1em; margin-bottom: 24px; }
+
+  /* Player banner */
+  .player-banner {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    border: 2px solid #a78bfa; border-radius: 50px;
+    padding: 8px 20px 8px 10px; margin-bottom: 20px; font-size: 1em;
+  }
+  .pb-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9em; color: white;
+  }
+  .pb-avatar.ozzy { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .pb-avatar.elinor { background: linear-gradient(135deg, #f472b6, #e94560); }
+  .pb-avatar.adam { background: linear-gradient(135deg, #34d399, #059669); }
+  .pb-name { font-weight: 700; color: #1e3a5f; }
+  .pb-pts { color: #f59e0b; font-weight: 700; }
+
+  /* Score bar */
+  .score-bar {
+    display: flex; justify-content: center; gap: 30px;
+    margin-bottom: 24px; font-size: 1.05em; color: #6b7280;
+    direction: rtl;
+  }
+  .score-bar span { font-weight: 700; color: #1e3a5f; }
+
+  /* Setup screen */
+  .setup { margin-bottom: 30px; }
+  .setup label {
+    font-size: 1.2em; color: #555; display: block; margin-bottom: 12px;
+  }
+  .difficulty-toggle {
+    display: flex; gap: 8px; justify-content: center;
+    margin-top: 12px; margin-bottom: 6px;
+  }
+  .diff-btn {
+    padding: 8px 18px; border-radius: 20px;
+    border: 2px solid #c4b5fd; background: white;
+    color: #1e3a5f; font-weight: 600; cursor: pointer;
+    font-size: 0.9em; transition: all 0.2s;
+  }
+  .diff-btn:hover { background: #ede9fe; }
+  .diff-btn.active {
+    background: #7c3aed; color: white; border-color: #7c3aed;
+  }
+  .go-btn {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: white; border: none;
+    padding: 14px 48px; font-size: 1.3em;
+    border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 16px;
+  }
+  .go-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+
+  /* Problem area */
+  .problem-area {
+    background: #f5f3ff; border: 3px solid #c4b5fd;
+    border-radius: 20px; padding: 30px 20px; margin: 20px 0 28px;
+    direction: rtl;
+  }
+  .hebrew-big {
+    font-size: 5em; font-weight: 700; color: #4f46e5;
+    line-height: 1.2; margin-bottom: 8px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .prompt-text {
+    font-size: 1.3em; color: #555; margin-bottom: 16px;
+  }
+  .hint-text {
+    font-size: 0.95em; color: #a78bfa; margin-top: 8px;
+  }
+
+  /* Multiple choice */
+  .choices {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; max-width: 400px; margin: 16px auto 0;
+  }
+  .choice-btn {
+    padding: 14px 10px; border-radius: 14px;
+    border: 2px solid #e5e7eb; background: white;
+    color: #1e3a5f; font-weight: 600; cursor: pointer;
+    font-size: 1.1em; transition: all 0.2s;
+  }
+  .choice-btn:hover { background: #f5f3ff; border-color: #a78bfa; transform: translateY(-2px); }
+  .choice-btn.correct-choice { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+  .choice-btn.wrong-choice { background: #fef2f2; border-color: #f87171; color: #991b1b; }
+  .choice-btn.disabled { pointer-events: none; opacity: 0.6; }
+  .choice-btn.highlight-correct { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+
+  /* Text input for spelling */
+  .answer-input {
+    font-size: 2.2em; font-weight: 700; text-align: center;
+    width: 280px; padding: 10px 16px;
+    border: 3px solid #fbbf24; border-radius: 16px;
+    background: #fffbeb; color: #92400e; outline: none; transition: all 0.2s;
+    direction: rtl;
+  }
+  .answer-input:focus {
+    border-color: #f59e0b; box-shadow: 0 0 0 4px rgba(251,191,36,0.3);
+  }
+  .answer-input.correct { border-color: #34d399; background: #ecfdf5; color: #065f46; }
+  .answer-input.incorrect {
+    border-color: #f87171; background: #fef2f2; color: #991b1b;
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* Fill-in display */
+  .word-display {
+    font-size: 3em; color: #4f46e5; direction: rtl;
+    letter-spacing: 8px; font-weight: 700; margin: 10px 0;
+  }
+  .word-display .blank {
+    display: inline-block;
+    width: 0.7em; height: 0.08em;
+    background: #f59e0b;
+    vertical-align: -0.05em;
+    border-radius: 3px;
+    margin: 0 2px;
+  }
+  .letter-choices {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap; max-width: 400px; margin: 16px auto 0;
+  }
+  .letter-choice-btn {
+    width: 52px; height: 52px; border-radius: 12px;
+    border: 2px solid #e5e7eb; background: white;
+    color: #4f46e5; font-weight: 700; cursor: pointer;
+    font-size: 1.6em; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .letter-choice-btn:hover { background: #f5f3ff; border-color: #a78bfa; transform: scale(1.1); }
+  .letter-choice-btn.correct-choice { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+  .letter-choice-btn.wrong-choice { background: #fef2f2; border-color: #f87171; color: #991b1b; }
+  .letter-choice-btn.disabled { pointer-events: none; opacity: 0.6; }
+  .letter-choice-btn.highlight-correct { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+
+  .check-btn {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 20px;
+  }
+  .check-btn:hover { transform: scale(1.05); }
+  .next-btn {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 12px;
+  }
+  .next-btn:hover { transform: scale(1.05); }
+
+  .result { margin-top: 16px; font-size: 1.4em; font-weight: 700; min-height: 44px; }
+  .result.success { color: #059669; }
+  .result.tryagain { color: #dc2626; }
+  .points-earned { font-size: 1.05em; color: #f59e0b; font-weight: 700; margin-top: 4px; min-height: 22px; }
+  .correct-answer { font-size: 1.1em; color: #6b7280; margin-top: 6px; min-height: 20px; }
+
+  .controls {
+    margin-top: 20px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .secondary-btn {
+    background: #f3f4f6; color: #6b7280;
+    border: 2px solid #e5e7eb; padding: 10px 28px;
+    font-size: 1em; border-radius: 50px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  .secondary-btn:hover { background: #e5e7eb; }
+  .home-btn { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+  .home-btn:hover { background: #fde68a; }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+
+  /* Error rate bar */
+  .error-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    background: rgba(30,30,60,0.95);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8em;
+    backdrop-filter: blur(8px);
+  }
+  .error-bar-label {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .error-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    position: relative;
+    overflow: visible;
+  }
+  .error-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .error-bar-threshold {
+    position: absolute;
+    left: 75%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #fbbf24;
+    border-radius: 1px;
+  }
+  .error-bar-threshold::after {
+    content: '75%';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+  .error-bar-pct {
+    color: white;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: right;
+  }
+  .error-bar-pts {
+    color: #fbbf24;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+<div class="game-container" id="app"></div>
+
+<script>
+const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
+
+// ---- Player & score management ----
+function getPlayerFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('player') || '';
+}
+function getScores() {
+  try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
+  return {};
+}
+function saveScores(scores) { localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores)); }
+function addPoints(pts) {
+  if (!currentPlayer) return;
+  const scores = getScores();
+  scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
+  saveScores(scores);
+}
+function getTotalPoints() {
+  if (!currentPlayer) return 0;
+  return getScores()[currentPlayer] || 0;
+}
+
+function getStats() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_stats');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+function saveStats(stats) { localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats)); }
+function recordAttempt(isCorrect) {
+  if (!currentPlayer) return;
+  const stats = getStats();
+  if (!stats[currentPlayer]) stats[currentPlayer] = { correct: 0, total: 0 };
+  stats[currentPlayer].total++;
+  if (isCorrect) stats[currentPlayer].correct++;
+  saveStats(stats);
+  updateErrorBar();
+}
+
+function updateErrorBar() {
+  if (!currentPlayer) { document.getElementById('errorBar').style.display = 'none'; return; }
+  const stats = getStats();
+  const s = stats[currentPlayer] || { correct: 0, total: 0 };
+  const totalPts = getTotalPoints();
+  const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+  const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+  const bar = document.getElementById('errorBar');
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="error-bar-label">דיוק</span>' +
+    '<div class="error-bar-track">' +
+    '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+    '<div class="error-bar-threshold"></div>' +
+    '</div>' +
+    '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+    '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' נקודות</span>';
+}
+
+const currentPlayer = getPlayerFromURL();
+const app = document.getElementById('app');
+
+// ---- Hebrew data ----
+const hebrewLetters = [
+  { letter: 'א', name: 'Alef', sound: 'silent (or "ah")' },
+  { letter: 'ב', name: 'Bet', sound: '"b" or "v"' },
+  { letter: 'ג', name: 'Gimel', sound: '"g"' },
+  { letter: 'ד', name: 'Dalet', sound: '"d"' },
+  { letter: 'ה', name: 'He', sound: '"h"' },
+  { letter: 'ו', name: 'Vav', sound: '"v"' },
+  { letter: 'ז', name: 'Zayin', sound: '"z"' },
+  { letter: 'ח', name: 'Chet', sound: '"ch"' },
+  { letter: 'ט', name: 'Tet', sound: '"t"' },
+  { letter: 'י', name: 'Yod', sound: '"y"' },
+  { letter: 'כ', name: 'Kaf', sound: '"k" or "ch"' },
+  { letter: 'ל', name: 'Lamed', sound: '"l"' },
+  { letter: 'מ', name: 'Mem', sound: '"m"' },
+  { letter: 'נ', name: 'Nun', sound: '"n"' },
+  { letter: 'ס', name: 'Samech', sound: '"s"' },
+  { letter: 'ע', name: 'Ayin', sound: 'silent (guttural)' },
+  { letter: 'פ', name: 'Pe', sound: '"p" or "f"' },
+  { letter: 'צ', name: 'Tsadi', sound: '"ts"' },
+  { letter: 'ק', name: 'Qof', sound: '"k"' },
+  { letter: 'ר', name: 'Resh', sound: '"r"' },
+  { letter: 'ש', name: 'Shin', sound: '"sh" or "s"' },
+  { letter: 'ת', name: 'Tav', sound: '"t"' },
+];
+
+// Hebrew names for letters
+const hebrewNames = {
+  'Alef': 'אלף',
+  'Bet': 'בית',
+  'Gimel': 'גימל',
+  'Dalet': 'דלת',
+  'He': 'הא',
+  'Vav': 'וו',
+  'Zayin': 'זין',
+  'Chet': 'חית',
+  'Tet': 'טית',
+  'Yod': 'יוד',
+  'Kaf': 'כף',
+  'Lamed': 'למד',
+  'Mem': 'מם',
+  'Nun': 'נון',
+  'Samech': 'סמך',
+  'Ayin': 'עין',
+  'Pe': 'פא',
+  'Tsadi': 'צדי',
+  'Qof': 'קוף',
+  'Resh': 'ריש',
+  'Shin': 'שין',
+  'Tav': 'תו'
+};
+
+// Final forms for reference
+const finalForms = [
+  { letter: 'ך', name: 'Final Kaf' },
+  { letter: 'ם', name: 'Final Mem' },
+  { letter: 'ן', name: 'Final Nun' },
+  { letter: 'ף', name: 'Final Pe' },
+  { letter: 'ץ', name: 'Final Tsadi' },
+];
+
+// Vocabulary words for medium & hard
+const vocabulary = [
+  // Greeting & Common Phrases
+  { hebrew: 'שלום', english: 'Hello / Peace', hint: 'A greeting' },
+  { hebrew: 'תודה', english: 'Thank you', hint: 'You say to be polite' },
+  { hebrew: 'בבקשה', english: 'Please', hint: 'When asking politely' },
+  { hebrew: 'סליחה', english: 'Sorry / Excuse me', hint: 'When you made a mistake' },
+  { hebrew: 'בוקר טוב', english: 'Good morning', hint: 'Said in the morning' },
+  { hebrew: 'ערב טוב', english: 'Good evening', hint: 'Said at night' },
+  { hebrew: 'לילה טוב', english: 'Goodnight', hint: 'Before sleeping' },
+  { hebrew: 'מה שלומך', english: 'How are you', hint: 'Asking how someone feels' },
+  { hebrew: 'כן', english: 'Yes', hint: 'Opposite of no' },
+  { hebrew: 'לא', english: 'No', hint: 'Opposite of yes' },
+  { hebrew: 'אולי', english: 'Maybe', hint: 'Not sure' },
+  { hebrew: 'בטוח', english: 'Sure', hint: 'Very confident' },
+  { hebrew: 'טוב בסדר', english: 'Okay', hint: 'I agree' },
+  { hebrew: 'לא משנה', english: 'Never mind', hint: 'Forget about it' },
+  { hebrew: 'עזור לי', english: 'Help me', hint: 'You need assistance' },
+
+  // Family & People
+  { hebrew: 'אמא', english: 'Mom', hint: 'Your mother' },
+  { hebrew: 'אבא', english: 'Dad', hint: 'Your father' },
+  { hebrew: 'ילד', english: 'Boy', hint: 'A young male' },
+  { hebrew: 'ילדה', english: 'Girl', hint: 'A young female' },
+  { hebrew: 'אח', english: 'Brother', hint: 'Your male sibling' },
+  { hebrew: 'אחות', english: 'Sister', hint: 'Your female sibling' },
+  { hebrew: 'סבא', english: 'Grandfather', hint: 'Mom or dad\'s dad' },
+  { hebrew: 'סבתא', english: 'Grandmother', hint: 'Mom or dad\'s mom' },
+  { hebrew: 'דוד', english: 'Uncle', hint: 'Mom or dad\'s brother' },
+  { hebrew: 'דודה', english: 'Aunt', hint: 'Mom or dad\'s sister' },
+  { hebrew: 'בן דוד', english: 'Cousin (male)', hint: 'Relative your age' },
+  { hebrew: 'בת דוד', english: 'Cousin (female)', hint: 'Relative your age' },
+  { hebrew: 'תינוק', english: 'Baby', hint: 'Very small child' },
+  { hebrew: 'משפחה', english: 'Family', hint: 'All your relatives' },
+  { hebrew: 'בן', english: 'Son', hint: 'Male child' },
+  { hebrew: 'בת', english: 'Daughter', hint: 'Female child' },
+  { hebrew: 'נכד', english: 'Grandson', hint: 'Your son\'s son' },
+  { hebrew: 'נכדה', english: 'Granddaughter', hint: 'Your son\'s daughter' },
+  { hebrew: 'חתן', english: 'Groom / Son-in-law', hint: 'Gets married' },
+  { hebrew: 'כלה', english: 'Bride / Daughter-in-law', hint: 'Wedding day' },
+  { hebrew: 'בעל', english: 'Husband', hint: 'Married man' },
+  { hebrew: 'אישה', english: 'Wife', hint: 'Married woman' },
+  { hebrew: 'שכן', english: 'Neighbor', hint: 'Lives next to you' },
+  { hebrew: 'שכנה', english: 'Neighbor (f)', hint: 'Lives next to you' },
+  { hebrew: 'חבר', english: 'Friend (m)', hint: 'Someone you play with' },
+  { hebrew: 'חברה', english: 'Friend (f)', hint: 'Someone you play with' },
+  { hebrew: 'מורה', english: 'Teacher', hint: 'Teaches you at school' },
+  { hebrew: 'תלמיד', english: 'Student (m)', hint: 'Goes to school' },
+  { hebrew: 'תלמידה', english: 'Student (f)', hint: 'Goes to school' },
+  { hebrew: 'רופא', english: 'Doctor', hint: 'Helps when sick' },
+  { hebrew: 'רופאה', english: 'Doctor (f)', hint: 'Helps when sick' },
+  { hebrew: 'שוטר', english: 'Police officer', hint: 'Keeps the peace' },
+  { hebrew: 'טבח', english: 'Cook', hint: 'Makes food' },
+  { hebrew: 'נהג', english: 'Driver', hint: 'Drives a car' },
+  { hebrew: 'חייל', english: 'Soldier', hint: 'Protects the country' },
+  { hebrew: 'מלך', english: 'King', hint: 'Rules the kingdom' },
+  { hebrew: 'מלכה', english: 'Queen', hint: 'Rules the kingdom' },
+  { hebrew: 'נסיך', english: 'Prince', hint: 'King\'s son' },
+  { hebrew: 'נסיכה', english: 'Princess', hint: 'King\'s daughter' },
+
+  // Animals
+  { hebrew: 'כלב', english: 'Dog', hint: 'A pet that barks' },
+  { hebrew: 'חתול', english: 'Cat', hint: 'A pet that meows' },
+  { hebrew: 'דג', english: 'Fish', hint: 'Swims in water' },
+  { hebrew: 'ציפור', english: 'Bird', hint: 'Has wings & flies' },
+  { hebrew: 'סוס', english: 'Horse', hint: 'Large farm animal' },
+  { hebrew: 'חמור', english: 'Donkey', hint: 'Says "hee-haw"' },
+  { hebrew: 'פרה', english: 'Cow', hint: 'Gives us milk' },
+  { hebrew: 'כבש', english: 'Sheep', hint: 'Has wool' },
+  { hebrew: 'עז', english: 'Goat', hint: 'Eats anything' },
+  { hebrew: 'תרנגול', english: 'Rooster', hint: 'Crows in morning' },
+  { hebrew: 'תרנגולת', english: 'Hen', hint: 'Lays eggs' },
+  { hebrew: 'ברווז', english: 'Duck', hint: 'Swims & quacks' },
+  { hebrew: 'אווז', english: 'Goose', hint: 'Like a big duck' },
+  { hebrew: 'נחש', english: 'Snake', hint: 'Long & scaly' },
+  { hebrew: 'צב', english: 'Turtle', hint: 'Has a hard shell' },
+  { hebrew: 'ארנב', english: 'Rabbit', hint: 'Has long ears' },
+  { hebrew: 'דוב', english: 'Bear', hint: 'Big & furry' },
+  { hebrew: 'אריה', english: 'Lion', hint: 'King of animals' },
+  { hebrew: 'נמר', english: 'Tiger', hint: 'Striped wild cat' },
+  { hebrew: 'פיל', english: 'Elephant', hint: 'Has a long trunk' },
+  { hebrew: 'קוף', english: 'Monkey', hint: 'Swings on trees' },
+  { hebrew: 'דולפין', english: 'Dolphin', hint: 'Smart sea mammal' },
+  { hebrew: 'לוויתן', english: 'Whale', hint: 'Huge sea creature' },
+  { hebrew: 'עכבר', english: 'Mouse', hint: 'Small & gray' },
+  { hebrew: 'חמוד', english: 'Cute', hint: 'Like a pet' },
+  { hebrew: 'עכביש', english: 'Spider', hint: 'Makes webs' },
+  { hebrew: 'פרפר', english: 'Butterfly', hint: 'Colorful & flies' },
+  { hebrew: 'דבורה', english: 'Bee', hint: 'Makes honey' },
+  { hebrew: 'נמלה', english: 'Ant', hint: 'Tiny insect' },
+  { hebrew: 'זבוב', english: 'Fly', hint: 'Small insect' },
+  { hebrew: 'תוכי', english: 'Parrot', hint: 'Colorful bird' },
+  { hebrew: 'ינשוף', english: 'Owl', hint: 'Hunts at night' },
+  { hebrew: 'עקרב', english: 'Scorpion', hint: 'Has poisonous tail' },
+  { hebrew: 'צפרדע', english: 'Frog', hint: 'Hops & croaks' },
+  { hebrew: 'עגל', english: 'Calf', hint: 'Baby cow' },
+  { hebrew: 'כשב', english: 'Lamb', hint: 'Baby sheep' },
+  { hebrew: 'גור', english: 'Puppy', hint: 'Young dog' },
+  { hebrew: 'חתלתול', english: 'Kitten', hint: 'Young cat' },
+  { hebrew: 'תרנגולת צעירה', english: 'Chick', hint: 'Baby chicken' },
+  { hebrew: 'ממלא', english: 'Bat', hint: 'Flies at night' },
+  { hebrew: 'אילם', english: 'Mute/Silent', hint: 'No sound' },
+  { hebrew: 'חריקה', english: 'Squeak', hint: 'Mouse sound' },
+  { hebrew: 'נחמן', english: 'Comforting', hint: 'Gives comfort' },
+
+  // Food & Drink
+  { hebrew: 'לחם', english: 'Bread', hint: 'Baked food' },
+  { hebrew: 'חלב', english: 'Milk', hint: 'White drink' },
+  { hebrew: 'מים', english: 'Water', hint: 'You drink it' },
+  { hebrew: 'תפוח', english: 'Apple', hint: 'Red round fruit' },
+  { hebrew: 'בננה', english: 'Banana', hint: 'Yellow fruit' },
+  { hebrew: 'תפוז', english: 'Orange', hint: 'Citrus fruit' },
+  { hebrew: 'ענב', english: 'Grapes', hint: 'Small purple fruit' },
+  { hebrew: 'אבטיח', english: 'Watermelon', hint: 'Red & watery' },
+  { hebrew: 'תות', english: 'Strawberry', hint: 'Red & sweet' },
+  { hebrew: 'לימון', english: 'Lemon', hint: 'Sour yellow fruit' },
+  { hebrew: 'אפרסק', english: 'Peach', hint: 'Fuzzy sweet fruit' },
+  { hebrew: 'אגס', english: 'Pear', hint: 'Green sweet fruit' },
+  { hebrew: 'מנגו', english: 'Mango', hint: 'Tropical fruit' },
+  { hebrew: 'אננס', english: 'Pineapple', hint: 'Spiky sweet fruit' },
+  { hebrew: 'קיווי', english: 'Kiwi', hint: 'Green & small' },
+  { hebrew: 'דלעת', english: 'Pumpkin', hint: 'Orange & round' },
+  { hebrew: 'עגבניה', english: 'Tomato', hint: 'Red vegetable' },
+  { hebrew: 'מלפפון', english: 'Cucumber', hint: 'Green & watery' },
+  { hebrew: 'גזר', english: 'Carrot', hint: 'Orange vegetable' },
+  { hebrew: 'בצל', english: 'Onion', hint: 'Makes you cry' },
+  { hebrew: 'שום', english: 'Garlic', hint: 'Pungent spice' },
+  { hebrew: 'תפוח אדמה', english: 'Potato', hint: 'Brown vegetable' },
+  { hebrew: 'מלח', english: 'Salt', hint: 'Makes food salty' },
+  { hebrew: 'פלפל', english: 'Pepper', hint: 'Spicy powder' },
+  { hebrew: 'בשר', english: 'Meat', hint: 'Animal protein' },
+  { hebrew: 'עוף', english: 'Chicken', hint: 'Bird meat' },
+  { hebrew: 'דג', english: 'Fish (food)', hint: 'From the sea' },
+  { hebrew: 'ביצה', english: 'Egg', hint: 'Breakfast food' },
+  { hebrew: 'גבינה', english: 'Cheese', hint: 'Yellow & tasty' },
+  { hebrew: 'חמאה', english: 'Butter', hint: 'Yellow spread' },
+  { hebrew: 'דבש', english: 'Honey', hint: 'Sweet golden liquid' },
+  { hebrew: 'סוכר', english: 'Sugar', hint: 'Sweet granules' },
+  { hebrew: 'שוקולד', english: 'Chocolate', hint: 'Brown sweet' },
+  { hebrew: 'עוגה', english: 'Cake', hint: 'Birthday dessert' },
+  { hebrew: 'בעיסוקים', english: 'Cookies', hint: 'Sweet treats' },
+  { hebrew: 'גלידה', english: 'Ice cream', hint: 'Cold & sweet' },
+  { hebrew: 'פיצה', english: 'Pizza', hint: 'Cheesy food' },
+  { hebrew: 'מרק', english: 'Soup', hint: 'Hot liquid meal' },
+  { hebrew: 'אורז', english: 'Rice', hint: 'White grain food' },
+  { hebrew: 'פסטה', english: 'Pasta', hint: 'Long noodles' },
+  { hebrew: 'לחמנייה', english: 'Roll', hint: 'Small bread' },
+  { hebrew: 'מטבח', english: 'Kitchen', hint: 'Where food cooks' },
+  { hebrew: 'אוכל', english: 'Food', hint: 'What you eat' },
+  { hebrew: 'שתייה', english: 'Drink', hint: 'Liquid to sip' },
+  { hebrew: 'יין', english: 'Wine', hint: 'Grape drink' },
+  { hebrew: 'בירה', english: 'Beer', hint: 'Adult beverage' },
+  { hebrew: 'קפה', english: 'Coffee', hint: 'Hot brown drink' },
+  { hebrew: 'תה', english: 'Tea', hint: 'Hot herbal drink' },
+  { hebrew: 'מיץ', english: 'Juice', hint: 'Fruit drink' },
+  { hebrew: 'סודה', english: 'Soda', hint: 'Fizzy drink' },
+
+  // Body Parts
+  { hebrew: 'ראש', english: 'Head', hint: 'Top of body' },
+  { hebrew: 'עין', english: 'Eye', hint: 'You see with' },
+  { hebrew: 'אוזן', english: 'Ear', hint: 'You hear with' },
+  { hebrew: 'אף', english: 'Nose', hint: 'You smell with' },
+  { hebrew: 'פה', english: 'Mouth', hint: 'You eat with' },
+  { hebrew: 'שן', english: 'Tooth', hint: 'In your mouth' },
+  { hebrew: 'לשון', english: 'Tongue', hint: 'In your mouth' },
+  { hebrew: 'שיער', english: 'Hair', hint: 'On your head' },
+  { hebrew: 'פנים', english: 'Face', hint: 'Front of head' },
+  { hebrew: 'לחיים', english: 'Cheeks', hint: 'Sides of face' },
+  { hebrew: 'סנטר', english: 'Chin', hint: 'Below mouth' },
+  { hebrew: 'קול', english: 'Voice', hint: 'When you speak' },
+  { hebrew: 'זקן', english: 'Beard', hint: 'Hair on face' },
+  { hebrew: 'גבה', english: 'Eyebrow', hint: 'Above eye' },
+  { hebrew: 'עפעף', english: 'Eyelash', hint: 'On eyelid' },
+  { hebrew: 'צוואר', english: 'Neck', hint: 'Connects head & body' },
+  { hebrew: 'כתף', english: 'Shoulder', hint: 'Top of arm' },
+  { hebrew: 'זרוע', english: 'Arm', hint: 'You lift things' },
+  { hebrew: 'כף יד', english: 'Hand', hint: 'End of arm' },
+  { hebrew: 'אצבע', english: 'Finger', hint: 'On your hand' },
+  { hebrew: 'גב', english: 'Back', hint: 'Rear of body' },
+  { hebrew: 'בטן', english: 'Belly / Stomach', hint: 'Front lower body' },
+  { hebrew: 'חזה', english: 'Chest', hint: 'Front upper body' },
+  { hebrew: 'לב', english: 'Heart', hint: 'Pumps blood' },
+  { hebrew: 'ריאה', english: 'Lung', hint: 'You breathe with' },
+  { hebrew: 'כבד', english: 'Liver', hint: 'Internal organ' },
+  { hebrew: 'כליה', english: 'Kidney', hint: 'Filters waste' },
+  { hebrew: 'מוח', english: 'Brain', hint: 'You think with' },
+  { hebrew: 'עצם', english: 'Bone', hint: 'Hard part inside' },
+  { hebrew: 'שריר', english: 'Muscle', hint: 'You flex it' },
+  { hebrew: 'עור', english: 'Skin', hint: 'Outside of body' },
+  { hebrew: 'דם', english: 'Blood', hint: 'Red liquid' },
+  { hebrew: 'ברך', english: 'Knee', hint: 'Bends your leg' },
+  { hebrew: 'רגל', english: 'Leg', hint: 'You walk with' },
+  { hebrew: 'כף רגל', english: 'Foot', hint: 'Bottom of leg' },
+  { hebrew: 'עקב', english: 'Heel', hint: 'Back of foot' },
+  { hebrew: 'יתד רגל', english: 'Toe', hint: 'On your foot' },
+  { hebrew: 'שיער גוף', english: 'Body hair', hint: 'On skin' },
+
+  // Nature & Weather
+  { hebrew: 'שמש', english: 'Sun', hint: 'Bright in sky' },
+  { hebrew: 'ירח', english: 'Moon', hint: 'Shines at night' },
+  { hebrew: 'כוכב', english: 'Star', hint: 'Twinkles at night' },
+  { hebrew: 'שמיים', english: 'Sky', hint: 'Above us' },
+  { hebrew: 'ענן', english: 'Cloud', hint: 'Floats in sky' },
+  { hebrew: 'גשם', english: 'Rain', hint: 'Water from clouds' },
+  { hebrew: 'שלג', english: 'Snow', hint: 'White & cold' },
+  { hebrew: 'רוח', english: 'Wind', hint: 'Moves air' },
+  { hebrew: 'ים', english: 'Sea / Ocean', hint: 'Salty water' },
+  { hebrew: 'נהר', english: 'River', hint: 'Flowing water' },
+  { hebrew: 'אגם', english: 'Lake', hint: 'Surrounded by land' },
+  { hebrew: 'חוף', english: 'Beach', hint: 'By the water' },
+  { hebrew: 'הר', english: 'Mountain', hint: 'Very tall & rocky' },
+  { hebrew: 'עץ', english: 'Tree', hint: 'Has leaves & branches' },
+  { hebrew: 'פרח', english: 'Flower', hint: 'Colorful & pretty' },
+  { hebrew: 'דשא', english: 'Grass', hint: 'Green plants' },
+  { hebrew: 'עלה', english: 'Leaf', hint: 'Part of tree' },
+  { hebrew: 'שיח', english: 'Bush', hint: 'Small tree' },
+  { hebrew: 'צמח', english: 'Plant', hint: 'Grows in ground' },
+  { hebrew: 'כרם', english: 'Vineyard', hint: 'Grapes grow here' },
+  { hebrew: 'בור', english: 'Pit / Well', hint: 'Deep hole' },
+  { hebrew: 'דיונה', english: 'Dune', hint: 'Sandy hill' },
+  { hebrew: 'אדמה', english: 'Soil / Earth', hint: 'Dirt' },
+  { hebrew: 'סלע', english: 'Rock', hint: 'Hard stone' },
+  { hebrew: 'חול', english: 'Sand', hint: 'Fine granules' },
+  { hebrew: 'גולה', english: 'Boulder', hint: 'Large rock' },
+  { hebrew: 'מלח', english: 'Salt (mineral)', hint: 'From sea' },
+  { hebrew: 'זהב', english: 'Gold', hint: 'Precious metal' },
+  { hebrew: 'כסף', english: 'Silver', hint: 'Precious metal' },
+  { hebrew: 'יהלום', english: 'Diamond', hint: 'Precious gem' },
+  { hebrew: 'קרח', english: 'Ice', hint: 'Frozen water' },
+  { hebrew: 'קצף', english: 'Foam', hint: 'Bubbles' },
+  { hebrew: 'טל', english: 'Dew', hint: 'Morning water drops' },
+  { hebrew: 'ערפיל', english: 'Fog', hint: 'Thick mist' },
+  { hebrew: 'ברק', english: 'Lightning', hint: 'Electric strike' },
+  { hebrew: 'רעם', english: 'Thunder', hint: 'Loud sound in sky' },
+  { hebrew: 'קשת', english: 'Rainbow', hint: 'After rain' },
+  { hebrew: 'אפל', english: 'Dark / Darkness', hint: 'No light' },
+  { hebrew: 'אור', english: 'Light', hint: 'Brightness' },
+  { hebrew: 'צל', english: 'Shadow', hint: 'Dark spot' },
+
+  // Colors
+  { hebrew: 'אדום', english: 'Red', hint: 'Color of apples' },
+  { hebrew: 'כחול', english: 'Blue', hint: 'Color of sky' },
+  { hebrew: 'ירוק', english: 'Green', hint: 'Color of grass' },
+  { hebrew: 'צהוב', english: 'Yellow', hint: 'Color of sun' },
+  { hebrew: 'לבן', english: 'White', hint: 'Color of snow' },
+  { hebrew: 'שחור', english: 'Black', hint: 'Darkest color' },
+  { hebrew: 'כתום', english: 'Orange', hint: 'Color of orange fruit' },
+  { hebrew: 'סגול', english: 'Purple', hint: 'Mix red & blue' },
+  { hebrew: 'ורוד', english: 'Pink', hint: 'Light red' },
+  { hebrew: 'חום', english: 'Brown', hint: 'Color of earth' },
+  { hebrew: 'אפור', english: 'Gray', hint: 'Between white & black' },
+  { hebrew: 'בהיר', english: 'Bright', hint: 'Light & shiny' },
+  { hebrew: 'כהה', english: 'Dark', hint: 'Not bright' },
+  { hebrew: 'צבע', english: 'Color', hint: 'Hue & shade' },
+  { hebrew: 'טורקיז', english: 'Turquoise', hint: 'Light blue-green' },
+  { hebrew: 'טיל', english: 'Violet', hint: 'Deep purple' },
+  { hebrew: 'כסוף', english: 'Bluish', hint: 'Slightly blue' },
+  { hebrew: 'זהבי', english: 'Golden', hint: 'Like gold' },
+  { hebrew: 'כספי', english: 'Silver (color)', hint: 'Like silver' },
+
+  // School & Learning
+  { hebrew: 'בית ספר', english: 'School', hint: 'Place to learn' },
+  { hebrew: 'כיתה', english: 'Class / Classroom', hint: 'Where you study' },
+  { hebrew: 'ספר', english: 'Book', hint: 'Has pages' },
+  { hebrew: 'עיתון', english: 'Newspaper', hint: 'Daily news' },
+  { hebrew: 'עט', english: 'Pen', hint: 'Writing tool' },
+  { hebrew: 'עפרון', english: 'Pencil', hint: 'Can be erased' },
+  { hebrew: 'מחק', english: 'Eraser', hint: 'Removes pencil marks' },
+  { hebrew: 'נייר', english: 'Paper', hint: 'Write on it' },
+  { hebrew: 'דף', english: 'Sheet / Page', hint: 'Part of paper' },
+  { hebrew: 'שיעור', english: 'Lesson', hint: 'What you learn' },
+  { hebrew: 'תרגיל', english: 'Exercise', hint: 'Practice work' },
+  { hebrew: 'בחינה', english: 'Exam / Test', hint: 'Check knowledge' },
+  { hebrew: 'ציון', english: 'Grade / Mark', hint: 'Score on test' },
+  { hebrew: 'מחברת', english: 'Notebook', hint: 'For writing notes' },
+  { hebrew: 'לוח', english: 'Board / Blackboard', hint: 'Teacher writes here' },
+  { hebrew: 'סמן', english: 'Marker', hint: 'Writing tool' },
+  { hebrew: 'צבעונים', english: 'Colored pencils', hint: 'Many colors' },
+  { hebrew: 'סרגל', english: 'Ruler', hint: 'Measure length' },
+  { hebrew: 'מספריים', english: 'Scissors', hint: 'Cuts paper' },
+  { hebrew: 'דבק', english: 'Glue', hint: 'Sticks things' },
+  { hebrew: 'תיקייה', english: 'Folder', hint: 'Holds papers' },
+  { hebrew: 'תיק', english: 'Backpack / Bag', hint: 'Carries books' },
+  { hebrew: 'שקית', english: 'Bag (small)', hint: 'Holds things' },
+  { hebrew: 'מחשב', english: 'Computer', hint: 'Electronic device' },
+  { hebrew: 'עכבר', english: 'Mouse (computer)', hint: 'Clicks buttons' },
+  { hebrew: 'מקלדת', english: 'Keyboard', hint: 'Types letters' },
+  { hebrew: 'צג', english: 'Screen / Monitor', hint: 'Shows pictures' },
+  { hebrew: 'מדפסת', english: 'Printer', hint: 'Prints papers' },
+  { hebrew: 'קובץ', english: 'File', hint: 'Stored data' },
+  { hebrew: 'כתיבה', english: 'Writing', hint: 'Put words on paper' },
+  { hebrew: 'קריאה', english: 'Reading', hint: 'Look at words' },
+  { hebrew: 'ספירה', english: 'Counting', hint: 'Numbers in order' },
+  { hebrew: 'מתמטיקה', english: 'Mathematics', hint: 'Numbers & equations' },
+  { hebrew: 'מדע', english: 'Science', hint: 'Study of nature' },
+  { hebrew: 'היסטוריה', english: 'History', hint: 'Past events' },
+  { hebrew: 'גיאוגרפיה', english: 'Geography', hint: 'Study of places' },
+
+  // Home & Living
+  { hebrew: 'בית', english: 'House', hint: 'Where you live' },
+  { hebrew: 'דלת', english: 'Door', hint: 'You open it to enter' },
+  { hebrew: 'חלון', english: 'Window', hint: 'Let light in' },
+  { hebrew: 'קיר', english: 'Wall', hint: 'Holds the roof' },
+  { hebrew: 'חדר', english: 'Room', hint: 'Part of house' },
+  { hebrew: 'חדר שינה', english: 'Bedroom', hint: 'Where you sleep' },
+  { hebrew: 'סלון', english: 'Living room', hint: 'For relaxing' },
+  { hebrew: 'מטבח', english: 'Kitchen', hint: 'Cook here' },
+  { hebrew: 'אמבטיה', english: 'Bathroom', hint: 'Toilet & tub' },
+  { hebrew: 'מדרגות', english: 'Stairs', hint: 'Go up & down' },
+  { hebrew: 'קומה', english: 'Floor / Level', hint: 'Height of building' },
+  { hebrew: 'גג', english: 'Roof', hint: 'Top of house' },
+  { hebrew: 'חצר', english: 'Yard', hint: 'Outside space' },
+  { hebrew: 'גדר', english: 'Fence', hint: 'Surrounds yard' },
+  { hebrew: 'שער', english: 'Gate', hint: 'Opens into yard' },
+  { hebrew: 'ספה', english: 'Couch / Sofa', hint: 'For sitting' },
+  { hebrew: 'כיסא', english: 'Chair', hint: 'For one person' },
+  { hebrew: 'שולחן', english: 'Table', hint: 'Flat surface' },
+  { hebrew: 'מיטה', english: 'Bed', hint: 'For sleeping' },
+  { hebrew: 'כריות', english: 'Pillow', hint: 'Under your head' },
+  { hebrew: 'שמיכה', english: 'Blanket', hint: 'Keeps you warm' },
+  { hebrew: 'יריעה', english: 'Sheet', hint: 'On the bed' },
+  { hebrew: 'מראה', english: 'Mirror', hint: 'See yourself' },
+  { hebrew: 'מנורה', english: 'Lamp', hint: 'Gives light' },
+  { hebrew: 'נר', english: 'Candle', hint: 'Burns for light' },
+  { hebrew: 'שנייה', english: 'Shelf', hint: 'Holds things' },
+  { hebrew: 'ארון', english: 'Closet / Wardrobe', hint: 'Stores clothes' },
+  { hebrew: 'מגירה', english: 'Drawer', hint: 'Slides open' },
+  { hebrew: 'ספה', english: 'Couch', hint: 'For sitting' },
+  { hebrew: 'רהיטים', english: 'Furniture', hint: 'Items in home' },
+  { hebrew: 'שטיח', english: 'Carpet / Rug', hint: 'On the floor' },
+  { hebrew: 'מתכת', english: 'Metal', hint: 'Hard material' },
+  { hebrew: 'עץ', english: 'Wood', hint: 'From trees' },
+  { hebrew: 'בד', english: 'Cloth / Fabric', hint: 'Soft material' },
+  { hebrew: 'זכוכית', english: 'Glass', hint: 'Clear material' },
+  { hebrew: 'פלסטיק', english: 'Plastic', hint: 'Synthetic material' },
+  { hebrew: 'כלי', english: 'Dish / Plate', hint: 'Eats from it' },
+  { hebrew: 'כוס', english: 'Cup / Glass', hint: 'Drink from it' },
+  { hebrew: 'כפית', english: 'Spoon', hint: 'For eating' },
+  { hebrew: 'מזלג', english: 'Fork', hint: 'For eating' },
+  { hebrew: 'סכין', english: 'Knife', hint: 'For cutting' },
+  { hebrew: 'סיר', english: 'Pot', hint: 'Cooking vessel' },
+  { hebrew: 'פן', english: 'Pan', hint: 'For cooking' },
+  { hebrew: 'תנור', english: 'Oven', hint: 'Bakes food' },
+  { hebrew: 'תנור מיקרוגל', english: 'Microwave', hint: 'Heats food' },
+  { hebrew: 'קירור', english: 'Refrigerator', hint: 'Keeps food cold' },
+  { hebrew: 'מנוח', english: 'Freezer', hint: 'Keeps food frozen' },
+  { hebrew: 'תריס', english: 'Blinds', hint: 'Cover windows' },
+  { hebrew: 'וילון', english: 'Curtain', hint: 'Hangs on window' },
+  { hebrew: 'כיור', english: 'Sink', hint: 'Wash dishes here' },
+  { hebrew: 'אמבטיה', english: 'Bathtub', hint: 'For bathing' },
+  { hebrew: 'מקלחת', english: 'Shower', hint: 'Standing wash' },
+
+  // Clothing & Accessories
+  { hebrew: 'בגדים', english: 'Clothes', hint: 'Wear on body' },
+  { hebrew: 'חולצה', english: 'Shirt', hint: 'Tops' },
+  { hebrew: 'מכנסיים', english: 'Pants', hint: 'Bottom wear' },
+  { hebrew: 'שמלה', english: 'Dress', hint: 'For girls' },
+  { hebrew: 'נעל', english: 'Shoe', hint: 'Wears on foot' },
+  { hebrew: 'גרב', english: 'Sock', hint: 'Inside shoe' },
+  { hebrew: 'גרביון', english: 'Stocking', hint: 'Tight leg wear' },
+  { hebrew: 'תחתונים', english: 'Underwear', hint: 'Worn under clothes' },
+  { hebrew: 'חזיה', english: 'Bra', hint: 'For women' },
+  { hebrew: 'חגורה', english: 'Belt', hint: 'Holds pants up' },
+  { hebrew: 'עניבה', english: 'Necktie', hint: 'Around neck' },
+  { hebrew: 'צעיף', english: 'Scarf', hint: 'Around neck or head' },
+  { hebrew: 'כובע', english: 'Hat', hint: 'Wears on head' },
+  { hebrew: 'בארט', english: 'Beret', hint: 'Flat hat' },
+  { hebrew: 'כובע בייסבול', english: 'Baseball cap', hint: 'Sports hat' },
+  { hebrew: 'כפפות', english: 'Gloves', hint: 'On hands' },
+  { hebrew: 'מעיל', english: 'Coat', hint: 'Warm outer layer' },
+  { hebrew: 'ז\'קט', english: 'Jacket', hint: 'Over shirt' },
+  { hebrew: 'סוודר', english: 'Sweater', hint: 'Warm shirt' },
+  { hebrew: 'טריקו', english: 'T-shirt', hint: 'Casual shirt' },
+  { hebrew: 'הנעלה', english: 'Sneaker', hint: 'Sports shoe' },
+  { hebrew: 'מגף', english: 'Boot', hint: 'Tall shoe' },
+  { hebrew: 'סנדל', english: 'Sandal', hint: 'Open shoe' },
+  { hebrew: 'נעל גבוהה', english: 'High heel', hint: 'Fancy shoe' },
+  { hebrew: 'כיפה', english: 'Kippah / Yarmulke', hint: 'Jewish head covering' },
+  { hebrew: 'תיק כתף', english: 'Shoulder bag', hint: 'Carries items' },
+  { hebrew: 'קסטה', english: 'Vase', hint: 'Holds flowers' },
+  { hebrew: 'תיבה', english: 'Box', hint: 'Storage container' },
+  { hebrew: 'תרמיל', english: 'Backpack', hint: 'School bag' },
+  { hebrew: 'חבק', english: 'Hug', hint: 'Arms around' },
+  { hebrew: 'תכשיטים', english: 'Jewelry', hint: 'Shiny accessories' },
+  { hebrew: 'טבעת', english: 'Ring', hint: 'On finger' },
+  { hebrew: 'שרשרת', english: 'Necklace', hint: 'Around neck' },
+  { hebrew: 'צמיד', english: 'Bracelet', hint: 'On wrist' },
+  { hebrew: 'עגיל', english: 'Earring', hint: 'On ear' },
+  { hebrew: 'שעון', english: 'Watch / Clock', hint: 'Tells time' },
+  { hebrew: 'זימה', english: 'Hair clip', hint: 'Holds hair' },
+  { hebrew: 'סרט', english: 'Ribbon', hint: 'Decorative band' },
+  { hebrew: 'כרטסת', english: 'Headband', hint: 'Around head' },
+  { hebrew: 'כפפה', english: 'Mittens', hint: 'Hand covering' },
+  { hebrew: 'אנטוקה', english: 'Vintage', hint: 'Old & valuable' },
+
+  // Sports & Games
+  { hebrew: 'כדור', english: 'Ball', hint: 'Round toy' },
+  { hebrew: 'כדורגל', english: 'Soccer', hint: 'Sport with feet' },
+  { hebrew: 'כדורסל', english: 'Basketball', hint: 'Shoot through hoop' },
+  { hebrew: 'כדור טניס', english: 'Tennis', hint: 'Racket sport' },
+  { hebrew: 'כדור בסיס', english: 'Baseball', hint: 'Bat & ball sport' },
+  { hebrew: 'כדור רגל אמריקאי', english: 'American football', hint: 'Contact sport' },
+  { hebrew: 'הוקי', english: 'Hockey', hint: 'Ice sport' },
+  { hebrew: 'מחליקים', english: 'Skating', hint: 'On ice' },
+  { hebrew: 'סקי', english: 'Skiing', hint: 'Snow sport' },
+  { hebrew: 'קרח', english: 'Ice skating', hint: 'On frozen water' },
+  { hebrew: 'שחייה', english: 'Swimming', hint: 'In water' },
+  { hebrew: 'צלילה', english: 'Diving', hint: 'Into water' },
+  { hebrew: 'גלישה', english: 'Surfing', hint: 'On waves' },
+  { hebrew: 'אופניים', english: 'Bicycle', hint: 'Two wheels' },
+  { hebrew: 'קלישור', english: 'Skateboard', hint: 'Extreme sport' },
+  { hebrew: 'רקיטה', english: 'Racket', hint: 'Hits ball' },
+  { hebrew: 'מחבט', english: 'Bat', hint: 'For baseball' },
+  { hebrew: 'שער', english: 'Goal / Gate', hint: 'Score here' },
+  { hebrew: 'כפפות אגרוף', english: 'Boxing gloves', hint: 'For fighting' },
+  { hebrew: 'רינג', english: 'Ring', hint: 'Boxing area' },
+  { hebrew: 'משחק', english: 'Game', hint: 'For fun' },
+  { hebrew: 'צעצוע', english: 'Toy', hint: 'To play with' },
+  { hebrew: 'בובה', english: 'Doll', hint: 'Like a person' },
+  { hebrew: 'רכבת', english: 'Train (toy)', hint: 'Moves on tracks' },
+  { hebrew: 'מכונית', english: 'Car (toy)', hint: 'Rides on wheels' },
+  { hebrew: 'בל"ון', english: 'Balloon', hint: 'Floats in air' },
+  { hebrew: 'עפיפון', english: 'Kite', hint: 'Flies in sky' },
+  { hebrew: 'טביעות', english: 'Marbles', hint: 'Small glass balls' },
+  { hebrew: 'טאטו', english: 'Tattoo', hint: 'Skin marking' },
+  { hebrew: 'כרטיס', english: 'Card', hint: 'Play game' },
+  { hebrew: 'קובייה', english: 'Dice', hint: 'Rolling cube' },
+  { hebrew: 'לוח משחק', english: 'Board game', hint: 'Play on board' },
+  { hebrew: 'פאזל', english: 'Puzzle', hint: 'Pieces fit together' },
+  { hebrew: 'שחמט', english: 'Chess', hint: 'Strategic game' },
+  { hebrew: 'דמקה', english: 'Checkers', hint: 'Piece game' },
+
+  // Transportation
+  { hebrew: 'רכב', english: 'Vehicle', hint: 'Travels' },
+  { hebrew: 'מכונית', english: 'Car', hint: 'Four wheels' },
+  { hebrew: 'אוטובוס', english: 'Bus', hint: 'Many passengers' },
+  { hebrew: 'משאית', english: 'Truck', hint: 'Carries cargo' },
+  { hebrew: 'אופנוע', english: 'Motorcycle', hint: 'Two wheels' },
+  { hebrew: 'אופניים', english: 'Bicycle', hint: 'No motor' },
+  { hebrew: 'רכבת', english: 'Train', hint: 'Tracks & cars' },
+  { hebrew: 'טרמוואי', english: 'Tram / Trolley', hint: 'On tracks' },
+  { hebrew: 'מטרו', english: 'Metro / Subway', hint: 'Underground' },
+  { hebrew: 'מונית', english: 'Taxi', hint: 'Pays to ride' },
+  { hebrew: 'ים', english: 'Sea / Ocean', hint: 'Salty water' },
+  { hebrew: 'אוניה', english: 'Ship', hint: 'Large boat' },
+  { hebrew: 'סירה', english: 'Boat', hint: 'Small vessel' },
+  { hebrew: 'יאכטה', english: 'Yacht', hint: 'Luxury boat' },
+  { hebrew: 'בדנק', english: 'Submarine', hint: 'Under water' },
+  { hebrew: 'קנו', english: 'Canoe', hint: 'Paddle boat' },
+  { hebrew: 'טיסה', english: 'Airplane', hint: 'Flies in sky' },
+  { hebrew: 'מסוק', english: 'Helicopter', hint: 'Has rotor blades' },
+  { hebrew: 'בלון', english: 'Hot air balloon', hint: 'Floats up' },
+  { hebrew: 'מנחתה', english: 'Landing', hint: 'Comes down' },
+  { hebrew: 'הסעה', english: 'Riding', hint: 'Being transported' },
+
+  // Time & Calendar
+  { hebrew: 'שעה', english: 'Hour', hint: '60 minutes' },
+  { hebrew: 'דקה', english: 'Minute', hint: '60 seconds' },
+  { hebrew: 'שנייה', english: 'Second', hint: 'Very short time' },
+  { hebrew: 'יום', english: 'Day', hint: '24 hours' },
+  { hebrew: 'לילה', english: 'Night', hint: 'Dark time' },
+  { hebrew: 'בוקר', english: 'Morning', hint: 'Early day' },
+  { hebrew: 'אחר הצהריים', english: 'Afternoon', hint: 'After lunch' },
+  { hebrew: 'ערב', english: 'Evening', hint: 'Before night' },
+  { hebrew: 'שבוע', english: 'Week', hint: '7 days' },
+  { hebrew: 'ראשון', english: 'Sunday', hint: 'First day' },
+  { hebrew: 'שני', english: 'Monday', hint: 'Second day' },
+  { hebrew: 'שלישי', english: 'Tuesday', hint: 'Third day' },
+  { hebrew: 'רביעי', english: 'Wednesday', hint: 'Fourth day' },
+  { hebrew: 'חמישי', english: 'Thursday', hint: 'Fifth day' },
+  { hebrew: 'שישי', english: 'Friday', hint: 'Sixth day' },
+  { hebrew: 'שבת', english: 'Saturday', hint: 'Seventh day' },
+  { hebrew: 'חודש', english: 'Month', hint: '30 days' },
+  { hebrew: 'שנה', english: 'Year', hint: '365 days' },
+  { hebrew: 'יום הולדת', english: 'Birthday', hint: 'You were born' },
+  { hebrew: 'חג', english: 'Holiday', hint: 'Special day' },
+  { hebrew: 'פסח', english: 'Passover', hint: 'Jewish holiday' },
+  { hebrew: 'שבועות', english: 'Shavuot', hint: 'Jewish holiday' },
+  { hebrew: 'תישעה באב', english: 'Tisha B\'Av', hint: 'Jewish fast day' },
+  { hebrew: 'ראש השנה', english: 'Rosh Hashanah', hint: 'Jewish new year' },
+  { hebrew: 'יום כיפור', english: 'Yom Kippur', hint: 'Day of atonement' },
+  { hebrew: 'סוכות', english: 'Sukkot', hint: 'Booth festival' },
+  { hebrew: 'שמחת תורה', english: 'Simchat Torah', hint: 'Torah celebration' },
+  { hebrew: 'חנוכה', english: 'Hanukkah', hint: 'Festival of lights' },
+  { hebrew: 'טו בשבט', english: 'Tu B\'Shevat', hint: 'Tree planting day' },
+  { hebrew: 'פורים', english: 'Purim', hint: 'Celebration holiday' },
+  { hebrew: 'יום השואה', english: 'Holocaust Remembrance', hint: 'Serious day' },
+  { hebrew: 'יום הזיכרון', english: 'Memorial Day', hint: 'Remember soldiers' },
+  { hebrew: 'יום העצמאות', english: 'Independence Day', hint: 'Israel\'s birthday' },
+
+  // Numbers
+  { hebrew: 'אחד', english: 'One', hint: 'Number 1' },
+  { hebrew: 'שניים', english: 'Two', hint: 'Number 2' },
+  { hebrew: 'שלוש', english: 'Three', hint: 'Number 3' },
+  { hebrew: 'ארבע', english: 'Four', hint: 'Number 4' },
+  { hebrew: 'חמש', english: 'Five', hint: 'Number 5' },
+  { hebrew: 'שש', english: 'Six', hint: 'Number 6' },
+  { hebrew: 'שבע', english: 'Seven', hint: 'Number 7' },
+  { hebrew: 'שמונה', english: 'Eight', hint: 'Number 8' },
+  { hebrew: 'תשע', english: 'Nine', hint: 'Number 9' },
+  { hebrew: 'עשר', english: 'Ten', hint: 'Number 10' },
+  { hebrew: 'אחת עשרה', english: 'Eleven', hint: 'Number 11' },
+  { hebrew: 'שתים עשרה', english: 'Twelve', hint: 'Number 12' },
+  { hebrew: 'שלוש עשרה', english: 'Thirteen', hint: 'Number 13' },
+  { hebrew: 'ארבע עשרה', english: 'Fourteen', hint: 'Number 14' },
+  { hebrew: 'חמש עשרה', english: 'Fifteen', hint: 'Number 15' },
+  { hebrew: 'שש עשרה', english: 'Sixteen', hint: 'Number 16' },
+  { hebrew: 'שבע עשרה', english: 'Seventeen', hint: 'Number 17' },
+  { hebrew: 'שמונה עשרה', english: 'Eighteen', hint: 'Number 18' },
+  { hebrew: 'תשע עשרה', english: 'Nineteen', hint: 'Number 19' },
+  { hebrew: 'עשרים', english: 'Twenty', hint: 'Number 20' },
+  { hebrew: 'שלוש עשרים', english: 'Thirty', hint: 'Number 30' },
+  { hebrew: 'ארבעים', english: 'Forty', hint: 'Number 40' },
+  { hebrew: 'חמישים', english: 'Fifty', hint: 'Number 50' },
+  { hebrew: 'שישים', english: 'Sixty', hint: 'Number 60' },
+  { hebrew: 'שבעים', english: 'Seventy', hint: 'Number 70' },
+  { hebrew: 'שמונים', english: 'Eighty', hint: 'Number 80' },
+  { hebrew: 'תשעים', english: 'Ninety', hint: 'Number 90' },
+  { hebrew: 'מאה', english: 'Hundred', hint: 'Number 100' },
+  { hebrew: 'אלף', english: 'Thousand', hint: 'Number 1000' },
+  { hebrew: 'אפס', english: 'Zero', hint: 'Nothing' },
+  { hebrew: 'כל', english: 'All', hint: 'Everything' },
+  { hebrew: 'כמה', english: 'How many', hint: 'Asking number' },
+
+  // Emotions & Feelings
+  { hebrew: 'שמח', english: 'Happy', hint: 'Smiling' },
+  { hebrew: 'עצוב', english: 'Sad', hint: 'Crying' },
+  { hebrew: 'כועס', english: 'Angry', hint: 'Mad' },
+  { hebrew: 'פחד', english: 'Afraid', hint: 'Scared' },
+  { hebrew: 'אהבה', english: 'Love', hint: 'Like very much' },
+  { hebrew: 'שנאה', english: 'Hate', hint: 'Dislike very much' },
+  { hebrew: 'דאגה', english: 'Worried', hint: 'Concerned' },
+  { hebrew: 'שקט', english: 'Calm', hint: 'Peaceful' },
+  { hebrew: 'עייף', english: 'Tired', hint: 'Need sleep' },
+  { hebrew: 'שעמום', english: 'Bored', hint: 'Not interested' },
+  { hebrew: 'רעב', english: 'Hungry', hint: 'Want food' },
+  { hebrew: 'צמא', english: 'Thirsty', hint: 'Want drink' },
+  { hebrew: 'בריא', english: 'Healthy', hint: 'Not sick' },
+  { hebrew: 'חולה', english: 'Sick', hint: 'Ill' },
+  { hebrew: 'כואב', english: 'Hurt', hint: 'In pain' },
+  { hebrew: 'מעניין', english: 'Interesting', hint: 'Captures attention' },
+  { hebrew: 'משעמם', english: 'Boring', hint: 'Not interesting' },
+  { hebrew: 'הופתע', english: 'Surprised', hint: 'Unexpected' },
+  { hebrew: 'מבוהל', english: 'Confused', hint: 'Not sure' },
+  { hebrew: 'בטוח', english: 'Confident', hint: 'Sure of self' },
+  { hebrew: 'סקרן', english: 'Curious', hint: 'Want to know' },
+  { hebrew: 'לח', english: 'Wet', hint: 'With moisture' },
+  { hebrew: 'יבש', english: 'Dry', hint: 'No moisture' },
+  { hebrew: 'חם', english: 'Hot', hint: 'High temperature' },
+  { hebrew: 'קר', english: 'Cold', hint: 'Low temperature' },
+  { hebrew: 'חזק', english: 'Strong', hint: 'Powerful' },
+  { hebrew: 'חלש', english: 'Weak', hint: 'Not strong' },
+  { hebrew: 'גדול', english: 'Big', hint: 'Large' },
+  { hebrew: 'קטן', english: 'Small', hint: 'Little' },
+  { hebrew: 'ישן', english: 'Old', hint: 'Ancient' },
+  { hebrew: 'חדש', english: 'New', hint: 'Recent' },
+  { hebrew: 'נקי', english: 'Clean', hint: 'Not dirty' },
+  { hebrew: 'מלוכלך', english: 'Dirty', hint: 'Not clean' },
+  { hebrew: 'יפה', english: 'Beautiful', hint: 'Looks good' },
+  { hebrew: 'מכוער', english: 'Ugly', hint: 'Not beautiful' },
+  { hebrew: 'טוב', english: 'Good', hint: 'Excellent' },
+  { hebrew: 'רע', english: 'Bad', hint: 'Not good' },
+  { hebrew: 'קל', english: 'Easy', hint: 'Not hard' },
+  { hebrew: 'קשה', english: 'Hard', hint: 'Difficult' },
+  { hebrew: 'פשוט', english: 'Simple', hint: 'Not complex' },
+  { hebrew: 'מסובך', english: 'Complicated', hint: 'Complex' },
+  { hebrew: 'חכם', english: 'Smart', hint: 'Intelligent' },
+  { hebrew: 'טפש', english: 'Stupid', hint: 'Not smart' },
+  { hebrew: 'עיז', english: 'Bold', hint: 'Daring' },
+  { hebrew: 'אמיץ', english: 'Brave', hint: 'Not afraid' },
+  { hebrew: 'ביישן', english: 'Shy', hint: 'Quiet around people' },
+  { hebrew: 'נדיב', english: 'Generous', hint: 'Gives to others' },
+  { hebrew: 'סבלן', english: 'Patient', hint: 'Can wait calmly' },
+
+  // More Jewish/Cultural
+  { hebrew: 'כיפה', english: 'Kippah', hint: 'Head covering' },
+  { hebrew: 'טלית', english: 'Tallit', hint: 'Prayer shawl' },
+  { hebrew: 'הבדלה', english: 'Havdalah', hint: 'End of Shabbat' },
+  { hebrew: 'קידוש', english: 'Kiddush', hint: 'Blessing over wine' },
+  { hebrew: 'ברכה', english: 'Blessing', hint: 'Thank God prayer' },
+  { hebrew: 'נר', english: 'Candle', hint: 'Has a flame' },
+  { hebrew: 'חנוכייה', english: 'Menorah', hint: 'Hanukkah candles' },
+  { hebrew: 'סביבון', english: 'Dreidel', hint: 'Hanukkah spinning top' },
+  { hebrew: 'מצה', english: 'Matzah', hint: 'Passover bread' },
+  { hebrew: 'הגדה', english: 'Haggadah', hint: 'Passover story book' },
+  { hebrew: 'שופר', english: 'Shofar', hint: 'Ram horn instrument' },
+  { hebrew: 'לולב', english: 'Lulav', hint: 'Palm branch for Sukkot' },
+  { hebrew: 'אתרוג', english: 'Etrog', hint: 'Yellow citrus for Sukkot' },
+  { hebrew: 'סוכה', english: 'Sukkah', hint: 'Temporary hut' },
+  { hebrew: 'המן', english: 'Haman', hint: 'Purim villain' },
+  { hebrew: 'אסתר', english: 'Esther', hint: 'Purim queen hero' },
+  { hebrew: 'משלוח מנות', english: 'Mishloach Manot', hint: 'Purim gift baskets' },
+  { hebrew: 'אוזן המן', english: 'Hamantaschen', hint: 'Triangle Purim cookie' },
+  { hebrew: 'צדקה', english: 'Charity', hint: 'Giving to the poor' },
+];
+
+
+// State
+let state = {
+  screen: 'setup',
+  difficulty: 'easy',
+  score: 0,
+  streak: 0,
+  round: 0,
+  checked: false,
+  isCorrect: false,
+  resultMsg: '',
+  resultClass: '',
+  pointsMsg: '',
+  showCorrect: '',
+  // Current question data
+  questionType: '', // 'name' | 'sound' | 'meaning' | 'meaning-reverse' | 'spell'
+  currentLetter: null,
+  currentWord: null,
+  choices: [],
+  correctChoice: '',
+  missingIndex: -1,
+  letterChoices: [],
+  correctLetter: '',
+};
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getDifficultyPoints() {
+  return state.difficulty === 'easy' ? 2 : state.difficulty === 'medium' ? 3 : 5;
+}
+
+function generateQuestion() {
+  state.checked = false;
+  state.isCorrect = false;
+  state.resultMsg = '';
+  state.resultClass = '';
+  state.pointsMsg = '';
+  state.showCorrect = '';
+  state.round++;
+
+  if (state.difficulty === 'easy') {
+    generateEasyQuestion();
+  } else if (state.difficulty === 'medium') {
+    generateMediumQuestion();
+  } else {
+    generateHardQuestion();
+  }
+}
+
+function generateEasyQuestion() {
+  // Two question types: identify the name, or identify the sound
+  const type = Math.random() < 0.6 ? 'name' : 'sound';
+  const idx = randInt(0, hebrewLetters.length - 1);
+  const correct = hebrewLetters[idx];
+  state.currentLetter = correct;
+  state.questionType = type;
+
+  if (type === 'name') {
+    // Pick 3 wrong answers - use Hebrew names
+    let pool = hebrewLetters.filter((_, i) => i !== idx);
+    pool = shuffle(pool).slice(0, 3);
+    const correctHebrewName = hebrewNames[correct.name];
+    state.choices = shuffle([correct, ...pool]).map(l => hebrewNames[l.name]);
+    state.correctChoice = correctHebrewName;
+  } else {
+    let pool = hebrewLetters.filter((_, i) => i !== idx);
+    pool = shuffle(pool).slice(0, 3);
+    state.choices = shuffle([correct, ...pool]).map(l => l.sound);
+    state.correctChoice = correct.sound;
+  }
+}
+
+function generateMediumQuestion() {
+  // Random type: translate Hebrew->English or English->Hebrew
+  const type = Math.random() < 0.5 ? 'meaning' : 'meaning-reverse';
+  const wordObj = vocabulary[randInt(0, vocabulary.length - 1)];
+  state.currentWord = wordObj;
+  state.questionType = type;
+
+  if (type === 'meaning') {
+    // Hebrew to English: show Hebrew, pick 4 English options
+    let pool = vocabulary.filter(w => w.english !== wordObj.english);
+    pool = shuffle(pool).slice(0, 3);
+    state.choices = shuffle([wordObj, ...pool]).map(w => w.english);
+    state.correctChoice = wordObj.english;
+  } else {
+    // English to Hebrew: show English, pick 4 Hebrew options
+    let pool = vocabulary.filter(w => w.hebrew !== wordObj.hebrew);
+    pool = shuffle(pool).slice(0, 3);
+    state.choices = shuffle([wordObj, ...pool]).map(w => w.hebrew);
+    state.correctChoice = wordObj.hebrew;
+  }
+}
+
+function generateHardQuestion() {
+  // Spell the full Hebrew word
+  state.questionType = 'spell';
+  const wordObj = vocabulary[randInt(0, vocabulary.length - 1)];
+  state.currentWord = wordObj;
+}
+
+function renderPlayerBanner() {
+  if (!currentPlayer) return '';
+  const avatarClass = currentPlayer.toLowerCase();
+  const initial = currentPlayer[0];
+  const totalPts = getTotalPoints();
+  return `
+    <div class="player-banner">
+      <div class="pb-avatar ${avatarClass}">${initial}</div>
+      <span class="pb-name">${currentPlayer}</span>
+      <span style="color:#ccc;">|</span>
+      <span class="pb-pts">${totalPts.toLocaleString()} נקודות</span>
+    </div>
+  `;
+}
+
+function render() {
+  if (state.screen === 'setup') renderSetup();
+  else renderPlay();
+}
+
+function renderSetup() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>🔤 אותיות ומילים בעברית</h1>
+    <p class="subtitle">!למד את האלף-בית ואוצר מילים בעברית</p>
+    <div class="setup">
+      <label>רמת קושי:</label>
+      <div class="difficulty-toggle">
+        <button class="diff-btn ${state.difficulty === 'easy' ? 'active' : ''}" onclick="setDifficulty('easy')">קל <span style="color:#f59e0b;font-size:0.85em;">★★ 2נק</span></button>
+        <button class="diff-btn ${state.difficulty === 'medium' ? 'active' : ''}" onclick="setDifficulty('medium')">בינוני <span style="color:#f59e0b;font-size:0.85em;">★★★ 3נק</span></button>
+        <button class="diff-btn ${state.difficulty === 'hard' ? 'active' : ''}" onclick="setDifficulty('hard')">קשה <span style="color:#f59e0b;font-size:0.85em;">★★★★★ 5נק</span></button>
+      </div>
+      <p style="color:#aaa;font-size:0.85em;margin-top:6px;">קל: זהה את האות · בינוני: מה המילה · קשה: כתוב את המילה</p>
+      <br>
+      <button class="go-btn" onclick="startGame()">!יאללה</button>
+    </div>
+    <div class="controls">
+      <button class="secondary-btn home-btn" onclick="goHome()">חזרה הביתה</button>
+    </div>
+  `;
+}
+
+function renderPlay() {
+  const pts = getDifficultyPoints();
+  let questionHTML = '';
+
+  if (state.questionType === 'name' || state.questionType === 'sound') {
+    questionHTML = renderEasyQuestion();
+  } else if (state.questionType === 'meaning' || state.questionType === 'meaning-reverse') {
+    questionHTML = renderMediumQuestion();
+  } else if (state.questionType === 'spell') {
+    questionHTML = renderHardQuestion();
+  }
+
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>🔤 אותיות ומילים בעברית</h1>
+    <div class="score-bar">
+      <div>ניקוד: <span>${state.score}</span></div>
+      <div>רצף: <span>${state.streak} 🔥</span></div>
+      <div>סיבוב: <span>${state.round}</span></div>
+    </div>
+    <p class="subtitle">
+      ${state.difficulty === 'easy' ? '!זהה את האות העברית' : state.difficulty === 'medium' ? '?מה המילה' : '!כתוב את המילה בעברית'}
+      <span style="color:#f59e0b;">+${pts} נקודות</span>
+    </p>
+    ${questionHTML}
+    <div class="result ${state.resultClass}">${state.resultMsg}</div>
+    <div class="points-earned">${state.pointsMsg}</div>
+    <div class="correct-answer">${state.showCorrect}</div>
+    ${state.checked ? '<button class="next-btn" onclick="nextQuestion()">← השאלה הבאה</button>' : ''}
+    <div class="controls">
+      <button class="secondary-btn" onclick="changeDifficulty()">שנה רמת קושי</button>
+      <button class="secondary-btn home-btn" onclick="goHome()">חזרה הביתה</button>
+    </div>
+  `;
+
+  if (state.questionType === 'spell' && !state.checked) {
+    const inp = document.getElementById('spellInput');
+    if (inp) inp.focus();
+  }
+  updateErrorBar();
+}
+
+function renderEasyQuestion() {
+  const l = state.currentLetter;
+  const prompt = state.questionType === 'name'
+    ? '?מה שם האות הזאת'
+    : '?איזה צליל עושה האות הזאת';
+
+  return `
+    <div class="problem-area">
+      <div class="hebrew-big">${l.letter}</div>
+      <div class="prompt-text">${prompt}</div>
+      <div class="choices">
+        ${state.choices.map(c => {
+          let cls = 'choice-btn';
+          if (state.checked) {
+            if (c === state.correctChoice) cls += ' highlight-correct';
+            cls += ' disabled';
+          }
+          return `<button class="${cls}" onclick="pickChoice(this.dataset.val)" data-val="${c.replace(/"/g, '&quot;')}">${c}</button>`;
+        }).join('')}
+      </div>
+      ${!state.checked ? `<div class="hint-text">צליל: ${l.sound}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderMediumQuestion() {
+  const w = state.currentWord;
+  const prompt = state.questionType === 'meaning'
+    ? `?מה המילה הזאת באנגלית`
+    : `?מה המילה בעברית`;
+  const displayValue = state.questionType === 'meaning' ? w.hebrew : w.english;
+
+  return `
+    <div class="problem-area">
+      <div class="prompt-text">${prompt}</div>
+      <div class="hebrew-big" style="font-size:3em;">${displayValue}</div>
+      <div class="hint-text">${w.hint}</div>
+      <div class="choices">
+        ${state.choices.map(c => {
+          let cls = 'choice-btn';
+          if (state.checked) {
+            if (c === state.correctChoice) cls += ' highlight-correct';
+            cls += ' disabled';
+          }
+          return `<button class="${cls}" onclick="pickChoice(this.dataset.val)" data-val="${c.replace(/"/g, '&quot;')}">${c}</button>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderHardQuestion() {
+  const w = state.currentWord;
+  const inputClass = state.checked ? (state.isCorrect ? 'correct' : 'incorrect') : '';
+
+  return `
+    <div class="problem-area">
+      <div class="prompt-text">:כתוב בעברית</div>
+      <div style="font-size:1.8em; font-weight:700; color:#1e3a5f; margin:8px 0;">"${w.english}"</div>
+      <div class="hint-text" style="margin-bottom:14px;">${w.hint}</div>
+      <input type="text" class="answer-input ${inputClass}" id="spellInput"
+        oninput="onSpellInput(this.value)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault(); ${state.checked ? 'nextQuestion()' : 'checkSpelling()'}; }"
+        ${state.checked ? 'disabled' : ''}
+        placeholder="...הקלד בעברית"
+        dir="rtl">
+    </div>
+    ${!state.checked ? '<button class="check-btn" onclick="checkSpelling()">✓ בדוק</button>' : ''}
+  `;
+}
+
+// ---- Actions ----
+function pickChoice(choice) {
+  if (state.checked) return;
+  state.checked = true;
+
+  if (choice === state.correctChoice) {
+    recordAttempt(true);
+    handleCorrect();
+  } else {
+    recordAttempt(false);
+    handleWrong();
+    if (state.questionType === 'name') {
+      state.showCorrect = `:${hebrewNames[state.currentLetter.name]} התשובה היא`;
+    } else if (state.questionType === 'sound') {
+      state.showCorrect = `:${state.currentLetter.sound} התשובה היא`;
+    } else if (state.questionType === 'meaning') {
+      state.showCorrect = `:${state.currentWord.english} התשובה היא`;
+    } else if (state.questionType === 'meaning-reverse') {
+      state.showCorrect = `:${state.currentWord.hebrew} התשובה היא`;
+    }
+  }
+  render();
+}
+
+let spellValue = '';
+function onSpellInput(val) { spellValue = val; }
+
+function checkSpelling() {
+  const trimmed = spellValue.trim();
+  if (!trimmed) {
+    state.resultMsg = '!קודם כל הקלד את המילה';
+    state.resultClass = 'tryagain';
+    render();
+    return;
+  }
+
+  state.checked = true;
+  if (trimmed === state.currentWord.hebrew) {
+    recordAttempt(true);
+    handleCorrect();
+  } else {
+    recordAttempt(false);
+    handleWrong();
+    state.showCorrect = `:${state.currentWord.hebrew} :האיות הנכון`;
+  }
+  render();
+}
+
+function handleCorrect() {
+  state.isCorrect = true;
+  state.streak++;
+  const earnedPts = getDifficultyPoints();
+  state.score += earnedPts;
+  addPoints(earnedPts);
+
+  const cheers = ['!מצוין', '!כל הכבוד', '!יופי', 'Amazing!', 'Perfect!', 'Brilliant!'];
+  const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+  const stars = state.streak >= 5 ? '🌟🌟🌟' : state.streak >= 3 ? '⭐⭐⭐' : state.streak >= 2 ? '⭐⭐' : '⭐';
+  state.resultMsg = `${cheer} ${stars}`;
+  state.resultClass = 'success';
+  state.pointsMsg = `+${earnedPts} נקודות!`;
+  launchConfetti();
+}
+
+function handleWrong() {
+  state.isCorrect = false;
+  state.streak = 0;
+  state.resultMsg = '!בפעם הבאה 💪';
+  state.resultClass = 'tryagain';
+  state.pointsMsg = '';
+}
+
+function setDifficulty(d) { state.difficulty = d; render(); }
+
+function startGame() {
+  state.screen = 'play';
+  state.score = 0;
+  state.streak = 0;
+  state.round = 0;
+  spellValue = '';
+  generateQuestion();
+  render();
+}
+
+function changeDifficulty() {
+  state.screen = 'setup';
+  render();
+}
+
+function nextQuestion() {
+  spellValue = '';
+  generateQuestion();
+  render();
+}
+
+function goHome() { window.location.href = 'index.html'; }
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['#7c3aed', '#fbbf24', '#34d399', '#818cf8', '#f472b6', '#0ea5e9'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    piece.style.animationDuration = (1 + Math.random()) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 2500);
+}
+
+// Start
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rule of X</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px 20px 20px;
+  }
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+  h1 {
+    font-size: 2.2em;
+    color: #4a2c82;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 1.1em;
+    margin-bottom: 30px;
+  }
+
+  /* Player banner */
+  .player-banner {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #f0e6ff, #e8d5ff);
+    border: 2px solid #d4c0f0;
+    border-radius: 50px;
+    padding: 8px 20px 8px 10px;
+    margin-bottom: 20px;
+    font-size: 1em;
+  }
+  .player-banner .pb-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.9em;
+    color: white;
+  }
+  .player-banner .pb-avatar.ozzy { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .player-banner .pb-avatar.elinor { background: linear-gradient(135deg, #f472b6, #e94560); }
+  .player-banner .pb-avatar.adam { background: linear-gradient(135deg, #34d399, #059669); }
+  .player-banner .pb-name { font-weight: 700; color: #4a2c82; }
+  .player-banner .pb-pts { color: #f59e0b; font-weight: 700; }
+
+  .setup {
+    margin-bottom: 30px;
+  }
+  .setup label {
+    font-size: 1.2em;
+    color: #555;
+    display: block;
+    margin-bottom: 12px;
+  }
+  .number-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .number-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #e0d4f5;
+    background: white;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #6a3daa;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .number-btn:hover {
+    background: #f0e6ff;
+    transform: scale(1.1);
+  }
+  .number-btn.selected {
+    background: #6a3daa;
+    color: white;
+    border-color: #6a3daa;
+    transform: scale(1.15);
+  }
+  .go-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 14px 48px;
+    font-size: 1.3em;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+  .go-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
+  .go-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  .sequence-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    margin: 30px 0;
+  }
+  .seq-item {
+    width: 72px;
+    height: 72px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5em;
+    font-weight: 700;
+  }
+  .seq-given {
+    background: #f0e6ff;
+    color: #4a2c82;
+    border: 3px solid #d4c0f0;
+  }
+  .seq-blank input {
+    width: 100%;
+    height: 100%;
+    border: 3px solid #fbbf24;
+    border-radius: 16px;
+    background: #fffbeb;
+    text-align: center;
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #92400e;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .seq-blank input::-webkit-outer-spin-button,
+  .seq-blank input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .seq-blank input { -moz-appearance: textfield; }
+  .seq-blank input:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(251,191,36,0.3);
+  }
+  .seq-blank input.correct {
+    border-color: #34d399;
+    background: #ecfdf5;
+    color: #065f46;
+  }
+  .seq-blank input.incorrect {
+    border-color: #f87171;
+    background: #fef2f2;
+    color: #991b1b;
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .check-btn {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white;
+    border: none;
+    padding: 14px 48px;
+    font-size: 1.2em;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .check-btn:hover { transform: scale(1.05); }
+
+  .result {
+    margin-top: 20px;
+    font-size: 1.5em;
+    font-weight: 700;
+    min-height: 50px;
+  }
+  .result.success { color: #059669; }
+  .result.tryagain { color: #dc2626; }
+
+  .points-earned {
+    font-size: 1.1em;
+    color: #f59e0b;
+    font-weight: 700;
+    margin-top: 4px;
+    min-height: 24px;
+  }
+
+  .controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .secondary-btn {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 2px solid #e5e7eb;
+    padding: 10px 28px;
+    font-size: 1em;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  .secondary-btn:hover { background: #e5e7eb; }
+  .home-btn {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fbbf24;
+  }
+  .home-btn:hover { background: #fde68a; }
+
+  .score-bar {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+    color: #6b7280;
+  }
+  .score-bar span { font-weight: 700; color: #4a2c82; }
+
+  .difficulty-toggle {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+    margin-bottom: 6px;
+  }
+  .diff-btn {
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 2px solid #e0d4f5;
+    background: white;
+    color: #6a3daa;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: all 0.2s;
+  }
+  .diff-btn.active {
+    background: #6a3daa;
+    color: white;
+    border-color: #6a3daa;
+  }
+
+  /* Error rate bar */
+  .error-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    background: rgba(30,30,60,0.95);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8em;
+    backdrop-filter: blur(8px);
+  }
+  .error-bar-label {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .error-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    position: relative;
+    overflow: visible;
+  }
+  .error-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .error-bar-threshold {
+    position: absolute;
+    left: 75%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #fbbf24;
+    border-radius: 1px;
+  }
+  .error-bar-threshold::after {
+    content: '75%';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+  .error-bar-pct {
+    color: white;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: right;
+  }
+  .error-bar-pts {
+    color: #fbbf24;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+<div class="game-container" id="app"></div>
+
+<script>
+const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
+const app = document.getElementById('app');
+
+// ---- Player & score management ----
+function getPlayerFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('player') || '';
+}
+
+function getScores() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_scores');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+
+function saveScores(scores) {
+  localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores));
+}
+
+function addPoints(pts) {
+  if (!currentPlayer) return;
+  const scores = getScores();
+  scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
+  saveScores(scores);
+}
+
+function getStats() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_stats');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+function saveStats(stats) { localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats)); }
+function recordAttempt(isCorrect) {
+  if (!currentPlayer) return;
+  const stats = getStats();
+  if (!stats[currentPlayer]) stats[currentPlayer] = { correct: 0, total: 0 };
+  stats[currentPlayer].total++;
+  if (isCorrect) stats[currentPlayer].correct++;
+  saveStats(stats);
+  updateErrorBar();
+}
+
+function updateErrorBar() {
+  if (!currentPlayer) { document.getElementById('errorBar').style.display = 'none'; return; }
+  const stats = getStats();
+  const s = stats[currentPlayer] || { correct: 0, total: 0 };
+  const totalPts = getTotalPoints();
+  const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+  const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+  const bar = document.getElementById('errorBar');
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="error-bar-label">Accuracy</span>' +
+    '<div class="error-bar-track">' +
+    '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+    '<div class="error-bar-threshold"></div>' +
+    '</div>' +
+    '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+    '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' pts</span>';
+}
+
+function getTotalPoints() {
+  if (!currentPlayer) return 0;
+  const scores = getScores();
+  return scores[currentPlayer] || 0;
+}
+
+const currentPlayer = getPlayerFromURL();
+
+let state = {
+  screen: 'setup',
+  ruleNumber: null,
+  difficulty: 'easy',
+  sequence: [],
+  blanks: [],
+  answers: {},
+  feedback: {},
+  resultMsg: '',
+  resultClass: '',
+  pointsMsg: '',
+  score: 0,
+  streak: 0,
+  round: 0,
+  patternName: '', // for hard mode display
+  checked: false
+};
+
+function getDifficultyBlanks() {
+  return state.difficulty === 'easy' ? 2 : state.difficulty === 'medium' ? 3 : 2;
+}
+
+// ---- Pattern generators for Hard mode ----
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function generatePatternSequence() {
+  const patterns = [
+    generateAlternatingPattern,
+    generateGrowingStepPattern,
+    generateInterleavedPattern,
+    generateDoubleStepPattern,
+    generateBouncePattern,
+    generateTrianglePattern,
+  ];
+  const gen = patterns[Math.floor(Math.random() * patterns.length)];
+  return gen();
+}
+
+// Pattern: +a, -b, +a, -b (like the screenshot)
+function generateAlternatingPattern() {
+  const up = randInt(1, 4);
+  let down = randInt(1, 3);
+  if (down >= up) down = up - 1 || 1; // ensure it trends somewhere
+  const start = randInt(1, 10);
+  const seq = [start];
+  for (let i = 1; i < 8; i++) {
+    seq.push(seq[i-1] + (i % 2 === 1 ? up : -down));
+  }
+  return { seq, name: `+${up}, -${down} alternating` };
+}
+
+// Pattern: +1, +2, +3, +4 (growing increments)
+function generateGrowingStepPattern() {
+  const start = randInt(1, 8);
+  const baseStep = randInt(1, 2);
+  const seq = [start];
+  for (let i = 1; i < 8; i++) {
+    seq.push(seq[i-1] + baseStep * i);
+  }
+  return { seq, name: 'growing steps' };
+}
+
+// Pattern: two interleaved sequences (odd positions go up, even positions go down or vice versa)
+function generateInterleavedPattern() {
+  const startA = randInt(2, 8);
+  const startB = randInt(10, 20);
+  const stepA = randInt(2, 4);
+  const stepB = randInt(-3, -1);
+  const seq = [];
+  for (let i = 0; i < 8; i++) {
+    if (i % 2 === 0) seq.push(startA + (i / 2) * stepA);
+    else seq.push(startB + Math.floor(i / 2) * stepB);
+  }
+  return { seq, name: 'two mixed sequences' };
+}
+
+// Pattern: +a, +a, +b, +b repeating
+function generateDoubleStepPattern() {
+  const a = randInt(1, 4);
+  const b = randInt(-3, -1);
+  const start = randInt(5, 15);
+  const seq = [start];
+  const steps = [a, a, b, b];
+  for (let i = 1; i < 8; i++) {
+    seq.push(seq[i-1] + steps[(i-1) % 4]);
+  }
+  return { seq, name: 'double-step pattern' };
+}
+
+// Pattern: goes up then back down like a bounce (e.g. +3, +2, +1, -1, -2, -3)
+function generateBouncePattern() {
+  const peak = randInt(3, 5);
+  const start = randInt(1, 8);
+  const seq = [start];
+  const steps = [];
+  for (let i = peak; i >= 1; i--) steps.push(i);
+  for (let i = -1; i >= -peak; i--) steps.push(i);
+  for (let i = 0; i < 7; i++) {
+    seq.push(seq[i] + steps[i % steps.length]);
+  }
+  return { seq, name: 'bounce pattern' };
+}
+
+// Pattern: triangular numbers (+1, +2, +3, +4, +3, +2, +1)
+function generateTrianglePattern() {
+  const start = randInt(1, 5);
+  const steps = [1, 2, 3, 4, 3, 2, 1];
+  const seq = [start];
+  for (let i = 0; i < 7; i++) {
+    seq.push(seq[i] + steps[i]);
+  }
+  return { seq, name: 'triangle wave' };
+}
+
+function generateSequence() {
+  if (state.difficulty === 'hard') {
+    // Non-linear patterns for hard mode
+    const result = generatePatternSequence();
+    state.sequence = result.seq;
+    state.patternName = result.name;
+    state.ruleNumber = null;
+  } else {
+    // Linear multiples for easy/medium
+    const x = state.ruleNumber;
+    const seqLen = 8;
+    const startMult = Math.floor(Math.random() * 6) + 1;
+    const seq = [];
+    for (let i = 0; i < seqLen; i++) {
+      seq.push(x * (startMult + i));
+    }
+    state.sequence = seq;
+    state.patternName = '';
+  }
+
+  const seqLen = state.sequence.length;
+  const numBlanks = getDifficultyBlanks();
+  const positions = [];
+  const available = [...Array(seqLen).keys()];
+  for (let i = 0; i < numBlanks; i++) {
+    const idx = Math.floor(Math.random() * available.length);
+    positions.push(available.splice(idx, 1)[0]);
+  }
+  state.blanks = positions.sort((a, b) => a - b);
+  state.answers = {};
+  state.feedback = {};
+  state.resultMsg = '';
+  state.resultClass = '';
+  state.pointsMsg = '';
+  state.checked = false;
+}
+
+function renderPlayerBanner() {
+  if (!currentPlayer) return '';
+  const avatarClass = currentPlayer.toLowerCase();
+  const initial = currentPlayer[0];
+  const totalPts = getTotalPoints();
+  return `
+    <div class="player-banner">
+      <div class="pb-avatar ${avatarClass}">${initial}</div>
+      <span class="pb-name">${currentPlayer}</span>
+      <span style="color:#ccc;">|</span>
+      <span class="pb-pts">${totalPts.toLocaleString()} pts</span>
+    </div>
+  `;
+}
+
+function render() {
+  if (state.screen === 'setup') {
+    renderSetup();
+  } else {
+    renderPlay();
+  }
+}
+
+function renderSetup() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>Rule of X</h1>
+    <p class="subtitle">Fill in the missing numbers in the sequence!</p>
+    <div class="setup">
+      <label>Difficulty:</label>
+      <div class="difficulty-toggle">
+        <button class="diff-btn ${state.difficulty === 'easy' ? 'active' : ''}" onclick="setDifficulty('easy')">Easy <span style="color:#f59e0b;font-size:0.85em;">★ 1pt</span></button>
+        <button class="diff-btn ${state.difficulty === 'medium' ? 'active' : ''}" onclick="setDifficulty('medium')">Medium <span style="color:#f59e0b;font-size:0.85em;">★★ 2pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'hard' ? 'active' : ''}" onclick="setDifficulty('hard')">Hard <span style="color:#f59e0b;font-size:0.85em;">★★★ 3pts</span></button>
+      </div>
+      <p style="color:#aaa;font-size:0.85em;margin-top:6px;">Easy: 2 blanks &middot; Medium: 3 blanks &middot; Hard: tricky patterns!</p>
+      <br>
+      <button class="go-btn" onclick="startGame()">Let's Go!</button>
+    </div>
+    <div class="controls">
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+}
+
+function renderPlay() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>${state.difficulty === 'hard' ? '🧩 Pattern Finder' : 'Rule of ' + state.ruleNumber}</h1>
+    <div class="score-bar">
+      <div>Round Score: <span>${state.score}</span></div>
+      <div>Streak: <span>${state.streak} 🔥</span></div>
+      <div>Round: <span>${state.round}</span></div>
+    </div>
+    <p class="subtitle">${state.difficulty === 'hard'
+      ? 'Find the pattern and fill in the blanks!'
+      : 'Fill in the missing numbers!'}
+      <span style="color:#f59e0b;">+${state.difficulty === 'easy' ? '1 point' : state.difficulty === 'medium' ? '2 points' : '3 points'} per correct round</span>
+    </p>
+    <div class="sequence-row">
+      ${state.sequence.map((val, i) => {
+        if (state.blanks.includes(i)) {
+          const fb = state.feedback[i] || '';
+          return `<div class="seq-item seq-blank">
+            <input type="number" id="blank-${i}" class="${fb}"
+              value="${state.answers[i] !== undefined ? state.answers[i] : ''}"
+              oninput="updateAnswer(${i}, this.value)"
+              onkeydown="handleKey(event, ${i})"
+              ${state.checked ? 'disabled' : ''}>
+          </div>`;
+        }
+        return `<div class="seq-item seq-given">${val}</div>`;
+      }).join('')}
+    </div>
+    ${!state.checked ? '<button class="check-btn" onclick="checkAnswers()">Check ✓</button>' : ''}
+    <div class="result ${state.resultClass}">${state.resultMsg}</div>
+    <div class="points-earned">${state.pointsMsg}</div>
+    <div class="controls">
+      <button class="secondary-btn" onclick="nextRound()">Next Round →</button>
+      <button class="secondary-btn" onclick="changeDifficulty()">Change Difficulty</button>
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+  const firstEmpty = state.blanks.find(i => !state.feedback[i] || state.feedback[i] !== 'correct');
+  if (firstEmpty !== undefined) {
+    const el = document.getElementById('blank-' + firstEmpty);
+    if (el && !state.resultMsg) el.focus();
+  }
+  updateErrorBar();
+}
+
+function pickNumber(n) {
+  state.ruleNumber = n;
+  render();
+}
+
+function setDifficulty(d) {
+  state.difficulty = d;
+  render();
+}
+
+function randomRuleNumber() {
+  state.ruleNumber = Math.floor(Math.random() * 9) + 2; // 2-10
+}
+
+function startGame() {
+  state.screen = 'play';
+  state.score = 0;
+  state.streak = 0;
+  state.round = 1;
+  if (state.difficulty !== 'hard') randomRuleNumber();
+  generateSequence();
+  render();
+}
+
+function updateAnswer(i, val) {
+  state.answers[i] = val;
+}
+
+function handleKey(e, idx) {
+  if (e.key === 'Enter') {
+    checkAnswers();
+  }
+}
+
+function checkAnswers() {
+  let allCorrect = true;
+  let allFilled = true;
+  state.blanks.forEach(i => {
+    const answer = parseInt(state.answers[i]);
+    if (isNaN(answer)) {
+      allFilled = false;
+      allCorrect = false;
+      return;
+    }
+    if (answer === state.sequence[i]) {
+      state.feedback[i] = 'correct';
+    } else {
+      state.feedback[i] = 'incorrect';
+      allCorrect = false;
+    }
+  });
+
+  if (!allFilled) {
+    state.resultMsg = 'Fill in all the blanks first!';
+    state.resultClass = 'tryagain';
+    state.pointsMsg = '';
+    render();
+    return;
+  }
+
+  state.checked = true;
+
+  if (allCorrect) {
+    recordAttempt(true);
+    state.streak++;
+    const earnedPts = state.difficulty === 'easy' ? 1 : state.difficulty === 'medium' ? 2 : 3;
+    state.score += earnedPts;
+    const stars = state.streak >= 3 ? '⭐⭐⭐' : state.streak >= 2 ? '⭐⭐' : '⭐';
+    const patternHint = state.difficulty === 'hard' && state.patternName
+      ? ` (${state.patternName})`
+      : '';
+    state.resultMsg = `Amazing! You got them all right!${patternHint} ${stars}`;
+    state.resultClass = 'success';
+    addPoints(earnedPts);
+    state.pointsMsg = `+${earnedPts} points${currentPlayer ? ' for ' + currentPlayer : ''}!`;
+  } else {
+    recordAttempt(false);
+    state.streak = 0;
+    // Show the correct answers for wrong blanks
+    const corrections = state.blanks
+      .filter(i => state.feedback[i] === 'incorrect')
+      .map(i => state.sequence[i]);
+    state.resultMsg = 'Not quite! The answers were: ' + state.blanks.map(i => state.sequence[i]).join(', ') + ' 💪';
+    state.resultClass = 'tryagain';
+    state.pointsMsg = '';
+  }
+  render();
+}
+
+function nextRound() {
+  state.round++;
+  if (state.difficulty !== 'hard') randomRuleNumber();
+  generateSequence();
+  render();
+}
+
+function changeDifficulty() {
+  state.screen = 'setup';
+  render();
+}
+
+function goHome() {
+  window.location.href = 'index.html';
+}
+
+render();
+</script>
+</body>
+</html>

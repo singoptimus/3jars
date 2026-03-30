@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Jars - Kids Math Games</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding-top: 36px;
+        }
+
+        /* Accuracy Bar — same as all game files */
+        .error-bar-container {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 9000;
+            background: rgba(30,30,60,0.95); padding: 6px 16px;
+            display: flex; align-items: center; gap: 10px;
+            font-size: 0.8em; backdrop-filter: blur(8px);
+        }
+        .error-bar-label { color: rgba(255,255,255,0.7); font-weight: 600; white-space: nowrap; min-width: 70px; }
+        .error-bar-track { flex: 1; height: 10px; background: rgba(255,255,255,0.15); border-radius: 5px; position: relative; overflow: visible; }
+        .error-bar-fill { height: 100%; border-radius: 5px; transition: width 0.5s ease, background 0.5s ease; }
+        .error-bar-threshold { position: absolute; left: 75%; top: -3px; bottom: -3px; width: 2px; background: #fbbf24; border-radius: 1px; }
+        .error-bar-threshold::after { content: '75%'; position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 0.75em; color: #fbbf24; white-space: nowrap; }
+        .error-bar-pct { color: white; font-weight: 700; min-width: 45px; text-align: right; }
+        .error-bar-pts { color: #fbbf24; font-weight: 700; min-width: 60px; text-align: right; white-space: nowrap; }
+
+        /* Header */
+        .header {
+            padding: 30px 20px;
+            text-align: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .player-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .player-name {
+            font-size: 1.3em;
+            color: #b0b0ff;
+        }
+
+        .player-points {
+            font-size: 1.3em;
+            color: #ffd700;
+            font-weight: 600;
+        }
+
+        .milestone-progress {
+            max-width: 600px;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .milestone-text {
+            font-size: 0.95em;
+            color: #b0b0ff;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffd700, #ffed4e);
+            transition: width 0.3s ease;
+        }
+
+        /* Back Button */
+        .back-button {
+            position: absolute;
+            top: 50px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Jars Container */
+        .jars-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        /* Jar Card */
+        .jar-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .jar-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .jar-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+
+        /* Experience with Family */
+        .jar-card.present {
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .jar-card.present::before {
+            background: radial-gradient(circle, #ffd700, transparent);
+        }
+
+        /* Investing Jar */
+        .jar-card.investing {
+            border-color: rgba(76, 175, 80, 0.3);
+        }
+
+        .jar-card.investing::before {
+            background: radial-gradient(circle, #4caf50, transparent);
+        }
+
+        /* Give Back Jar */
+        .jar-card.giveback {
+            border-color: rgba(233, 30, 99, 0.3);
+        }
+
+        .jar-card.giveback::before {
+            background: radial-gradient(circle, #e91e63, transparent);
+        }
+
+        .jar-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .jar-icon {
+            font-size: 3em;
+            animation: bounce 2s infinite;
+        }
+
+        .jar-card.present .jar-icon {
+            animation-delay: 0s;
+        }
+
+        .jar-card.investing .jar-icon {
+            animation-delay: 0.2s;
+        }
+
+        .jar-card.giveback .jar-icon {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .jar-title {
+            font-size: 1.5em;
+            font-weight: 600;
+        }
+
+        .jar-balance {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin: 15px 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .jar-card.present .jar-balance {
+            color: #ffd700;
+        }
+
+        .jar-card.investing .jar-balance {
+            color: #4caf50;
+        }
+
+        .jar-card.giveback .jar-balance {
+            color: #e91e63;
+        }
+
+        .jar-description {
+            font-size: 0.9em;
+            color: #c0c0c0;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Experience Rewards */
+        .rewards-list {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .rewards-title {
+            font-size: 0.9em;
+            color: #ffd700;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .reward-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            font-size: 0.85em;
+            color: #d0d0d0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .reward-option:last-child {
+            border-bottom: none;
+        }
+
+        .reward-number {
+            background: rgba(255, 215, 0, 0.2);
+            color: #ffd700;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8em;
+            flex-shrink: 0;
+        }
+
+        /* History Timeline */
+        .history-section {
+            position: relative;
+            z-index: 1;
+            flex-grow: 1;
+        }
+
+        .history-title {
+            font-size: 0.9em;
+            color: #b0b0ff;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .history-timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .history-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            border-left: 3px solid;
+            color: #c0c0c0;
+        }
+
+        .jar-card.present .history-item {
+            border-left-color: #ffd700;
+        }
+
+        .jar-card.investing .history-item {
+            border-left-color: #4caf50;
+        }
+
+        .jar-card.giveback .history-item {
+            border-left-color: #e91e63;
+        }
+
+        .history-date {
+            display: block;
+            font-size: 0.75em;
+            color: #808080;
+            margin-top: 4px;
+        }
+
+        .empty-history {
+            color: #808080;
+            font-size: 0.85em;
+            font-style: italic;
+            padding: 10px 12px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #808080;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .jars-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .player-info {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+    <a href="#" class="back-button" id="backButton">← Back to Games</a>
+
+    <div class="header">
+        <h1>🏺 My Jars</h1>
+
+        <div class="player-info">
+            <div class="player-name">Player: <span id="playerName">Loading...</span></div>
+            <div class="player-points">Points: <span id="playerPoints">0</span></div>
+        </div>
+
+        <div class="milestone-progress">
+            <div class="milestone-text" id="milestoneText">0 / 10,000 points to next reward</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="jars-container">
+        <!-- Experience with Family -->
+        <div class="jar-card present">
+            <div class="jar-header">
+                <div class="jar-icon">🎉</div>
+                <h2 class="jar-title">Experience with Family</h2>
+            </div>
+            <div class="jar-balance" id="presentBalance">0</div>
+            <div class="jar-description">Celebrate milestones with fun family experiences!</div>
+
+            <div class="rewards-list">
+                <div class="rewards-title">Choose Your Reward:</div>
+                <div class="reward-option">
+                    <div class="reward-number">1</div>
+                    <div>$50-$100 Arcade Trip</div>
+                </div>
+                <div class="reward-option">
+                    <div class="reward-number">2</div>
+                    <div>Ice Cream Date</div>
+                </div>
+                <div class="reward-option">
+                    <div class="reward-number">3</div>
+                    <div>Movie/Show Date</div>
+                </div>
+            </div>
+
+            <div class="history-section">
+                <div class="history-title">History</div>
+                <div class="history-timeline" id="presentHistory">
+                    <div class="empty-history">No celebrations yet</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investing Jar -->
+        <div class="jar-card investing">
+            <div class="jar-header">
+                <div class="jar-icon">💰</div>
+                <h2 class="jar-title">Investing Jar</h2>
+            </div>
+            <div class="jar-balance" id="investingBalance">$0</div>
+            <div class="jar-description">Save up, pick a stock, and watch it grow!</div>
+
+            <div class="history-section">
+                <div class="history-title">Savings History</div>
+                <div class="history-timeline" id="investingHistory">
+                    <div class="empty-history">No savings yet</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Give Back Jar -->
+        <div class="jar-card giveback">
+            <div class="jar-header">
+                <div class="jar-icon">💝</div>
+                <h2 class="jar-title">Give Back Jar</h2>
+            </div>
+            <div class="jar-balance" id="givebackBalance">$0</div>
+            <div class="jar-description">Save up and choose where to donate!</div>
+
+            <div class="history-section">
+                <div class="history-title">Donation History</div>
+                <div class="history-timeline" id="givebackHistory">
+                    <div class="empty-history">No donations yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>Keep playing to earn more rewards!</p>
+    </div>
+
+    <script>
+        // Auth check — same pattern as all game files
+        const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+        if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
+
+        const currentPlayer = new URLSearchParams(window.location.search).get('player') || '';
+        if (!currentPlayer) { window.location.href = 'index.html'; }
+
+        // Data access — same pattern as all game files
+        function getScores() {
+            try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
+            return {};
+        }
+        function getStats() {
+            try { const raw = localStorage.getItem('km_' + accountId + '_stats'); if (raw) return JSON.parse(raw); } catch(e) {}
+            return {};
+        }
+        function getJars() {
+            try { const raw = localStorage.getItem('km_' + accountId + '_jars'); if (raw) return JSON.parse(raw); } catch(e) {}
+            return {};
+        }
+
+        function formatDate(timestamp) {
+            return new Date(timestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        // Accuracy bar — same pattern as all game files
+        function updateErrorBar() {
+            const bar = document.getElementById('errorBar');
+            if (!currentPlayer) { bar.style.display = 'none'; return; }
+            const stats = getStats();
+            const s = stats[currentPlayer] || { correct: 0, total: 0 };
+            const scores = getScores();
+            const totalPts = scores[currentPlayer] || 0;
+            const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+            const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+            bar.style.display = 'flex';
+            bar.innerHTML = '<span class="error-bar-label">' + currentPlayer + ' Accuracy</span>' +
+                '<div class="error-bar-track">' +
+                '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+                '<div class="error-bar-threshold"></div>' +
+                '</div>' +
+                '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+                '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' pts</span>';
+        }
+
+        function loadJarData() {
+            document.getElementById('playerName').textContent = currentPlayer;
+
+            const scores = getScores();
+            const playerScore = scores[currentPlayer] || 0;
+            document.getElementById('playerPoints').textContent = playerScore.toLocaleString();
+
+            // Milestone progress
+            const progressInCycle = playerScore % 10000;
+            const pct = Math.round((progressInCycle / 10000) * 100);
+            document.getElementById('milestoneText').textContent =
+                progressInCycle.toLocaleString() + ' / 10,000 points to next reward';
+            document.getElementById('progressFill').style.width = Math.min(pct, 100) + '%';
+
+            // Jar data
+            const allJars = getJars();
+            const pj = allJars[currentPlayer] || {
+                present: { balance: 0, history: [] },
+                investing: { balance: 0, history: [] },
+                giveback: { balance: 0, history: [] }
+            };
+
+            document.getElementById('presentBalance').textContent = '$' + pj.present.balance;
+            updateHistory('present', pj.present.history);
+
+            document.getElementById('investingBalance').textContent = '$' + pj.investing.balance;
+            updateHistory('investing', pj.investing.history);
+
+            document.getElementById('givebackBalance').textContent = '$' + pj.giveback.balance;
+            updateHistory('giveback', pj.giveback.history);
+
+            updateErrorBar();
+        }
+
+        function updateHistory(jarType, history) {
+            const el = document.getElementById(jarType + 'History');
+            if (!history || history.length === 0) {
+                el.innerHTML = '<div class="empty-history">No history yet — keep playing!</div>';
+                return;
+            }
+            el.innerHTML = history.slice().reverse().map(item => {
+                const text = '$' + item.amount + ' earned';
+                return '<div class="history-item">' + text +
+                    '<span class="history-date">' + formatDate(item.date) + '</span></div>';
+            }).join('');
+        }
+
+        // Back button
+        document.getElementById('backButton').href = 'index.html';
+
+        // Init
+        loadJarData();
+    </script>
+</body>
+</html>

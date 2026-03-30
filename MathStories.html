@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Stories</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px 20px 20px;
+  }
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 620px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+  h1 { font-size: 2.2em; color: #065f46; margin-bottom: 8px; }
+  .subtitle { color: #888; font-size: 1.1em; margin-bottom: 24px; }
+
+  /* Player banner */
+  .player-banner {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+    border: 2px solid #6ee7b7;
+    border-radius: 50px; padding: 8px 20px 8px 10px;
+    margin-bottom: 20px; font-size: 1em;
+  }
+  .pb-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9em; color: white;
+  }
+  .pb-avatar.ozzy { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .pb-avatar.elinor { background: linear-gradient(135deg, #f472b6, #e94560); }
+  .pb-avatar.adam { background: linear-gradient(135deg, #34d399, #059669); }
+  .pb-name { font-weight: 700; color: #065f46; }
+  .pb-pts { color: #f59e0b; font-weight: 700; }
+
+  /* Score bar */
+  .score-bar {
+    display: flex; justify-content: center; gap: 30px;
+    margin-bottom: 24px; font-size: 1.05em; color: #6b7280;
+  }
+  .score-bar span { font-weight: 700; color: #065f46; }
+
+  /* Setup */
+  .setup { margin-bottom: 30px; }
+  .setup label { font-size: 1.2em; color: #555; display: block; margin-bottom: 12px; }
+  .difficulty-toggle {
+    display: flex; gap: 8px; justify-content: center;
+    margin-top: 12px; margin-bottom: 6px;
+  }
+  .diff-btn {
+    padding: 8px 18px; border-radius: 20px;
+    border: 2px solid #a7f3d0; background: white;
+    color: #065f46; font-weight: 600; cursor: pointer;
+    font-size: 0.9em; transition: all 0.2s;
+  }
+  .diff-btn:hover { background: #ecfdf5; }
+  .diff-btn.active { background: #059669; color: white; border-color: #059669; }
+  .go-btn {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white; border: none;
+    padding: 14px 48px; font-size: 1.3em;
+    border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 16px;
+  }
+  .go-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(5,150,105,0.4); }
+
+  /* Story card */
+  .story-card {
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+    border: 3px solid #a7f3d0;
+    border-radius: 20px;
+    padding: 28px 24px;
+    margin: 20px 0 24px;
+    text-align: left;
+    position: relative;
+  }
+  .story-emoji { font-size: 2.2em; margin-bottom: 12px; text-align: center; }
+  .story-text { font-size: 1.25em; color: #1f2937; line-height: 1.6; margin-bottom: 16px; }
+  .story-question { font-size: 1.2em; font-weight: 700; color: #065f46; line-height: 1.5; }
+
+  /* Answer area */
+  .answer-area {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-top: 20px;
+  }
+  .answer-input {
+    font-size: 2em; font-weight: 700; text-align: center;
+    width: 180px; padding: 10px 16px;
+    border: 3px solid #fbbf24; border-radius: 16px;
+    background: #fffbeb; color: #92400e; outline: none; transition: all 0.2s;
+  }
+  .answer-input::-webkit-outer-spin-button,
+  .answer-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .answer-input { -moz-appearance: textfield; }
+  .answer-input:focus { border-color: #f59e0b; box-shadow: 0 0 0 4px rgba(251,191,36,0.3); }
+  .answer-input.correct { border-color: #34d399; background: #ecfdf5; color: #065f46; }
+  .answer-input.incorrect {
+    border-color: #f87171; background: #fef2f2; color: #991b1b;
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .check-btn {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white; border: none; padding: 14px 48px; font-size: 1.2em;
+    border-radius: 50px; cursor: pointer; font-weight: 700;
+    transition: all 0.2s; margin-top: 20px;
+  }
+  .check-btn:hover { transform: scale(1.05); }
+  .next-btn {
+    background: linear-gradient(135deg, #059669, #047857);
+    color: white; border: none; padding: 14px 48px; font-size: 1.2em;
+    border-radius: 50px; cursor: pointer; font-weight: 700;
+    transition: all 0.2s; margin-top: 12px;
+  }
+  .next-btn:hover { transform: scale(1.05); }
+
+  .result { margin-top: 16px; font-size: 1.4em; font-weight: 700; min-height: 44px; }
+  .result.success { color: #059669; }
+  .result.tryagain { color: #dc2626; }
+  .points-earned { font-size: 1.05em; color: #f59e0b; font-weight: 700; margin-top: 4px; min-height: 22px; }
+  .correct-answer { font-size: 1em; color: #6b7280; margin-top: 6px; min-height: 20px; }
+
+  .controls {
+    margin-top: 20px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .secondary-btn {
+    background: #f3f4f6; color: #6b7280;
+    border: 2px solid #e5e7eb; padding: 10px 28px;
+    font-size: 1em; border-radius: 50px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  .secondary-btn:hover { background: #e5e7eb; }
+  .home-btn { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+  .home-btn:hover { background: #fde68a; }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+
+  /* Error rate bar */
+  .error-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    background: rgba(30,30,60,0.95);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8em;
+    backdrop-filter: blur(8px);
+  }
+  .error-bar-label {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .error-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    position: relative;
+    overflow: visible;
+  }
+  .error-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .error-bar-threshold {
+    position: absolute;
+    left: 75%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #fbbf24;
+    border-radius: 1px;
+  }
+  .error-bar-threshold::after {
+    content: '75%';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+  .error-bar-pct {
+    color: white;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: right;
+  }
+  .error-bar-pts {
+    color: #fbbf24;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+<div class="game-container" id="app"></div>
+
+<script>
+const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
+
+// ---- Player & score management ----
+function getPlayerFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('player') || '';
+}
+function getScores() {
+  try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
+  return {};
+}
+function saveScores(scores) { localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores)); }
+function addPoints(pts) {
+  if (!currentPlayer) return;
+  const scores = getScores();
+  scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
+  saveScores(scores);
+}
+function getStats() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_stats');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+function saveStats(stats) { localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats)); }
+function recordAttempt(isCorrect) {
+  if (!currentPlayer) return;
+  const stats = getStats();
+  if (!stats[currentPlayer]) stats[currentPlayer] = { correct: 0, total: 0 };
+  stats[currentPlayer].total++;
+  if (isCorrect) stats[currentPlayer].correct++;
+  saveStats(stats);
+  updateErrorBar();
+}
+
+function updateErrorBar() {
+  if (!currentPlayer) { document.getElementById('errorBar').style.display = 'none'; return; }
+  const stats = getStats();
+  const s = stats[currentPlayer] || { correct: 0, total: 0 };
+  const totalPts = getTotalPoints();
+  const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+  const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+  const bar = document.getElementById('errorBar');
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="error-bar-label">Accuracy</span>' +
+    '<div class="error-bar-track">' +
+    '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+    '<div class="error-bar-threshold"></div>' +
+    '</div>' +
+    '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+    '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' pts</span>';
+}
+function getTotalPoints() {
+  if (!currentPlayer) return 0;
+  return getScores()[currentPlayer] || 0;
+}
+
+const currentPlayer = getPlayerFromURL();
+const app = document.getElementById('app');
+
+// ---- Names ----
+const names = ['Dora', 'Ronen', 'Maya', 'Liam', 'Noa', 'Ethan', 'Yael', 'Omer', 'Lily', 'Jake', 'Talia', 'Ben'];
+
+function randBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+function pickName() { return names[Math.floor(Math.random() * names.length)]; }
+function pick2Names() {
+  const s = [...names].sort(() => Math.random() - 0.5);
+  return [s[0], s[1]];
+}
+function pick3Names() {
+  const s = [...names].sort(() => Math.random() - 0.5);
+  return [s[0], s[1], s[2]];
+}
+
+// ---- Scenarios by difficulty ----
+const easyScenarios = [
+  {
+    emoji: '🍎',
+    generate() {
+      const n1 = randBetween(5, 30);
+      const n2 = randBetween(3, 20);
+      const [a, b] = pick2Names();
+      return {
+        story: `${a} has ${n1} apples. ${b} has ${n2} apples.`,
+        question: `How many apples do they have together?`,
+        answer: n1 + n2
+      };
+    }
+  },
+  {
+    emoji: '🎈',
+    generate() {
+      const total = randBetween(10, 30);
+      const popped = randBetween(2, Math.floor(total / 2));
+      const name = pickName();
+      return {
+        story: `${name} had ${total} balloons. ${popped} of them popped!`,
+        question: `How many balloons does ${name} have left?`,
+        answer: total - popped
+      };
+    }
+  },
+  {
+    emoji: '🧁',
+    generate() {
+      const n1 = randBetween(5, 20);
+      const n2 = randBetween(3, 15);
+      const [a, b] = pick2Names();
+      return {
+        story: `${a} baked ${n1} cupcakes. ${b} baked ${n2} cupcakes.`,
+        question: `How many cupcakes did they bake in total?`,
+        answer: n1 + n2
+      };
+    }
+  },
+  {
+    emoji: '🍪',
+    generate() {
+      const total = randBetween(12, 30);
+      const gave = randBetween(3, Math.floor(total / 2));
+      const [a, b] = pick2Names();
+      return {
+        story: `${a} had ${total} cookies and gave ${gave} to ${b}.`,
+        question: `How many cookies does ${a} have now?`,
+        answer: total - gave
+      };
+    }
+  },
+  {
+    emoji: '🐶',
+    generate() {
+      const n1 = randBetween(3, 12);
+      const n2 = randBetween(2, 10);
+      const [a, b] = pick2Names();
+      return {
+        story: `${a} saw ${n1} dogs at the park. ${b} saw ${n2} cats.`,
+        question: `How many animals did they see in total?`,
+        answer: n1 + n2
+      };
+    }
+  }
+];
+
+const mediumScenarios = [
+  {
+    emoji: '🚗',
+    generate() {
+      const n1 = randBetween(10, 50);
+      const diff = randBetween(3, 20);
+      const [a, b] = pick2Names();
+      return {
+        story: `${a} has ${n1} toy cars. ${b} has ${diff} more toy cars than ${a}.`,
+        question: `How many toy cars do they have together?`,
+        answer: n1 + (n1 + diff)
+      };
+    }
+  },
+  {
+    emoji: '📚',
+    generate() {
+      const n1 = randBetween(8, 30);
+      const n2 = randBetween(5, 25);
+      const n3 = randBetween(3, 15);
+      const name = pickName();
+      return {
+        story: `${name} read ${n1} pages on Monday, ${n2} pages on Tuesday, and ${n3} pages on Wednesday.`,
+        question: `How many pages did ${name} read in total?`,
+        answer: n1 + n2 + n3
+      };
+    }
+  },
+  {
+    emoji: '⭐',
+    generate() {
+      const n1 = randBetween(15, 50);
+      const n2 = randBetween(10, 45);
+      const [a, b] = pick2Names();
+      const big = Math.max(n1, n2);
+      const small = Math.min(n1, n2);
+      return {
+        story: `${a} collected ${big} stickers. ${b} collected ${small} stickers.`,
+        question: `How many more stickers does ${a} have than ${b}?`,
+        answer: big - small
+      };
+    }
+  },
+  {
+    emoji: '🌺',
+    generate() {
+      const n1 = randBetween(10, 30);
+      const diff = randBetween(3, 12);
+      const [a, b] = pick2Names();
+      return {
+        story: `${a} planted ${n1} flowers. ${b} planted ${diff} fewer flowers than ${a}.`,
+        question: `How many flowers did they plant together?`,
+        answer: n1 + (n1 - diff)
+      };
+    }
+  },
+  {
+    emoji: '🍕',
+    generate() {
+      const slices = randBetween(8, 16);
+      const ate1 = randBetween(1, Math.floor(slices / 3));
+      const ate2 = randBetween(1, Math.floor(slices / 3));
+      const [a, b] = pick2Names();
+      return {
+        story: `A pizza was cut into ${slices} slices. ${a} ate ${ate1} slices and ${b} ate ${ate2} slices.`,
+        question: `How many slices are left?`,
+        answer: slices - ate1 - ate2
+      };
+    }
+  }
+];
+
+const hardScenarios = [
+  {
+    emoji: '🐟',
+    generate() {
+      const caught = randBetween(20, 60);
+      const released = randBetween(5, Math.floor(caught / 3));
+      const caught2 = randBetween(5, 25);
+      const name = pickName();
+      return {
+        story: `${name} caught ${caught} fish in the morning, released ${released} back into the lake, then caught ${caught2} more in the afternoon.`,
+        question: `How many fish does ${name} have now?`,
+        answer: caught - released + caught2
+      };
+    }
+  },
+  {
+    emoji: '💰',
+    generate() {
+      const had = randBetween(30, 80);
+      const earned = randBetween(10, 40);
+      const spent = randBetween(5, Math.floor((had + earned) / 2));
+      const name = pickName();
+      return {
+        story: `${name} had $${had}, earned $${earned} doing chores, then spent $${spent} on a book.`,
+        question: `How much money does ${name} have now?`,
+        answer: had + earned - spent
+      };
+    }
+  },
+  {
+    emoji: '🎟️',
+    generate() {
+      const total = randBetween(50, 120);
+      const sold1 = randBetween(8, Math.floor(total / 4));
+      const sold2 = randBetween(8, Math.floor(total / 4));
+      const sold3 = randBetween(5, Math.floor(total / 5));
+      const name = pickName();
+      return {
+        story: `${name}'s school had ${total} tickets for the show. They sold ${sold1} on Monday, ${sold2} on Tuesday, and ${sold3} on Wednesday.`,
+        question: `How many tickets are left?`,
+        answer: total - sold1 - sold2 - sold3
+      };
+    }
+  },
+  {
+    emoji: '🏀',
+    generate() {
+      const n1 = randBetween(15, 40);
+      const n2 = randBetween(10, 35);
+      const n3 = randBetween(8, 25);
+      const opponent = randBetween(40, 80);
+      const [a, b, c] = pick3Names();
+      const teamTotal = n1 + n2 + n3;
+      const bigScore = Math.max(teamTotal, opponent);
+      const smallScore = Math.min(teamTotal, opponent);
+      return {
+        story: `${a} scored ${n1} points, ${b} scored ${n2}, and ${c} scored ${n3}. The other team scored ${opponent} points.`,
+        question: `How many points did ${teamTotal >= opponent ? 'they win' : 'they lose'} by?`,
+        answer: bigScore - smallScore
+      };
+    }
+  },
+  {
+    emoji: '🎮',
+    generate() {
+      const day1 = randBetween(30, 80);
+      const day2 = randBetween(20, 60);
+      const lost = randBetween(10, Math.floor((day1 + day2) / 3));
+      const bonus = randBetween(5, 30);
+      const name = pickName();
+      return {
+        story: `${name} earned ${day1} game points on Saturday and ${day2} on Sunday. ${name} lost ${lost} points on a tough level, but then got a ${bonus}-point bonus!`,
+        question: `How many points does ${name} have now?`,
+        answer: day1 + day2 - lost + bonus
+      };
+    }
+  },
+  {
+    emoji: '🛒',
+    generate() {
+      const budget = randBetween(50, 100);
+      const item1 = randBetween(8, 25);
+      const item2 = randBetween(5, 20);
+      const item3 = randBetween(3, 15);
+      const name = pickName();
+      return {
+        story: `${name} went shopping with $${budget}. ${name} bought a toy for $${item1}, a book for $${item2}, and snacks for $${item3}.`,
+        question: `How much money does ${name} have left?`,
+        answer: budget - item1 - item2 - item3
+      };
+    }
+  }
+];
+
+// ---- Game state ----
+let state = {
+  screen: 'setup',
+  difficulty: 'easy',
+  story: '',
+  question: '',
+  emoji: '',
+  correctAnswer: 0,
+  userAnswer: '',
+  checked: false,
+  isCorrect: false,
+  score: 0,
+  streak: 0,
+  round: 0,
+  resultMsg: '',
+  resultClass: '',
+  pointsMsg: '',
+  showCorrect: ''
+};
+
+function getDifficultyPoints() {
+  return state.difficulty === 'easy' ? 2 : state.difficulty === 'medium' ? 3 : 5;
+}
+
+function getDifficultyLabel() {
+  return state.difficulty === 'easy' ? 'simple' : state.difficulty === 'medium' ? 'two-step' : 'multi-step';
+}
+
+function getScenarios() {
+  if (state.difficulty === 'easy') return easyScenarios;
+  if (state.difficulty === 'medium') return mediumScenarios;
+  return hardScenarios;
+}
+
+function generateProblem() {
+  const pool = getScenarios();
+  const scenario = pool[Math.floor(Math.random() * pool.length)];
+  const problem = scenario.generate();
+  state.emoji = scenario.emoji;
+  state.story = problem.story;
+  state.question = problem.question;
+  state.correctAnswer = problem.answer;
+  state.userAnswer = '';
+  state.checked = false;
+  state.isCorrect = false;
+  state.resultMsg = '';
+  state.resultClass = '';
+  state.pointsMsg = '';
+  state.showCorrect = '';
+  state.round++;
+}
+
+function renderPlayerBanner() {
+  if (!currentPlayer) return '';
+  const avatarClass = currentPlayer.toLowerCase();
+  const initial = currentPlayer[0];
+  const totalPts = getTotalPoints();
+  return `
+    <div class="player-banner">
+      <div class="pb-avatar ${avatarClass}">${initial}</div>
+      <span class="pb-name">${currentPlayer}</span>
+      <span style="color:#ccc;">|</span>
+      <span class="pb-pts">${totalPts.toLocaleString()} pts</span>
+    </div>
+  `;
+}
+
+function render() {
+  if (state.screen === 'setup') {
+    renderSetup();
+  } else {
+    renderPlay();
+  }
+}
+
+function renderSetup() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>Math Stories</h1>
+    <p class="subtitle">Read fun stories and solve the math!</p>
+    <div class="setup">
+      <label>Difficulty:</label>
+      <div class="difficulty-toggle">
+        <button class="diff-btn ${state.difficulty === 'easy' ? 'active' : ''}" onclick="setDifficulty('easy')">Easy <span style="color:#f59e0b;font-size:0.85em;">★★ 2pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'medium' ? 'active' : ''}" onclick="setDifficulty('medium')">Medium <span style="color:#f59e0b;font-size:0.85em;">★★★ 3pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'hard' ? 'active' : ''}" onclick="setDifficulty('hard')">Hard <span style="color:#f59e0b;font-size:0.85em;">★★★★★ 5pts</span></button>
+      </div>
+      <p style="color:#aaa;font-size:0.85em;margin-top:6px;">Easy: simple stories &middot; Medium: two-step problems &middot; Hard: multi-step brain teasers</p>
+      <br>
+      <button class="go-btn" onclick="startGame()">Let's Go!</button>
+    </div>
+    <div class="controls">
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+}
+
+function renderPlay() {
+  const inputClass = state.checked ? (state.isCorrect ? 'correct' : 'incorrect') : '';
+  const pts = getDifficultyPoints();
+
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>Math Stories</h1>
+    <div class="score-bar">
+      <div>Score: <span>${state.score}</span></div>
+      <div>Streak: <span>${state.streak} 🔥</span></div>
+      <div>Round: <span>${state.round}</span></div>
+    </div>
+    <p class="subtitle">Read the ${getDifficultyLabel()} story and solve it! <span style="color:#f59e0b;">+${pts} points per correct answer</span></p>
+
+    <div class="story-card">
+      <div class="story-emoji">${state.emoji}</div>
+      <div class="story-text">${state.story}</div>
+      <div class="story-question">${state.question}</div>
+    </div>
+
+    <div class="answer-area">
+      <input type="number" class="answer-input ${inputClass}" id="answerInput"
+        value="${state.userAnswer}"
+        oninput="onInput(this.value)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault(); ${state.checked ? 'nextProblem()' : 'checkAnswer()'}; }"
+        ${state.checked ? 'disabled' : ''}
+        placeholder="?">
+    </div>
+
+    ${!state.checked ? `
+      <button class="check-btn" onclick="checkAnswer()">Check ✓</button>
+    ` : `
+      <button class="next-btn" onclick="nextProblem()">Next Story →</button>
+    `}
+
+    <div class="result ${state.resultClass}">${state.resultMsg}</div>
+    <div class="points-earned">${state.pointsMsg}</div>
+    <div class="correct-answer">${state.showCorrect}</div>
+
+    <div class="controls">
+      <button class="secondary-btn" onclick="changeDifficulty()">Change Difficulty</button>
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+
+  if (!state.checked) {
+    const inp = document.getElementById('answerInput');
+    if (inp) inp.focus();
+  }
+  updateErrorBar();
+}
+
+function setDifficulty(d) { state.difficulty = d; render(); }
+
+function startGame() {
+  state.screen = 'play';
+  state.score = 0;
+  state.streak = 0;
+  state.round = 0;
+  generateProblem();
+  render();
+}
+
+function changeDifficulty() { state.screen = 'setup'; render(); }
+
+function onInput(val) { state.userAnswer = val; }
+
+function checkAnswer() {
+  const parsed = parseInt(state.userAnswer);
+  if (isNaN(parsed) || state.userAnswer.trim() === '') {
+    state.resultMsg = 'Type your answer first!';
+    state.resultClass = 'tryagain';
+    render();
+    return;
+  }
+
+  state.checked = true;
+
+  if (parsed === state.correctAnswer) {
+    recordAttempt(true);
+    state.isCorrect = true;
+    state.streak++;
+    const earnedPts = getDifficultyPoints();
+    state.score += earnedPts;
+    addPoints(earnedPts);
+
+    const cheers = ['Amazing!', 'You got it!', 'Brilliant!', 'Great thinking!', 'Superstar!', 'Wow, nice work!'];
+    const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+    const stars = state.streak >= 5 ? '🌟🌟🌟' : state.streak >= 3 ? '⭐⭐⭐' : state.streak >= 2 ? '⭐⭐' : '⭐';
+    state.resultMsg = `${cheer} ${stars}`;
+    state.resultClass = 'success';
+    state.pointsMsg = `+${earnedPts} points${currentPlayer ? ' for ' + currentPlayer : ''}!`;
+    launchConfetti();
+  } else {
+    recordAttempt(false);
+    state.isCorrect = false;
+    state.streak = 0;
+    state.resultMsg = 'Not quite! 💪';
+    state.resultClass = 'tryagain';
+    state.pointsMsg = '';
+    state.showCorrect = `The answer was ${state.correctAnswer}`;
+  }
+  render();
+}
+
+function nextProblem() { generateProblem(); render(); }
+function goHome() { window.location.href = 'index.html'; }
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['#fbbf24', '#34d399', '#818cf8', '#f472b6', '#0ea5e9', '#e94560'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    piece.style.animationDuration = (1 + Math.random()) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 2500);
+}
+
+// Start
+render();
+</script>
+</body>
+</html>

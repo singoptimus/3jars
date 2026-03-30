@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add & Subtract</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px 20px 20px;
+  }
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 560px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+  h1 { font-size: 2.2em; color: #1e3a5f; margin-bottom: 8px; }
+  .subtitle { color: #888; font-size: 1.1em; margin-bottom: 24px; }
+
+  /* Player banner */
+  .player-banner {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    border: 2px solid #7dd3fc; border-radius: 50px;
+    padding: 8px 20px 8px 10px; margin-bottom: 20px; font-size: 1em;
+  }
+  .pb-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9em; color: white;
+  }
+  .pb-avatar.ozzy { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .pb-avatar.elinor { background: linear-gradient(135deg, #f472b6, #e94560); }
+  .pb-avatar.adam { background: linear-gradient(135deg, #34d399, #059669); }
+  .pb-name { font-weight: 700; color: #1e3a5f; }
+  .pb-pts { color: #f59e0b; font-weight: 700; }
+
+  /* Score bar */
+  .score-bar {
+    display: flex; justify-content: center; gap: 30px;
+    margin-bottom: 24px; font-size: 1.05em; color: #6b7280;
+  }
+  .score-bar span { font-weight: 700; color: #1e3a5f; }
+
+  /* Setup screen */
+  .setup { margin-bottom: 30px; }
+  .setup label {
+    font-size: 1.2em; color: #555; display: block; margin-bottom: 12px;
+  }
+  .difficulty-toggle {
+    display: flex; gap: 8px; justify-content: center;
+    margin-top: 12px; margin-bottom: 6px;
+  }
+  .diff-btn {
+    padding: 8px 18px; border-radius: 20px;
+    border: 2px solid #bae6fd; background: white;
+    color: #1e3a5f; font-weight: 600; cursor: pointer;
+    font-size: 0.9em; transition: all 0.2s;
+  }
+  .diff-btn:hover { background: #e0f2fe; }
+  .diff-btn.active {
+    background: #2563eb; color: white; border-color: #2563eb;
+  }
+  .go-btn {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: white; border: none;
+    padding: 14px 48px; font-size: 1.3em;
+    border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 16px;
+  }
+  .go-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(14,165,233,0.4); }
+
+  /* Problem display */
+  .problem-area {
+    background: #f0f9ff; border: 3px solid #bae6fd;
+    border-radius: 20px; padding: 30px 20px; margin: 20px 0 28px;
+  }
+  .problem-numbers {
+    display: flex; flex-direction: column; align-items: flex-end;
+    gap: 4px; font-family: 'Courier New', Courier, monospace;
+    font-size: 2.8em; font-weight: 700; color: #1e3a5f;
+    width: fit-content; margin: 0 auto; min-width: 220px;
+  }
+  .problem-top { padding-right: 4px; }
+  .problem-bottom { display: flex; align-items: center; gap: 12px; }
+  .problem-op { color: #2563eb; font-size: 0.85em; }
+  .problem-line {
+    width: 100%; height: 4px; background: #1e3a5f;
+    border-radius: 2px; margin: 8px 0 4px;
+  }
+
+  /* Answer input */
+  .answer-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 12px; margin-top: 12px;
+  }
+  .answer-input {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 2.4em; font-weight: 700; text-align: right;
+    width: 220px; padding: 8px 16px;
+    border: 3px solid #fbbf24; border-radius: 16px;
+    background: #fffbeb; color: #92400e; outline: none; transition: all 0.2s;
+  }
+  .answer-input::-webkit-outer-spin-button,
+  .answer-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .answer-input { -moz-appearance: textfield; }
+  .answer-input:focus {
+    border-color: #f59e0b; box-shadow: 0 0 0 4px rgba(251,191,36,0.3);
+  }
+  .answer-input.correct { border-color: #34d399; background: #ecfdf5; color: #065f46; }
+  .answer-input.incorrect {
+    border-color: #f87171; background: #fef2f2; color: #991b1b;
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .check-btn {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 20px;
+  }
+  .check-btn:hover { transform: scale(1.05); }
+  .next-btn {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 12px;
+  }
+  .next-btn:hover { transform: scale(1.05); }
+
+  .result { margin-top: 16px; font-size: 1.4em; font-weight: 700; min-height: 44px; }
+  .result.success { color: #059669; }
+  .result.tryagain { color: #dc2626; }
+  .points-earned { font-size: 1.05em; color: #f59e0b; font-weight: 700; margin-top: 4px; min-height: 22px; }
+  .correct-answer { font-size: 1em; color: #6b7280; margin-top: 6px; min-height: 20px; }
+
+  .controls {
+    margin-top: 20px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .secondary-btn {
+    background: #f3f4f6; color: #6b7280;
+    border: 2px solid #e5e7eb; padding: 10px 28px;
+    font-size: 1em; border-radius: 50px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  .secondary-btn:hover { background: #e5e7eb; }
+  .home-btn { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+  .home-btn:hover { background: #fde68a; }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+
+  /* Error rate bar */
+  .error-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    background: rgba(30,30,60,0.95);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8em;
+    backdrop-filter: blur(8px);
+  }
+  .error-bar-label {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .error-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    position: relative;
+    overflow: visible;
+  }
+  .error-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .error-bar-threshold {
+    position: absolute;
+    left: 75%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #fbbf24;
+    border-radius: 1px;
+  }
+  .error-bar-threshold::after {
+    content: '75%';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+  .error-bar-pct {
+    color: white;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: right;
+  }
+  .error-bar-pts {
+    color: #fbbf24;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+<div class="game-container" id="app"></div>
+
+<script>
+const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
+
+// ---- Player & score management ----
+function getPlayerFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('player') || '';
+}
+function getScores() {
+  try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
+  return {};
+}
+function saveScores(scores) { localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores)); }
+function addPoints(pts) {
+  if (!currentPlayer) return;
+  const scores = getScores();
+  scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
+  saveScores(scores);
+}
+function getStats() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_stats');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+function saveStats(stats) { localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats)); }
+function recordAttempt(isCorrect) {
+  if (!currentPlayer) return;
+  const stats = getStats();
+  if (!stats[currentPlayer]) stats[currentPlayer] = { correct: 0, total: 0 };
+  stats[currentPlayer].total++;
+  if (isCorrect) stats[currentPlayer].correct++;
+  saveStats(stats);
+  updateErrorBar();
+}
+
+function updateErrorBar() {
+  if (!currentPlayer) { document.getElementById('errorBar').style.display = 'none'; return; }
+  const stats = getStats();
+  const s = stats[currentPlayer] || { correct: 0, total: 0 };
+  const totalPts = getTotalPoints();
+  const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+  const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+  const bar = document.getElementById('errorBar');
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="error-bar-label">Accuracy</span>' +
+    '<div class="error-bar-track">' +
+    '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+    '<div class="error-bar-threshold"></div>' +
+    '</div>' +
+    '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+    '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' pts</span>';
+}
+function getTotalPoints() {
+  if (!currentPlayer) return 0;
+  return getScores()[currentPlayer] || 0;
+}
+
+const currentPlayer = getPlayerFromURL();
+const app = document.getElementById('app');
+
+let state = {
+  screen: 'setup', // setup | play
+  difficulty: 'easy',
+  num1: 0,
+  num2: 0,
+  op: '+',
+  correctAnswer: 0,
+  userAnswer: '',
+  checked: false,
+  isCorrect: false,
+  score: 0,
+  streak: 0,
+  round: 0,
+  resultMsg: '',
+  resultClass: '',
+  pointsMsg: '',
+  showCorrect: ''
+};
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getDifficultyRange() {
+  if (state.difficulty === 'easy') return { min: 10, max: 999 };
+  if (state.difficulty === 'medium') return { min: 100, max: 9999 };
+  return { min: 1000, max: 99999 };
+}
+
+function getDifficultyPoints() {
+  return state.difficulty === 'easy' ? 1 : state.difficulty === 'medium' ? 2 : 3;
+}
+
+function getDifficultyLabel() {
+  if (state.difficulty === 'easy') return '2-3 digit';
+  if (state.difficulty === 'medium') return '3-4 digit';
+  return '4-5 digit';
+}
+
+function generateProblem() {
+  const range = getDifficultyRange();
+  state.op = Math.random() < 0.5 ? '+' : '-';
+
+  if (state.op === '+') {
+    state.num1 = randInt(range.min, range.max);
+    state.num2 = randInt(range.min, range.max);
+    state.correctAnswer = state.num1 + state.num2;
+  } else {
+    let a = randInt(range.min, range.max);
+    let b = randInt(range.min, range.max);
+    if (a < b) { let t = a; a = b; b = t; }
+    state.num1 = a;
+    state.num2 = b;
+    state.correctAnswer = a - b;
+  }
+
+  state.userAnswer = '';
+  state.checked = false;
+  state.isCorrect = false;
+  state.resultMsg = '';
+  state.resultClass = '';
+  state.pointsMsg = '';
+  state.showCorrect = '';
+  state.round++;
+}
+
+function renderPlayerBanner() {
+  if (!currentPlayer) return '';
+  const avatarClass = currentPlayer.toLowerCase();
+  const initial = currentPlayer[0];
+  const totalPts = getTotalPoints();
+  return `
+    <div class="player-banner">
+      <div class="pb-avatar ${avatarClass}">${initial}</div>
+      <span class="pb-name">${currentPlayer}</span>
+      <span style="color:#ccc;">|</span>
+      <span class="pb-pts">${totalPts.toLocaleString()} pts</span>
+    </div>
+  `;
+}
+
+function formatNum(n) { return n.toLocaleString(); }
+
+function render() {
+  if (state.screen === 'setup') {
+    renderSetup();
+  } else {
+    renderPlay();
+  }
+}
+
+function renderSetup() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>Add & Subtract</h1>
+    <p class="subtitle">Pick your difficulty and start solving!</p>
+    <div class="setup">
+      <label>Difficulty:</label>
+      <div class="difficulty-toggle">
+        <button class="diff-btn ${state.difficulty === 'easy' ? 'active' : ''}" onclick="setDifficulty('easy')">Easy <span style="color:#f59e0b;font-size:0.85em;">★ 1pt</span></button>
+        <button class="diff-btn ${state.difficulty === 'medium' ? 'active' : ''}" onclick="setDifficulty('medium')">Medium <span style="color:#f59e0b;font-size:0.85em;">★★ 2pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'hard' ? 'active' : ''}" onclick="setDifficulty('hard')">Hard <span style="color:#f59e0b;font-size:0.85em;">★★★ 3pts</span></button>
+      </div>
+      <p style="color:#aaa;font-size:0.85em;margin-top:6px;">Easy: 2-3 digit numbers &middot; Medium: 3-4 digit &middot; Hard: 4-5 digit</p>
+      <br>
+      <button class="go-btn" onclick="startGame()">Let's Go!</button>
+    </div>
+    <div class="controls">
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+}
+
+function renderPlay() {
+  const inputClass = state.checked ? (state.isCorrect ? 'correct' : 'incorrect') : '';
+  const pts = getDifficultyPoints();
+
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>Add & Subtract</h1>
+    <div class="score-bar">
+      <div>Score: <span>${state.score}</span></div>
+      <div>Streak: <span>${state.streak} 🔥</span></div>
+      <div>Round: <span>${state.round}</span></div>
+    </div>
+    <p class="subtitle">Solve the ${getDifficultyLabel()} problem! <span style="color:#f59e0b;">+${pts} point${pts > 1 ? 's' : ''} per correct answer</span></p>
+
+    <div class="problem-area">
+      <div class="problem-numbers">
+        <div class="problem-top">${formatNum(state.num1)}</div>
+        <div class="problem-bottom">
+          <span class="problem-op">${state.op === '+' ? '+' : '−'}</span>
+          <span>${formatNum(state.num2)}</span>
+        </div>
+        <div class="problem-line"></div>
+      </div>
+      <div class="answer-row">
+        <input type="number" class="answer-input ${inputClass}" id="answerInput"
+          value="${state.userAnswer}"
+          oninput="onInput(this.value)"
+          onkeydown="if(event.key==='Enter'){event.preventDefault(); ${state.checked ? 'nextProblem()' : 'checkAnswer()'}; }"
+          ${state.checked ? 'disabled' : ''}
+          placeholder="?">
+      </div>
+    </div>
+
+    ${!state.checked ? `
+      <button class="check-btn" onclick="checkAnswer()">Check ✓</button>
+    ` : `
+      <button class="next-btn" onclick="nextProblem()">Next Problem →</button>
+    `}
+
+    <div class="result ${state.resultClass}">${state.resultMsg}</div>
+    <div class="points-earned">${state.pointsMsg}</div>
+    <div class="correct-answer">${state.showCorrect}</div>
+
+    <div class="controls">
+      <button class="secondary-btn" onclick="changeDifficulty()">Change Difficulty</button>
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+
+  if (!state.checked) {
+    const inp = document.getElementById('answerInput');
+    if (inp) inp.focus();
+  }
+  updateErrorBar();
+}
+
+function setDifficulty(d) { state.difficulty = d; render(); }
+
+function startGame() {
+  state.screen = 'play';
+  state.score = 0;
+  state.streak = 0;
+  state.round = 0;
+  generateProblem();
+  render();
+}
+
+function changeDifficulty() {
+  state.screen = 'setup';
+  render();
+}
+
+function onInput(val) { state.userAnswer = val; }
+
+function checkAnswer() {
+  const parsed = parseInt(state.userAnswer);
+  if (isNaN(parsed) || state.userAnswer.trim() === '') {
+    state.resultMsg = 'Type your answer first!';
+    state.resultClass = 'tryagain';
+    render();
+    return;
+  }
+
+  state.checked = true;
+
+  if (parsed === state.correctAnswer) {
+    recordAttempt(true);
+    state.isCorrect = true;
+    state.streak++;
+    const earnedPts = getDifficultyPoints();
+    state.score += earnedPts;
+    addPoints(earnedPts);
+
+    const cheers = ['Amazing!', 'Perfect!', 'Brilliant!', 'You nailed it!', 'Superstar!'];
+    const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+    const stars = state.streak >= 5 ? '🌟🌟🌟' : state.streak >= 3 ? '⭐⭐⭐' : state.streak >= 2 ? '⭐⭐' : '⭐';
+    state.resultMsg = `${cheer} ${stars}`;
+    state.resultClass = 'success';
+    state.pointsMsg = `+${earnedPts} point${earnedPts > 1 ? 's' : ''}${currentPlayer ? ' for ' + currentPlayer : ''}!`;
+    launchConfetti();
+  } else {
+    recordAttempt(false);
+    state.isCorrect = false;
+    state.streak = 0;
+    state.resultMsg = 'Not quite! 💪';
+    state.resultClass = 'tryagain';
+    state.pointsMsg = '';
+    state.showCorrect = `The answer was ${formatNum(state.correctAnswer)}`;
+  }
+  render();
+}
+
+function nextProblem() { generateProblem(); render(); }
+function goHome() { window.location.href = 'index.html'; }
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['#fbbf24', '#34d399', '#818cf8', '#f472b6', '#0ea5e9', '#e94560'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    piece.style.animationDuration = (1 + Math.random()) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 2500);
+}
+
+// Start
+render();
+</script>
+</body>
+</html>

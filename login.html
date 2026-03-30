@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kids Games — Login</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .login-container {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 28px;
+    padding: 50px 44px;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    animation: fadeUp 0.6s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo { font-size: 3em; margin-bottom: 10px; }
+  h1 {
+    color: white;
+    font-size: 1.8em;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .subtitle {
+    color: rgba(255,255,255,0.45);
+    font-size: 0.95em;
+    margin-bottom: 30px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 28px;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 11px;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: rgba(255,255,255,0.15);
+    color: white;
+  }
+  .tab:hover:not(.active) {
+    color: rgba(255,255,255,0.7);
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+    text-align: left;
+  }
+  .form-label {
+    display: block;
+    color: rgba(255,255,255,0.5);
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    padding-left: 4px;
+  }
+  .form-input {
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.08);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    color: white;
+    font-size: 1.05em;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus {
+    border-color: rgba(251,191,36,0.5);
+  }
+  .form-input::placeholder {
+    color: rgba(255,255,255,0.25);
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    border-radius: 14px;
+    color: #1a1a2e;
+    font-size: 1.15em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(251,191,36,0.3);
+  }
+
+  .error-msg {
+    color: #f87171;
+    font-size: 0.9em;
+    margin-top: 12px;
+    min-height: 24px;
+  }
+  .success-msg {
+    color: #34d399;
+    font-size: 0.9em;
+    margin-top: 12px;
+  }
+
+  .accounts-list {
+    margin-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 20px;
+  }
+  .accounts-title {
+    color: rgba(255,255,255,0.35);
+    font-size: 0.75em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .account-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 18px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: white;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+  .account-btn:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(251,191,36,0.3);
+  }
+  .account-btn .acct-icon {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1em;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .account-btn .acct-name { font-weight: 600; }
+  .account-btn .acct-email {
+    font-size: 0.8em;
+    color: rgba(255,255,255,0.4);
+  }
+  .account-btn .acct-players {
+    font-size: 0.75em;
+    color: rgba(255,255,255,0.3);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: rgba(255,255,255,0.25);
+    font-size: 0.8em;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.1);
+  }
+
+  @media (max-width: 480px) {
+    .login-container { padding: 36px 24px; }
+    h1 { font-size: 1.5em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="login-container" id="app"></div>
+
+<script>
+// ---- Account storage ----
+function getAccounts() {
+  try {
+    const raw = localStorage.getItem('km_accounts');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+
+function saveAccounts(accounts) {
+  localStorage.setItem('km_accounts', JSON.stringify(accounts));
+}
+
+function hashPassword(pw) {
+  // Simple hash for local use — NOT secure for production, just for localStorage demo
+  let hash = 0;
+  for (let i = 0; i < pw.length; i++) {
+    const char = pw.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(36);
+}
+
+// Normalize email to use as account key
+function normalizeEmail(email) {
+  return (email || '').trim().toLowerCase();
+}
+
+// ---- State ----
+let mode = 'login';
+
+function switchMode(m) {
+  mode = m;
+  render();
+}
+
+function render() {
+  const accounts = getAccounts();
+  const accountKeys = Object.keys(accounts);
+
+  const quickLogin = accountKeys.length > 0 ? `
+    <div class="accounts-list">
+      <div class="accounts-title">Quick Login</div>
+      ${accountKeys.map(key => {
+        const acct = accounts[key];
+        const playerCount = acct.players ? acct.players.length : 0;
+        const displayEmail = acct.email || key;
+        const displayName = acct.displayName || key;
+        const initial = displayName[0].toUpperCase();
+        return `
+          <button class="account-btn" onclick="quickLogin('${key.replace(/'/g, "\\'")}')">
+            <div class="acct-icon">${initial}</div>
+            <div>
+              <div class="acct-name">${displayName}</div>
+              <div class="acct-email">${displayEmail}</div>
+              <div class="acct-players">${playerCount} player${playerCount !== 1 ? 's' : ''}</div>
+            </div>
+          </button>
+        `;
+      }).join('')}
+    </div>
+  ` : '';
+
+  app.innerHTML = `
+    <div class="logo">🎮</div>
+    <h1>Kids Games</h1>
+    <div class="subtitle">Math, Hebrew & Everything In Between</div>
+
+    <div class="tabs">
+      <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
+      <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
+    </div>
+
+    ${mode === 'login' ? `
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="email" type="email" placeholder="Enter your email" autocomplete="email"
+          onkeydown="if(event.key==='Enter'){document.getElementById('password').focus();}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="password" type="password" placeholder="Enter your password" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter'){doLogin();}">
+      </div>
+      <button class="submit-btn" onclick="doLogin()">Log In</button>
+      <div class="error-msg" id="msg"></div>
+
+      ${quickLogin}
+    ` : `
+      <div class="form-group">
+        <label class="form-label">Your Name</label>
+        <input class="form-input" id="newName" type="text" placeholder="e.g. The Smith Family" autocomplete="name"
+          onkeydown="if(event.key==='Enter'){document.getElementById('newEmail').focus();}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="newEmail" type="email" placeholder="e.g. you@email.com" autocomplete="email"
+          onkeydown="if(event.key==='Enter'){document.getElementById('newPassword').focus();}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Choose a Password</label>
+        <input class="form-input" id="newPassword" type="password" placeholder="At least 4 characters" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter'){document.getElementById('confirmPassword').focus();}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm Password</label>
+        <input class="form-input" id="confirmPassword" type="password" placeholder="Type it again" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter'){doSignup();}">
+      </div>
+      <button class="submit-btn" onclick="doSignup()">Create Account</button>
+      <div class="error-msg" id="msg"></div>
+    `}
+  `;
+
+  // Auto-focus first input
+  setTimeout(() => {
+    const first = document.querySelector('.form-input');
+    if (first) first.focus();
+  }, 100);
+}
+
+function showMsg(text, isError) {
+  const el = document.getElementById('msg');
+  if (el) {
+    el.textContent = text;
+    el.className = isError ? 'error-msg' : 'success-msg';
+  }
+}
+
+function doLogin() {
+  const email = normalizeEmail(document.getElementById('email').value);
+  const password = document.getElementById('password').value || '';
+
+  if (!email || !password) {
+    showMsg('Please enter both email and password.', true);
+    return;
+  }
+
+  if (!isValidEmail(email)) {
+    showMsg('Please enter a valid email address.', true);
+    return;
+  }
+
+  const accounts = getAccounts();
+  const acct = accounts[email];
+
+  if (!acct) {
+    showMsg('Account not found. Create one first!', true);
+    return;
+  }
+
+  if (acct.passwordHash !== hashPassword(password)) {
+    showMsg('Wrong password. Try again!', true);
+    return;
+  }
+
+  // Login success!
+  sessionStorage.setItem('km_currentAccount', email);
+  window.location.href = 'index.html';
+}
+
+function quickLogin(accountKey) {
+  const password = prompt('Password for ' + accountKey + ':');
+  if (password === null) return;
+
+  const accounts = getAccounts();
+  const acct = accounts[accountKey];
+
+  if (!acct || acct.passwordHash !== hashPassword(password)) {
+    alert('Wrong password!');
+    return;
+  }
+
+  sessionStorage.setItem('km_currentAccount', accountKey);
+  window.location.href = 'index.html';
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function doSignup() {
+  const name = (document.getElementById('newName').value || '').trim();
+  const email = normalizeEmail(document.getElementById('newEmail').value);
+  const password = document.getElementById('newPassword').value || '';
+  const confirm = document.getElementById('confirmPassword').value || '';
+
+  if (!name) {
+    showMsg('Please enter your name.', true);
+    return;
+  }
+  if (!email) {
+    showMsg('Please enter your email.', true);
+    return;
+  }
+  if (!isValidEmail(email)) {
+    showMsg('Please enter a valid email address.', true);
+    return;
+  }
+  if (password.length < 4) {
+    showMsg('Password must be at least 4 characters.', true);
+    return;
+  }
+  if (password !== confirm) {
+    showMsg('Passwords don\'t match!', true);
+    return;
+  }
+
+  const accounts = getAccounts();
+  if (accounts[email]) {
+    showMsg('An account with this email already exists. Try logging in!', true);
+    return;
+  }
+
+  // Create account — keyed by email
+  accounts[email] = {
+    passwordHash: hashPassword(password),
+    displayName: name,
+    email: email,
+    players: [],
+    createdAt: Date.now()
+  };
+  saveAccounts(accounts);
+
+  // Auto-login
+  sessionStorage.setItem('km_currentAccount', email);
+  window.location.href = 'index.html';
+}
+
+// ---- Migration: convert old username-keyed accounts to email-keyed ----
+function migrateAccounts() {
+  const accounts = getAccounts();
+  let changed = false;
+
+  // Migrate the default 'adam' account to email-keyed
+  if (accounts['adam'] && !accounts['adam.s@taboola.com']) {
+    const oldAcct = accounts['adam'];
+    // Create new email-keyed account with existing data
+    accounts['adam.s@taboola.com'] = {
+      ...oldAcct,
+      email: 'adam.s@taboola.com',
+      displayName: oldAcct.displayName || 'Adam'
+    };
+    // Migrate account-scoped localStorage data
+    const dataKeys = ['scores', 'stats', 'celebrations', 'player'];
+    dataKeys.forEach(key => {
+      const old = localStorage.getItem('km_adam_' + key);
+      if (old) {
+        localStorage.setItem('km_adam.s@taboola.com_' + key, old);
+      }
+    });
+    // Remove old account
+    delete accounts['adam'];
+    changed = true;
+  }
+
+  // Also migrate any other username-only accounts that don't look like emails
+  // (leave them as-is for now, they can still log in)
+
+  if (changed) saveAccounts(accounts);
+}
+
+// ---- Seed default account if fresh install ----
+function seedDefaults() {
+  const accounts = getAccounts();
+  if (Object.keys(accounts).length === 0) {
+    // Check if there's existing data from the old non-account system
+    const oldScores = localStorage.getItem('kidsMathScores');
+    const oldStats = localStorage.getItem('kidsMathStats');
+    const oldCelebs = localStorage.getItem('kidsMathCelebrations');
+
+    // Create the default account keyed by email
+    accounts['adam.s@taboola.com'] = {
+      passwordHash: hashPassword('1234'),
+      displayName: 'Adam',
+      email: 'adam.s@taboola.com',
+      players: [
+        { name: 'Ozzy', emoji: '🏀', color: '#667eea' },
+        { name: 'Elinor', emoji: '🏊', color: '#f472b6' },
+        { name: 'Adam', emoji: '🏃', color: '#34d399' }
+      ],
+      createdAt: Date.now()
+    };
+    saveAccounts(accounts);
+
+    // Migrate old data to account-scoped keys
+    if (oldScores) localStorage.setItem('km_adam.s@taboola.com_scores', oldScores);
+    if (oldStats) localStorage.setItem('km_adam.s@taboola.com_stats', oldStats);
+    if (oldCelebs) localStorage.setItem('km_adam.s@taboola.com_celebrations', oldCelebs);
+  }
+}
+
+// ---- Check if already logged in ----
+const currentAccount = sessionStorage.getItem('km_currentAccount');
+if (currentAccount) {
+  window.location.href = 'index.html';
+} else {
+  seedDefaults();
+  migrateAccounts();
+  render();
+}
+</script>
+</body>
+</html>

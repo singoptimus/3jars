@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shape Patterns</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #059669 0%, #0d9488 50%, #0891b2 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px 20px 20px;
+  }
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 720px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+  }
+  h1 { font-size: 2.2em; color: #134e4a; margin-bottom: 8px; }
+  .subtitle { color: #888; font-size: 1.1em; margin-bottom: 24px; }
+
+  /* Player banner */
+  .player-banner {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border: 2px solid #6ee7b7; border-radius: 50px;
+    padding: 8px 20px 8px 10px; margin-bottom: 20px; font-size: 1em;
+  }
+  .pb-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9em; color: white;
+  }
+  .pb-avatar.ozzy { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .pb-avatar.elinor { background: linear-gradient(135deg, #f472b6, #e94560); }
+  .pb-avatar.adam { background: linear-gradient(135deg, #34d399, #059669); }
+  .pb-name { font-weight: 700; color: #134e4a; }
+  .pb-pts { color: #f59e0b; font-weight: 700; }
+
+  /* Score bar */
+  .score-bar {
+    display: flex; justify-content: center; gap: 30px;
+    margin-bottom: 24px; font-size: 1.05em; color: #6b7280;
+  }
+  .score-bar span { font-weight: 700; color: #134e4a; }
+
+  /* Setup screen */
+  .setup { margin-bottom: 30px; }
+  .setup label {
+    font-size: 1.2em; color: #555; display: block; margin-bottom: 12px;
+  }
+  .difficulty-toggle {
+    display: flex; gap: 8px; justify-content: center;
+    margin-top: 12px; margin-bottom: 6px;
+  }
+  .diff-btn {
+    padding: 8px 16px; border-radius: 20px;
+    border: 2px solid #a7f3d0; background: white;
+    color: #134e4a; font-weight: 600; cursor: pointer;
+    font-size: 0.9em; transition: all 0.2s;
+  }
+  .diff-btn:hover { background: #d1fae5; }
+  .diff-btn.active {
+    background: #059669; color: white; border-color: #059669;
+  }
+  .go-btn {
+    background: linear-gradient(135deg, #059669, #0d9488);
+    color: white; border: none;
+    padding: 14px 48px; font-size: 1.3em;
+    border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 16px;
+  }
+  .go-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(5,150,105,0.4); }
+
+  /* Sequence display */
+  .sequence-row {
+    display: flex; flex-wrap: wrap; gap: 8px;
+    justify-content: center; align-items: center;
+    margin: 24px 0;
+  }
+  .seq-cell {
+    width: 90px; height: 90px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    border: 3px solid #d1fae5;
+    background: #f0fdf4;
+    position: relative;
+  }
+  .seq-cell svg { width: 60px; height: 60px; }
+  .seq-cell.mystery {
+    border: 3px dashed #f59e0b;
+    background: #fffbeb;
+  }
+  .seq-cell.mystery::after {
+    content: '?';
+    font-size: 2.2em;
+    font-weight: 800;
+    color: #f59e0b;
+  }
+  .seq-arrow {
+    font-size: 1.3em;
+    color: #a7f3d0;
+    flex-shrink: 0;
+  }
+
+  /* Answer choices */
+  .choices-label {
+    font-size: 1.1em; color: #555; margin-bottom: 12px; font-weight: 600;
+  }
+  .choices {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    justify-content: center; margin-bottom: 20px;
+  }
+  .choice-cell {
+    width: 90px; height: 90px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    border: 3px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .choice-cell svg { width: 60px; height: 60px; }
+  .choice-cell:hover {
+    border-color: #059669;
+    background: #f0fdf4;
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+  }
+  .choice-cell.selected {
+    border-color: #059669;
+    background: #d1fae5;
+    box-shadow: 0 0 0 3px rgba(5,150,105,0.3);
+  }
+  .choice-cell.correct-pick {
+    border-color: #34d399;
+    background: #ecfdf5;
+    box-shadow: 0 0 0 3px rgba(52,211,153,0.4);
+  }
+  .choice-cell.wrong-pick {
+    border-color: #f87171;
+    background: #fef2f2;
+    box-shadow: 0 0 0 3px rgba(248,113,113,0.3);
+  }
+  .choice-cell.show-correct {
+    border-color: #34d399;
+    background: #ecfdf5;
+  }
+  .choice-cell.disabled { pointer-events: none; }
+  .choice-letter {
+    position: absolute;
+    top: 4px; left: 8px;
+    font-size: 0.7em; font-weight: 700;
+    color: #aaa;
+  }
+
+  .check-btn {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 8px;
+  }
+  .check-btn:hover { transform: scale(1.05); }
+  .check-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+  .next-btn {
+    background: linear-gradient(135deg, #059669, #0d9488);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 12px;
+  }
+  .next-btn:hover { transform: scale(1.05); }
+
+  .result { margin-top: 16px; font-size: 1.4em; font-weight: 700; min-height: 44px; }
+  .result.success { color: #059669; }
+  .result.tryagain { color: #dc2626; }
+  .points-earned { font-size: 1.05em; color: #f59e0b; font-weight: 700; margin-top: 4px; min-height: 22px; }
+
+  .controls {
+    margin-top: 20px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .secondary-btn {
+    background: #f3f4f6; color: #6b7280;
+    border: 2px solid #e5e7eb; padding: 10px 28px;
+    font-size: 1em; border-radius: 50px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  .secondary-btn:hover { background: #e5e7eb; }
+  .home-btn { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+  .home-btn:hover { background: #fde68a; }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+
+  /* Error rate bar */
+  .error-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    background: rgba(30,30,60,0.95);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8em;
+    backdrop-filter: blur(8px);
+  }
+  .error-bar-label {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .error-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    position: relative;
+    overflow: visible;
+  }
+  .error-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .error-bar-threshold {
+    position: absolute;
+    left: 75%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #fbbf24;
+    border-radius: 1px;
+  }
+  .error-bar-threshold::after {
+    content: '75%';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+  .error-bar-pct {
+    color: white;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: right;
+  }
+  .error-bar-pts {
+    color: #fbbf24;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 600px) {
+    .seq-cell, .choice-cell { width: 70px; height: 70px; }
+    .seq-cell svg, .choice-cell svg { width: 46px; height: 46px; }
+    .sequence-row { gap: 4px; }
+    .seq-arrow { font-size: 1em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+<div class="game-container" id="app"></div>
+
+<script>
+const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+if (!sessionStorage.getItem('km_currentAccount')) { window.location.href = 'login.html'; }
+// ---- Player & score management ----
+function getPlayerFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('player') || '';
+}
+function getScores() {
+  try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
+  return {};
+}
+function saveScores(scores) { localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores)); }
+function addPoints(pts) {
+  if (!currentPlayer) return;
+  const scores = getScores();
+  scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
+  saveScores(scores);
+}
+function getTotalPoints() {
+  if (!currentPlayer) return 0;
+  return getScores()[currentPlayer] || 0;
+}
+function getStats() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_stats');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+function saveStats(stats) { localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats)); }
+function recordAttempt(isCorrect) {
+  if (!currentPlayer) return;
+  const stats = getStats();
+  if (!stats[currentPlayer]) stats[currentPlayer] = { correct: 0, total: 0 };
+  stats[currentPlayer].total++;
+  if (isCorrect) stats[currentPlayer].correct++;
+  saveStats(stats);
+  updateErrorBar();
+}
+
+function updateErrorBar() {
+  if (!currentPlayer) { document.getElementById('errorBar').style.display = 'none'; return; }
+  const stats = getStats();
+  const s = stats[currentPlayer] || { correct: 0, total: 0 };
+  const totalPts = getTotalPoints();
+  const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+  const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+  const bar = document.getElementById('errorBar');
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="error-bar-label">Accuracy</span>' +
+    '<div class="error-bar-track">' +
+    '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+    '<div class="error-bar-threshold"></div>' +
+    '</div>' +
+    '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+    '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' pts</span>';
+}
+
+const currentPlayer = getPlayerFromURL();
+const app = document.getElementById('app');
+
+// ---- Utilities ----
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ===========================================================
+//  SVG Shape Rendering
+// ===========================================================
+const COLORS = ['#7c3aed', '#0d9488', '#e94560', '#2563eb', '#f59e0b', '#059669'];
+const SHAPES = ['triangle', 'square', 'circle', 'diamond', 'star', 'cross', 'arrow', 'hexagon'];
+
+// A "shape descriptor" is { shape, color, rotation, size, filled }
+function renderShape(desc) {
+  const { shape, color, rotation, size, filled } = desc;
+  const s = size === 'small' ? 0.55 : size === 'large' ? 1.0 : 0.75;
+  const fill = filled ? color : 'none';
+  const stroke = color;
+  const sw = filled ? 0 : 3;
+
+  const inner = getShapePath(shape, fill, stroke, sw);
+  return `<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(30,30) rotate(${rotation}) scale(${s}) translate(-30,-30)">
+      ${inner}
+    </g>
+  </svg>`;
+}
+
+function getShapePath(shape, fill, stroke, sw) {
+  switch(shape) {
+    case 'triangle':
+      return `<polygon points="30,8 52,50 8,50" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    case 'square':
+      return `<rect x="10" y="10" width="40" height="40" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    case 'circle':
+      return `<circle cx="30" cy="30" r="22" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    case 'diamond':
+      return `<polygon points="30,6 54,30 30,54 6,30" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    case 'star':
+      return `<polygon points="30,6 36,22 54,22 40,33 45,50 30,40 15,50 20,33 6,22 24,22" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    case 'cross':
+      return `<polygon points="22,8 38,8 38,22 52,22 52,38 38,38 38,52 22,52 22,38 8,38 8,22 22,22" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    case 'arrow':
+      return `<polygon points="30,6 52,30 40,30 40,54 20,54 20,30 8,30" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    case 'hexagon':
+      return `<polygon points="30,6 52,18 52,42 30,54 8,42 8,18" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+    default:
+      return `<circle cx="30" cy="30" r="22" fill="${fill}" stroke="${stroke}" stroke-width="${sw || 2.5}"/>`;
+  }
+}
+
+// ===========================================================
+//  Pattern Generation
+// ===========================================================
+
+// Each pattern generator returns:
+// { sequence: [desc, desc, ...], missingIndex: int, correctAnswer: desc, wrongAnswers: [desc, desc, desc] }
+
+function generatePattern() {
+  if (state.difficulty === 'easy') return generateEasyPattern();
+  if (state.difficulty === 'medium') return generateMediumPattern();
+  return generateHardPattern();
+}
+
+// ---- Pick a safe missing index: the answer must be deducible ----
+// We only blank a position whose descKey appears at least once more in the sequence
+function pickSafeMissingIndex(seq) {
+  const keys = seq.map(d => descKey(d));
+  // Find positions where the same item appears at least once more
+  const safe = [];
+  for (let i = 0; i < keys.length; i++) {
+    const count = keys.filter(k => k === keys[i]).length;
+    if (count >= 2) safe.push(i);
+  }
+  // Avoid first position if possible (feels better to see the start)
+  const preferred = safe.filter(i => i > 0);
+  if (preferred.length > 0) return pick(preferred);
+  if (safe.length > 0) return pick(safe);
+  // Fallback: pick from second half where prior context is visible
+  return randInt(Math.floor(seq.length / 2), seq.length - 1);
+}
+
+// ---- EASY: one property changes in a cycle ----
+function generateEasyPattern() {
+  const patternType = pick(['rotation', 'color', 'shape', 'size']);
+  const seqLen = 7; // longer so every cycle value appears 2+ times
+
+  const baseShape = pick(SHAPES);
+  const baseColor = pick(COLORS);
+  const baseRotation = 0;
+  const baseFilled = Math.random() < 0.5;
+
+  const seq = [];
+
+  if (patternType === 'rotation') {
+    const step = pick([45, 90, 60]);
+    for (let i = 0; i < seqLen; i++) {
+      seq.push({ shape: baseShape, color: baseColor, rotation: (step * i) % 360, size: 'medium', filled: baseFilled });
+    }
+  } else if (patternType === 'color') {
+    const colors = shuffle(COLORS).slice(0, 3);
+    for (let i = 0; i < seqLen; i++) {
+      seq.push({ shape: baseShape, color: colors[i % colors.length], rotation: 0, size: 'medium', filled: true });
+    }
+  } else if (patternType === 'shape') {
+    const shapes = shuffle(SHAPES).slice(0, 3);
+    for (let i = 0; i < seqLen; i++) {
+      seq.push({ shape: shapes[i % shapes.length], color: baseColor, rotation: 0, size: 'medium', filled: baseFilled });
+    }
+  } else { // size
+    const sizes = ['small', 'medium', 'large'];
+    for (let i = 0; i < seqLen; i++) {
+      seq.push({ shape: baseShape, color: baseColor, rotation: 0, size: sizes[i % 3], filled: baseFilled });
+    }
+  }
+
+  const missingIdx = pickSafeMissingIndex(seq);
+  return buildQuestion(seq, missingIdx, patternType);
+}
+
+// ---- MEDIUM: two properties change ----
+function generateMediumPattern() {
+  const props = shuffle(['rotation', 'color', 'shape', 'size', 'filled']).slice(0, 2);
+  const seqLen = 7;
+
+  const seq = buildMultiPropSequence(seqLen, props);
+  const missingIdx = pickSafeMissingIndex(seq);
+  return buildQuestion(seq, missingIdx, props.join('+'));
+}
+
+// ---- HARD: three properties change ----
+function generateHardPattern() {
+  const props = shuffle(['rotation', 'color', 'shape', 'size', 'filled']).slice(0, 3);
+  const seqLen = 7;
+
+  const seq = buildMultiPropSequence(seqLen, props);
+  const missingIdx = pickSafeMissingIndex(seq);
+  return buildQuestion(seq, missingIdx, props.join('+'));
+}
+
+function buildMultiPropSequence(seqLen, changingProps) {
+  // Set up base and cycling values for each property
+  const baseShape = pick(SHAPES);
+  const baseColor = pick(COLORS);
+  const baseFilled = Math.random() < 0.5;
+
+  // Cycling pools
+  const shapePool = shuffle(SHAPES).slice(0, 3);
+  const colorPool = shuffle(COLORS).slice(0, 3);
+  const sizePool = ['small', 'medium', 'large'];
+  const rotStep = pick([45, 90, 60]);
+  const filledPool = [true, false];
+
+  const seq = [];
+  for (let i = 0; i < seqLen; i++) {
+    seq.push({
+      shape: changingProps.includes('shape') ? shapePool[i % shapePool.length] : baseShape,
+      color: changingProps.includes('color') ? colorPool[i % colorPool.length] : baseColor,
+      rotation: changingProps.includes('rotation') ? (rotStep * i) % 360 : 0,
+      size: changingProps.includes('size') ? sizePool[i % sizePool.length] : 'medium',
+      filled: changingProps.includes('filled') ? filledPool[i % 2] : baseFilled,
+    });
+  }
+  return seq;
+}
+
+function buildQuestion(seq, missingIdx, patternLabel) {
+  const correct = seq[missingIdx];
+  const correctKey = descKey(correct);
+
+  // Collect all keys in the sequence (except the missing one) so we
+  // can avoid generating a wrong answer that accidentally matches another position
+  const seqKeys = new Set(seq.map(d => descKey(d)));
+
+  // Generate 3 wrong answers by tweaking the correct answer
+  // Each wrong must differ from correct AND not be a duplicate of another sequence item
+  const wrongs = [];
+  let safety = 0;
+  while (wrongs.length < 3 && safety < 200) {
+    safety++;
+    const w = { ...correct };
+    // Tweak 1-2 properties to make it clearly wrong but plausible-looking
+    const numTweaks = randInt(1, 2);
+    for (let t = 0; t < numTweaks; t++) {
+      const prop = pick(['shape', 'color', 'rotation', 'size', 'filled']);
+      if (prop === 'shape') w.shape = pick(SHAPES.filter(s => s !== correct.shape));
+      else if (prop === 'color') w.color = pick(COLORS.filter(c => c !== correct.color));
+      else if (prop === 'rotation') w.rotation = (correct.rotation + pick([45, 90, 135, 180, 270])) % 360;
+      else if (prop === 'size') w.size = pick(['small', 'medium', 'large'].filter(s => s !== correct.size));
+      else w.filled = !correct.filled;
+    }
+
+    const wVis = visualKey(w);
+    const correctVis = visualKey(correct);
+    // Must look visually different from correct AND from other wrongs
+    if (wVis !== correctVis && !wrongs.some(x => visualKey(x) === wVis)) {
+      wrongs.push(w);
+    }
+  }
+
+  // Final safety: fill remaining slots if we couldn't generate enough
+  while (wrongs.length < 3) {
+    wrongs.push({
+      shape: pick(SHAPES.filter(s => s !== correct.shape)),
+      color: pick(COLORS.filter(c => c !== correct.color)),
+      rotation: (correct.rotation + 90) % 360,
+      size: pick(['small', 'medium', 'large']),
+      filled: !correct.filled
+    });
+  }
+
+  return {
+    sequence: seq,
+    missingIndex: missingIdx,
+    correctAnswer: correct,
+    wrongAnswers: wrongs.slice(0, 3),
+    patternLabel
+  };
+}
+
+function descKey(d) {
+  return `${d.shape}-${d.color}-${d.rotation}-${d.size}-${d.filled}`;
+}
+
+// Visual key normalizes rotation for rotationally symmetric shapes
+function visualKey(d) {
+  let rot = d.rotation || 0;
+  if (d.shape === 'circle') rot = 0;
+  else if (d.shape === 'square' || d.shape === 'cross') rot = rot % 90;
+  else if (d.shape === 'hexagon') rot = rot % 60;
+  else if (d.shape === 'star') rot = rot % 72;
+  else if (d.shape === 'diamond') rot = rot % 180;
+  return `${d.shape}-${d.color}-${rot}-${d.size}-${d.filled}`;
+}
+
+// ===========================================================
+//  Game State
+// ===========================================================
+let state = {
+  screen: 'setup',
+  difficulty: 'easy',
+  score: 0,
+  streak: 0,
+  round: 0,
+  // Current question
+  sequence: [],
+  missingIndex: -1,
+  choices: [],      // shuffled array of choice descriptors
+  correctIdx: -1,   // index in choices that's correct
+  selectedIdx: -1,  // player's pick
+  checked: false,
+  isCorrect: false,
+  resultMsg: '',
+  resultClass: '',
+  pointsMsg: '',
+  patternLabel: ''
+};
+
+function getDifficultyPoints() {
+  return state.difficulty === 'easy' ? 3 : state.difficulty === 'medium' ? 6 : 9;
+}
+
+function newQuestion() {
+  const q = generatePattern();
+  state.sequence = q.sequence;
+  state.missingIndex = q.missingIndex;
+  state.patternLabel = q.patternLabel;
+
+  // Shuffle choices
+  const allChoices = shuffle([q.correctAnswer, ...q.wrongAnswers]);
+  state.choices = allChoices;
+  state.correctIdx = allChoices.findIndex(c => descKey(c) === descKey(q.correctAnswer));
+
+  state.selectedIdx = -1;
+  state.checked = false;
+  state.isCorrect = false;
+  state.resultMsg = '';
+  state.resultClass = '';
+  state.pointsMsg = '';
+  state.round++;
+}
+
+// ===========================================================
+//  Rendering
+// ===========================================================
+function renderPlayerBanner() {
+  if (!currentPlayer) return '';
+  const avatarClass = currentPlayer.toLowerCase();
+  const initial = currentPlayer[0];
+  const totalPts = getTotalPoints();
+  return `
+    <div class="player-banner">
+      <div class="pb-avatar ${avatarClass}">${initial}</div>
+      <span class="pb-name">${currentPlayer}</span>
+      <span style="color:#ccc;">|</span>
+      <span class="pb-pts">${totalPts.toLocaleString()} pts</span>
+    </div>
+  `;
+}
+
+function render() {
+  if (state.screen === 'setup') renderSetup();
+  else renderPlay();
+}
+
+function renderSetup() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>🧩 Shape Patterns</h1>
+    <p class="subtitle">Find the missing shape in the sequence!</p>
+    <div class="setup">
+      <label>Difficulty:</label>
+      <div class="difficulty-toggle">
+        <button class="diff-btn ${state.difficulty === 'easy' ? 'active' : ''}" onclick="setDifficulty('easy')">Easy <span style="color:#f59e0b;font-size:0.85em;">★★★ 3pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'medium' ? 'active' : ''}" onclick="setDifficulty('medium')">Medium <span style="color:#f59e0b;font-size:0.85em;">★★★★★★ 6pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'hard' ? 'active' : ''}" onclick="setDifficulty('hard')">Hard <span style="color:#f59e0b;font-size:0.85em;">★★★★★★★★★ 9pts</span></button>
+      </div>
+      <p style="color:#aaa;font-size:0.85em;margin-top:6px;">Easy: 1 rule changes &middot; Medium: 2 rules change &middot; Hard: 3 rules change</p>
+      <br>
+      <button class="go-btn" onclick="startGame()">Let's Go!</button>
+    </div>
+    <div class="controls">
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+}
+
+function renderPlay() {
+  const pts = getDifficultyPoints();
+  const letters = ['A', 'B', 'C', 'D'];
+
+  // Build sequence display
+  let seqHTML = '';
+  for (let i = 0; i < state.sequence.length; i++) {
+    if (i > 0) seqHTML += '<div class="seq-arrow">→</div>';
+    if (i === state.missingIndex) {
+      if (state.checked && state.isCorrect) {
+        // Show the correct answer in place
+        seqHTML += `<div class="seq-cell" style="border-color:#34d399;background:#ecfdf5;">${renderShape(state.sequence[i])}</div>`;
+      } else if (state.checked && !state.isCorrect) {
+        seqHTML += `<div class="seq-cell" style="border-color:#34d399;background:#ecfdf5;">${renderShape(state.sequence[i])}</div>`;
+      } else {
+        seqHTML += '<div class="seq-cell mystery"></div>';
+      }
+    } else {
+      seqHTML += `<div class="seq-cell">${renderShape(state.sequence[i])}</div>`;
+    }
+  }
+
+  // Build choices
+  let choicesHTML = state.choices.map((c, idx) => {
+    let cls = 'choice-cell';
+    if (state.checked) {
+      cls += ' disabled';
+      if (idx === state.correctIdx) cls += ' show-correct';
+      if (idx === state.selectedIdx && state.isCorrect) cls += ' correct-pick';
+      if (idx === state.selectedIdx && !state.isCorrect) cls += ' wrong-pick';
+    } else {
+      if (idx === state.selectedIdx) cls += ' selected';
+    }
+    return `<div class="${cls}" onclick="selectChoice(${idx})">
+      <span class="choice-letter">${letters[idx]}</span>
+      ${renderShape(c)}
+    </div>`;
+  }).join('');
+
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>🧩 Shape Patterns</h1>
+    <div class="score-bar">
+      <div>Score: <span>${state.score}</span></div>
+      <div>Streak: <span>${state.streak} 🔥</span></div>
+      <div>Round: <span>${state.round}</span></div>
+    </div>
+    <p class="subtitle">Which shape completes the pattern?
+      <span style="color:#f59e0b;">+${pts} point${pts > 1 ? 's' : ''} per correct answer</span>
+    </p>
+
+    <div class="sequence-row">${seqHTML}</div>
+
+    <div class="choices-label">Pick the missing shape:</div>
+    <div class="choices">${choicesHTML}</div>
+
+    ${!state.checked
+      ? `<button class="check-btn" onclick="checkAnswer()" ${state.selectedIdx === -1 ? 'disabled' : ''}>Check ✓</button>`
+      : `<button class="next-btn" onclick="nextQuestion()">Next Pattern →</button>`
+    }
+
+    <div class="result ${state.resultClass}">${state.resultMsg}</div>
+    <div class="points-earned">${state.pointsMsg}</div>
+
+    <div class="controls">
+      <button class="secondary-btn" onclick="changeDifficulty()">Change Difficulty</button>
+      <button class="secondary-btn home-btn" onclick="goHome()">Back to Home</button>
+    </div>
+  `;
+  updateErrorBar();
+}
+
+// ===========================================================
+//  Actions
+// ===========================================================
+function setDifficulty(d) { state.difficulty = d; render(); }
+
+function startGame() {
+  state.screen = 'play';
+  state.score = 0;
+  state.streak = 0;
+  state.round = 0;
+  newQuestion();
+  render();
+}
+
+function selectChoice(idx) {
+  if (state.checked) return;
+  state.selectedIdx = idx;
+  render();
+}
+
+function checkAnswer() {
+  if (state.selectedIdx === -1) return;
+  state.checked = true;
+
+  if (state.selectedIdx === state.correctIdx) {
+    recordAttempt(true);
+    state.isCorrect = true;
+    state.streak++;
+    const earnedPts = getDifficultyPoints();
+    state.score += earnedPts;
+    addPoints(earnedPts);
+
+    const cheers = ['Amazing!', 'Perfect!', 'Brilliant!', 'Sharp eyes!', 'Pattern master!'];
+    const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+    const stars = state.streak >= 5 ? '🌟🌟🌟' : state.streak >= 3 ? '⭐⭐⭐' : state.streak >= 2 ? '⭐⭐' : '⭐';
+    state.resultMsg = `${cheer} ${stars}`;
+    state.resultClass = 'success';
+    state.pointsMsg = `+${earnedPts} point${earnedPts > 1 ? 's' : ''}${currentPlayer ? ' for ' + currentPlayer : ''}!`;
+    launchConfetti();
+  } else {
+    recordAttempt(false);
+    state.isCorrect = false;
+    state.streak = 0;
+    state.resultMsg = 'Not quite! Look at how each shape changes 💪';
+    state.resultClass = 'tryagain';
+    state.pointsMsg = '';
+  }
+  render();
+}
+
+function nextQuestion() {
+  newQuestion();
+  render();
+}
+
+function changeDifficulty() {
+  state.screen = 'setup';
+  render();
+}
+
+function goHome() { window.location.href = 'index.html'; }
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['#059669', '#fbbf24', '#34d399', '#818cf8', '#f472b6', '#0ea5e9'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    piece.style.animationDuration = (1 + Math.random()) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 2500);
+}
+
+// Start
+render();
+</script>
+</body>
+</html>
