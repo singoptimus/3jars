@@ -595,10 +595,10 @@ function doSignup() {
     console.log('Email notification failed:', e);
   }
 
-  // Auto-login
+  // Auto-login — send new accounts to settings to set up jars
   sessionStorage.setItem('km_currentAccount', email);
   localStorage.setItem('km_currentAccount_backup', email);
-  window.location.href = 'index.html';
+  window.location.href = 'settings.html?welcome=1';
 }
 
 // ---- Migration: convert old username-keyed accounts to email-keyed ----

@@ -108,14 +108,41 @@
     z-index: 9999;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .welcome-banner {
+    background: linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08));
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 28px;
+  }
+  .welcome-banner h2 {
+    font-size: 1.5em;
+    margin-bottom: 12px;
+    color: #fbbf24;
+  }
+  .welcome-banner p {
+    color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+    font-size: 0.95em;
+    margin-bottom: 12px;
+  }
+  .welcome-banner p:last-child { margin-bottom: 0; }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <a class="back-link" href="index.html">← Back to Home</a>
-  <h1>⚙️ Settings</h1>
-  <p class="subtitle">Configure what happens when a player hits 10,000 points</p>
+  <a class="back-link" href="index.html" id="backLink">← Back to Home</a>
+  <h1 id="pageTitle">⚙️ Settings</h1>
+  <p class="subtitle" id="pageSubtitle">Configure what happens when a player hits 10,000 points</p>
+
+  <div class="welcome-banner" id="welcomeBanner" style="display:none;">
+    <h2>Welcome to 3 Jars! 🍯</h2>
+    <p>3 Jars teaches kids that every dollar they earn has three jobs: experiencing life with family, investing for the future, and giving back to the world. Every time your child earns 10,000 points through games and practice, their three jars fill up with real money that you configure below.</p>
+    <p>The idea is simple but powerful: instead of just handing out allowances, kids earn their rewards through learning. They see their jars fill up, learn to split money into experiences, savings, and generosity — and start building financial habits that last a lifetime.</p>
+    <p>We recommend starting with <strong>$50 for experiences</strong>, <strong>$10 for investing</strong>, and <strong>$10 for giving back</strong>. You can always adjust these amounts later. Set up your jars below, then start playing!</p>
+  </div>
 
   <div class="section">
     <div class="section-title">🎯 10,000-Point Milestone Rewards</div>
@@ -162,7 +189,7 @@
     </div>
   </div>
 
-  <button class="save-btn" onclick="saveSettings()">Save Settings</button>
+  <button class="save-btn" id="saveBtn" onclick="saveSettings()">Save Settings</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -188,6 +215,16 @@
     localStorage.setItem('km_' + accountId + '_config', JSON.stringify(cfg));
   }
 
+  // Welcome mode for new signups
+  const isWelcome = new URLSearchParams(window.location.search).get('welcome') === '1';
+  if (isWelcome) {
+    document.getElementById('welcomeBanner').style.display = 'block';
+    document.getElementById('backLink').style.display = 'none';
+    document.getElementById('pageTitle').textContent = '🍯 Set Up Your 3 Jars';
+    document.getElementById('pageSubtitle').textContent = 'One last step before you start playing!';
+    document.getElementById('saveBtn').textContent = 'Save & Start Playing →';
+  }
+
   // Load current values
   const config = getConfig();
   document.getElementById('experienceAmount').value = config.experienceAmount ?? 50;
@@ -201,7 +238,11 @@
       givebackAmount: Math.max(0, parseInt(document.getElementById('givebackAmount').value) || 10)
     };
     saveConfig(cfg);
-    showToast('Settings saved!');
+    if (isWelcome) {
+      window.location.href = 'index.html';
+    } else {
+      showToast('Settings saved!');
+    }
   }
 
   function showToast(msg) {

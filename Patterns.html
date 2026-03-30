@@ -535,15 +535,17 @@ function buildQuestion(seq, missingIdx, patternLabel) {
   const correct = seq[missingIdx];
   const correctKey = descKey(correct);
 
-  // Collect all keys in the sequence (except the missing one) so we
-  // can avoid generating a wrong answer that accidentally matches another position
-  const seqKeys = new Set(seq.map(d => descKey(d)));
+  // Collect visual keys of ALL sequence items so wrong answers can't look
+  // identical to any shape already visible in the pattern
+  const seqVisKeys = new Set(seq.map(d => visualKey(d)));
+  const correctVis = visualKey(correct);
 
   // Generate 3 wrong answers by tweaking the correct answer
-  // Each wrong must differ from correct AND not be a duplicate of another sequence item
+  // Each wrong must differ visually from correct, from other wrongs, AND from all sequence items
   const wrongs = [];
+  const wrongVisKeys = new Set();
   let safety = 0;
-  while (wrongs.length < 3 && safety < 200) {
+  while (wrongs.length < 3 && safety < 300) {
     safety++;
     const w = { ...correct };
     // Tweak 1-2 properties to make it clearly wrong but plausible-looking
@@ -558,22 +560,30 @@ function buildQuestion(seq, missingIdx, patternLabel) {
     }
 
     const wVis = visualKey(w);
-    const correctVis = visualKey(correct);
-    // Must look visually different from correct AND from other wrongs
-    if (wVis !== correctVis && !wrongs.some(x => visualKey(x) === wVis)) {
+    // Must look visually different from correct, from other wrongs, AND from sequence items
+    if (wVis !== correctVis && !wrongVisKeys.has(wVis) && !seqVisKeys.has(wVis)) {
       wrongs.push(w);
+      wrongVisKeys.add(wVis);
     }
   }
 
-  // Final safety: fill remaining slots if we couldn't generate enough
+  // Final safety: fill remaining slots — ensure no visual duplicates
+  let fallbackIdx = 0;
   while (wrongs.length < 3) {
-    wrongs.push({
-      shape: pick(SHAPES.filter(s => s !== correct.shape)),
-      color: pick(COLORS.filter(c => c !== correct.color)),
-      rotation: (correct.rotation + 90) % 360,
-      size: pick(['small', 'medium', 'large']),
-      filled: !correct.filled
-    });
+    fallbackIdx++;
+    const fb = {
+      shape: SHAPES[fallbackIdx % SHAPES.length],
+      color: COLORS[(fallbackIdx * 3) % COLORS.length],
+      rotation: (correct.rotation + 90 * fallbackIdx) % 360,
+      size: ['small', 'medium', 'large'][fallbackIdx % 3],
+      filled: fallbackIdx % 2 === 0
+    };
+    const fbVis = visualKey(fb);
+    if (fbVis !== correctVis && !wrongVisKeys.has(fbVis) && !seqVisKeys.has(fbVis)) {
+      wrongs.push(fb);
+      wrongVisKeys.add(fbVis);
+    }
+    if (fallbackIdx > 100) break; // absolute safety
   }
 
   return {

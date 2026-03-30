@@ -653,7 +653,14 @@ function startTimer() {
   state.timerRunning = true;
   const timerInterval = setInterval(() => {
     state.timeRemaining--;
-    render();
+
+    // Update ONLY the timer display — don't re-render the whole page
+    // (full render destroys the input field and kills typing mid-keystroke)
+    const timerEl = document.querySelector('.timer-display');
+    if (timerEl) {
+      timerEl.textContent = formatTime(state.timeRemaining);
+      if (state.timeRemaining < 60) timerEl.classList.add('warning');
+    }
 
     if (state.timeRemaining <= 0) {
       clearInterval(timerInterval);
