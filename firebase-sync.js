@@ -27,6 +27,8 @@
 
   let db = null;
   let firebaseReady = false;
+  let _readyResolve;
+  const firebaseReadyPromise = new Promise(function(resolve) { _readyResolve = resolve; });
 
   async function initFirebase() {
     try {
@@ -38,9 +40,22 @@
       db = firebase.database();
       firebaseReady = true;
       console.log('[3Jars] Firebase connected');
+      _readyResolve(true);
     } catch (e) {
       console.warn('[3Jars] Firebase init failed, using localStorage only:', e);
+      _readyResolve(false);
     }
+  }
+
+  // Helper: wait for Firebase to be ready (with timeout)
+  function whenReady(fn) {
+    if (firebaseReady && db) { fn(); return; }
+    // Wait up to 5 seconds for init
+    var timer = setTimeout(function() { console.warn('[3Jars] Firebase ready timeout'); }, 5000);
+    firebaseReadyPromise.then(function(ok) {
+      clearTimeout(timer);
+      if (ok && db) fn();
+    });
   }
 
   // Sanitize email for use as Firebase key (Firebase doesn't allow . $ # [ ] /)
@@ -52,44 +67,48 @@
 
   // Write scores to Firebase
   window.firebaseSaveScores = function(accountId, scores) {
-    if (!firebaseReady || !db) return;
-    const key = sanitizeKey(accountId);
-    db.ref('accounts/' + key + '/scores').set(scores).catch(function(e) {
-      console.warn('[3Jars] Firebase save scores failed:', e);
+    whenReady(function() {
+      var key = sanitizeKey(accountId);
+      db.ref('accounts/' + key + '/scores').set(scores).catch(function(e) {
+        console.warn('[3Jars] Firebase save scores failed:', e);
+      });
     });
   };
 
   // Write stats to Firebase
   window.firebaseSaveStats = function(accountId, stats) {
-    if (!firebaseReady || !db) return;
-    const key = sanitizeKey(accountId);
-    db.ref('accounts/' + key + '/stats').set(stats).catch(function(e) {
-      console.warn('[3Jars] Firebase save stats failed:', e);
+    whenReady(function() {
+      var key = sanitizeKey(accountId);
+      db.ref('accounts/' + key + '/stats').set(stats).catch(function(e) {
+        console.warn('[3Jars] Firebase save stats failed:', e);
+      });
     });
   };
 
   // Write config (jar amounts) to Firebase
   window.firebaseSaveConfig = function(accountId, config) {
-    if (!firebaseReady || !db) return;
-    const key = sanitizeKey(accountId);
-    db.ref('accounts/' + key + '/config').set(config).catch(function(e) {
-      console.warn('[3Jars] Firebase save config failed:', e);
+    whenReady(function() {
+      var key = sanitizeKey(accountId);
+      db.ref('accounts/' + key + '/config').set(config).catch(function(e) {
+        console.warn('[3Jars] Firebase save config failed:', e);
+      });
     });
   };
 
   // Write account data (players, jars, etc.) to Firebase
   window.firebaseSaveAccountData = function(accountId, data) {
-    if (!firebaseReady || !db) return;
-    const key = sanitizeKey(accountId);
-    db.ref('accounts/' + key + '/accountData').set(data).catch(function(e) {
-      console.warn('[3Jars] Firebase save account data failed:', e);
+    whenReady(function() {
+      var key = sanitizeKey(accountId);
+      db.ref('accounts/' + key + '/accountData').set(data).catch(function(e) {
+        console.warn('[3Jars] Firebase save account data failed:', e);
+      });
     });
   };
 
   // Fetch scores from Firebase and merge with local (take higher value per player)
   window.firebaseSyncScores = function(accountId, localScores, callback) {
-    if (!firebaseReady || !db) { if (callback) callback(localScores); return; }
-    const key = sanitizeKey(accountId);
+    whenReady(function() {
+    var key = sanitizeKey(accountId);
     db.ref('accounts/' + key + '/scores').once('value').then(function(snapshot) {
       const remote = snapshot.val() || {};
       const merged = { ...localScores };
@@ -114,12 +133,13 @@
       console.warn('[3Jars] Firebase sync scores failed:', e);
       if (callback) callback(localScores);
     });
+    }); // end whenReady
   };
 
   // Fetch account data from Firebase and merge with local
   window.firebaseSyncAccountData = function(accountId, localData, callback) {
-    if (!firebaseReady || !db) { if (callback) callback(localData); return; }
-    const key = sanitizeKey(accountId);
+    whenReady(function() {
+    var key = sanitizeKey(accountId);
     db.ref('accounts/' + key + '/accountData').once('value').then(function(snapshot) {
       const remote = snapshot.val();
       if (!remote) {
@@ -159,12 +179,13 @@
       console.warn('[3Jars] Firebase sync account data failed:', e);
       if (callback) callback(localData);
     });
+    }); // end whenReady
   };
 
   // Sync config from Firebase
   window.firebaseSyncConfig = function(accountId, localConfig, callback) {
-    if (!firebaseReady || !db) { if (callback) callback(localConfig); return; }
-    const key = sanitizeKey(accountId);
+    whenReady(function() {
+    var key = sanitizeKey(accountId);
     db.ref('accounts/' + key + '/config').once('value').then(function(snapshot) {
       const remote = snapshot.val();
       if (!remote) {
@@ -178,6 +199,7 @@
       console.warn('[3Jars] Firebase sync config failed:', e);
       if (callback) callback(localConfig);
     });
+    }); // end whenReady
   };
 
   // Initialize on load

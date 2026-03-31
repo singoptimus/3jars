@@ -719,10 +719,12 @@
   // ---- Init ----
   fixScoreMigration();
 
-  // Sync scores and account data from Firebase
+  // Sync scores and account data from Firebase, then re-render
   if (typeof firebaseSyncScores === 'function') {
     firebaseSyncScores(currentAccountId, getScores(), function(merged) {
       localStorage.setItem('km_' + currentAccountId + '_scores', JSON.stringify(merged));
+      console.log('[3Jars] Scores synced from Firebase:', merged);
+      render(); // re-render with updated scores
     });
   }
   if (typeof firebaseSyncAccountData === 'function') {
@@ -730,6 +732,7 @@
     firebaseSyncAccountData(currentAccountId, accountData, function(merged) {
       if (merged) {
         updateAccountData(merged);
+        render(); // re-render with updated player data
       }
     });
   }
