@@ -368,12 +368,13 @@
       accts[currentAccountId] = accts[currentAccountId] || {};
       Object.assign(accts[currentAccountId], updates);
       localStorage.setItem('km_accounts', JSON.stringify(accts));
+      if (typeof firebaseSaveAccountData === 'function') firebaseSaveAccountData(currentAccountId, accts[currentAccountId]);
     } catch(e) {}
   }
   function getScores() { try { const r = localStorage.getItem('km_' + currentAccountId + '_scores'); if (r) return JSON.parse(r); } catch(e) {} return {}; }
-  function saveScores(s) { localStorage.setItem('km_' + currentAccountId + '_scores', JSON.stringify(s)); }
+  function saveScores(s) { localStorage.setItem('km_' + currentAccountId + '_scores', JSON.stringify(s)); if (typeof firebaseSaveScores === 'function') firebaseSaveScores(currentAccountId, s); }
   function getStats() { try { const r = localStorage.getItem('km_' + currentAccountId + '_stats'); if (r) return JSON.parse(r); } catch(e) {} return {}; }
-  function saveStats(s) { localStorage.setItem('km_' + currentAccountId + '_stats', JSON.stringify(s)); }
+  function saveStats(s) { localStorage.setItem('km_' + currentAccountId + '_stats', JSON.stringify(s)); if (typeof firebaseSaveStats === 'function') firebaseSaveStats(currentAccountId, s); }
   function getCelebrations() { try { const r = localStorage.getItem('km_' + currentAccountId + '_celebrations'); if (r) return JSON.parse(r); } catch(e) {} return {}; }
   function saveCelebrations(c) { localStorage.setItem('km_' + currentAccountId + '_celebrations', JSON.stringify(c)); }
   function getJars() { try { const r = localStorage.getItem('km_' + currentAccountId + '_jars'); if (r) return JSON.parse(r); } catch(e) {} return {}; }
@@ -725,13 +726,10 @@
     });
   }
   if (typeof firebaseSyncAccountData === 'function') {
-    const accountData = { players: getPlayers(), jars: getJars() };
+    const accountData = getAccountData();
     firebaseSyncAccountData(currentAccountId, accountData, function(merged) {
-      if (merged && merged.players) {
-        localStorage.setItem('km_' + currentAccountId + '_players', JSON.stringify(merged.players));
-      }
-      if (merged && merged.jars) {
-        localStorage.setItem('km_' + currentAccountId + '_jars', JSON.stringify(merged.jars));
+      if (merged) {
+        updateAccountData(merged);
       }
     });
   }
