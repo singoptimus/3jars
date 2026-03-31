@@ -24,6 +24,17 @@
     width: 100%;
     display: block;
   }
+  /* Fallback image shown while video loads */
+  .hero-poster {
+    width: 100%;
+    display: block;
+  }
+  .hero-poster.hidden {
+    display: none;
+  }
+  .hero-video.hidden {
+    display: none;
+  }
   /* Dark gradient at bottom to blend into page */
   .hero::after {
     content: '';
@@ -285,7 +296,17 @@
   <div class="brand">
     <div class="brand-name">🍯 3 JARS ACADEMY</div>
   </div>
-  <video class="hero-video" src="hero-3jars.mp4" autoplay muted loop playsinline></video>
+  <img class="hero-poster" src="hero-3jars.png" alt="3 Jars">
+  <video class="hero-video hidden" src="hero-3jars.mp4" autoplay muted loop playsinline></video>
+  <script>
+    // Swap poster for video once it can play
+    var vid = document.querySelector('.hero-video');
+    var poster = document.querySelector('.hero-poster');
+    vid.addEventListener('canplay', function() {
+      poster.classList.add('hidden');
+      vid.classList.remove('hidden');
+    }, {once: true});
+  </script>
 </div>
 
 <!-- Content overlaps video bottom -->
