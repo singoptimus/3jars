@@ -284,9 +284,10 @@
 if (!sessionStorage.getItem('km_currentAccount')) {
   const backup = localStorage.getItem('km_currentAccount_backup');
   if (backup) { sessionStorage.setItem('km_currentAccount', backup); }
-  else { window.location.href = 'login.html'; }
+  else if (!sessionStorage.getItem('km_guest')) { window.location.href = 'login.html'; }
 }
-const accountId = sessionStorage.getItem('km_currentAccount') || 'default';
+const isGuest = sessionStorage.getItem('km_guest') === 'true';
+const accountId = sessionStorage.getItem('km_currentAccount') || 'guest';
 
 // ---- Player & score management ----
 function getPlayerFromURL() {
@@ -302,6 +303,7 @@ function saveScores(scores) {
   if (typeof firebaseSaveScores === 'function') firebaseSaveScores(accountId, scores);
 }
 function addPoints(pts) {
+  if (isGuest) return;
   if (!currentPlayer) return;
   const scores = getScores();
   scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
