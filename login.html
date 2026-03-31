@@ -11,7 +11,7 @@
   body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
-    background: #1a1a2e;
+    background: #FFF8F0;
   }
 
   /* === FULL-WIDTH VIDEO HERO === */
@@ -41,7 +41,7 @@
     position: absolute;
     bottom: 0; left: 0; right: 0;
     height: 100px;
-    background: linear-gradient(to top, #1a1a2e, transparent);
+    background: linear-gradient(to top, #FFF8F0, transparent);
     pointer-events: none;
   }
   /* Subtle gradient at top */
@@ -50,7 +50,7 @@
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 50px;
-    background: linear-gradient(to bottom, rgba(26,26,46,0.35), transparent);
+    background: linear-gradient(to bottom, rgba(255,248,240,0.35), transparent);
     z-index: 1;
     pointer-events: none;
   }
@@ -89,18 +89,18 @@
   .tagline h1 {
     font-size: 1.4em;
     font-weight: 800;
-    color: white;
+    color: #2d2d2d;
     margin-bottom: 6px;
   }
   .tagline p {
     font-size: 0.82em;
-    color: rgba(255,255,255,0.55);
+    color: rgba(0,0,0,0.5);
     line-height: 1.6;
     max-width: 420px;
     margin: 0 auto;
   }
   .tagline strong {
-    color: rgba(255,255,255,0.85);
+    color: rgba(0,0,0,0.7);
   }
 
   .pills {
@@ -116,10 +116,10 @@
     gap: 4px;
     padding: 4px 11px;
     border-radius: 50px;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.04);
+    border: 1px solid rgba(0,0,0,0.08);
     font-size: 0.7em;
-    color: rgba(255,255,255,0.5);
+    color: rgba(0,0,0,0.5);
   }
 
   /* === EXPLAINER SECTION === */
@@ -136,7 +136,7 @@
     font-size: 0.68em;
     text-transform: uppercase;
     letter-spacing: 2.5px;
-    color: rgba(255,255,255,0.3);
+    color: rgba(0,0,0,0.35);
     margin-bottom: 2px;
   }
   .explainer-card {
@@ -144,8 +144,8 @@
     gap: 14px;
     align-items: flex-start;
     padding: 16px 18px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: white;
+    border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     border-radius: 16px;
     text-align: left;
   }
@@ -159,26 +159,26 @@
   .explainer-text h3 {
     font-size: 0.92em;
     font-weight: 700;
-    color: rgba(255,255,255,0.9);
+    color: #2d2d2d;
     margin-bottom: 4px;
   }
   .explainer-text p {
     font-size: 0.78em;
-    color: rgba(255,255,255,0.45);
+    color: rgba(0,0,0,0.45);
     line-height: 1.55;
   }
 
   /* === COMPACT LOGIN CARD === */
   .login-container {
-    background: rgba(255,255,255,0.07);
+    background: white;
     backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,0.12);
+    border: 1px solid rgba(0,0,0,0.08);
     border-radius: 22px;
     padding: 28px 32px;
     max-width: 380px;
     width: 100%;
     text-align: center;
-    box-shadow: 0 16px 64px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
     animation: fadeUp 0.6s ease both;
   }
   @keyframes fadeUp {
@@ -189,7 +189,7 @@
   .tabs {
     display: flex;
     gap: 4px;
-    background: rgba(255,255,255,0.08);
+    background: rgba(0,0,0,0.05);
     border-radius: 12px;
     padding: 3px;
     margin-bottom: 20px;
@@ -199,7 +199,7 @@
     padding: 8px;
     border: none;
     background: none;
-    color: rgba(255,255,255,0.5);
+    color: rgba(0,0,0,0.45);
     font-size: 0.88em;
     font-weight: 600;
     cursor: pointer;
@@ -207,11 +207,11 @@
     transition: all 0.2s;
   }
   .tab.active {
-    background: rgba(255,255,255,0.15);
-    color: white;
+    background: white;
+    color: #2d2d2d; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
   .tab:hover:not(.active) {
-    color: rgba(255,255,255,0.7);
+    color: rgba(0,0,0,0.65);
   }
 
   .form-group {
@@ -220,7 +220,7 @@
   }
   .form-label {
     display: block;
-    color: rgba(255,255,255,0.45);
+    color: rgba(0,0,0,0.5);
     font-size: 0.72em;
     font-weight: 600;
     text-transform: uppercase;
@@ -231,10 +231,10 @@
   .form-input {
     width: 100%;
     padding: 11px 14px;
-    background: rgba(255,255,255,0.08);
-    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.03);
+    border: 2px solid rgba(0,0,0,0.1);
     border-radius: 12px;
-    color: white;
+    color: #2d2d2d;
     font-size: 0.95em;
     outline: none;
     transition: border-color 0.2s;
@@ -243,7 +243,7 @@
     border-color: rgba(251,191,36,0.5);
   }
   .form-input::placeholder {
-    color: rgba(255,255,255,0.25);
+    color: rgba(0,0,0,0.3);
   }
 
   .submit-btn {
@@ -252,7 +252,7 @@
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     border: none;
     border-radius: 12px;
-    color: #1a1a2e;
+    color: #2d2d2d;
     font-size: 1.05em;
     font-weight: 700;
     cursor: pointer;
@@ -278,11 +278,11 @@
 
   .accounts-list {
     margin-top: 16px;
-    border-top: 1px solid rgba(255,255,255,0.08);
+    border-top: 1px solid rgba(0,0,0,0.08);
     padding-top: 14px;
   }
   .accounts-title {
-    color: rgba(255,255,255,0.3);
+    color: rgba(0,0,0,0.35);
     font-size: 0.68em;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -294,10 +294,10 @@
     gap: 10px;
     width: 100%;
     padding: 10px 14px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
+    background: white;
+    border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     border-radius: 10px;
-    color: white;
+    color: #2d2d2d;
     font-size: 0.9em;
     cursor: pointer;
     transition: all 0.2s;
@@ -305,7 +305,7 @@
     text-align: left;
   }
   .account-btn:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(251,191,36,0.06);
     border-color: rgba(251,191,36,0.3);
   }
   .account-btn .acct-icon {
@@ -322,11 +322,11 @@
   .account-btn .acct-name { font-weight: 600; font-size: 0.9em; }
   .account-btn .acct-email {
     font-size: 0.72em;
-    color: rgba(255,255,255,0.4);
+    color: rgba(0,0,0,0.45);
   }
   .account-btn .acct-players {
     font-size: 0.68em;
-    color: rgba(255,255,255,0.3);
+    color: rgba(0,0,0,0.35);
   }
 
   @media (max-width: 480px) {
@@ -385,7 +385,7 @@
       <div class="explainer-icon">🍯</div>
       <div class="explainer-text">
         <h3>Points Fill 3 Jars</h3>
-        <p>Every point earned is split into three jars: <strong style="color:rgba(255,255,255,0.7)">Family Experiences</strong> (trips, activities), <strong style="color:rgba(255,255,255,0.7)">Investing</strong> (real stocks &amp; savings), and <strong style="color:rgba(255,255,255,0.7)">Giving Back</strong> (donations &amp; community).</p>
+        <p>Every point earned is split into three jars: <strong style="color:rgba(0,0,0,0.6)">Family Experiences</strong> (trips, activities), <strong style="color:rgba(0,0,0,0.6)">Investing</strong> (real stocks &amp; savings), and <strong style="color:rgba(0,0,0,0.6)">Giving Back</strong> (donations &amp; community).</p>
       </div>
     </div>
 
