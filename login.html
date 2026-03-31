@@ -277,10 +277,19 @@
   .tab.guest-tab {
     color: #b45309;
     font-weight: 700;
+    position: relative;
+  }
+  .tab.guest-tab:not(.active) {
+    animation: gentle-pulse 2s ease-in-out infinite;
+  }
+  @keyframes gentle-pulse {
+    0%, 100% { background: rgba(251,191,36,0.08); }
+    50% { background: rgba(251,191,36,0.22); }
   }
   .tab.guest-tab.active {
     background: linear-gradient(135deg, #fef3c7, #fde68a);
     color: #92400e;
+    animation: none;
   }
 
   /* Just Play panel inside the card */
@@ -625,7 +634,9 @@ function normalizeEmail(email) {
 }
 
 // ---- State ----
-let mode = 'login';
+const urlParams = new URLSearchParams(window.location.search);
+const isPaidTraffic = urlParams.has('utm_source') || urlParams.has('utm_campaign') || urlParams.has('ref');
+let mode = isPaidTraffic ? 'guest' : 'login';
 
 function switchMode(m) {
   mode = m;
@@ -661,9 +672,15 @@ function render() {
 
   app.innerHTML = `
     <div class="tabs">
-      <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
-      <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
-      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
+      ${isPaidTraffic ? `
+        <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
+        <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
+        <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
+      ` : `
+        <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
+        <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
+        <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
+      `}
     </div>
 
     ${mode === 'guest' ? `
