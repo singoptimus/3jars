@@ -151,10 +151,21 @@
       } else {
         // Merge: combine player lists, take newer jar values
         const merged = { ...localData, ...remote };
-        // Merge player lists
+        // Merge player lists — dedup by player name (players are objects with .name)
         const localPlayers = (localData && localData.players) || [];
         const remotePlayers = remote.players || [];
-        const allPlayers = [...new Set([...localPlayers, ...remotePlayers])];
+        const seen = {};
+        const allPlayers = [];
+        for (var i = 0; i < localPlayers.length; i++) {
+          var p = localPlayers[i];
+          var n = (typeof p === 'string') ? p : (p && p.name);
+          if (n && !seen[n]) { seen[n] = true; allPlayers.push(p); }
+        }
+        for (var j = 0; j < remotePlayers.length; j++) {
+          var rp = remotePlayers[j];
+          var rn = (typeof rp === 'string') ? rp : (rp && rp.name);
+          if (rn && !seen[rn]) { seen[rn] = true; allPlayers.push(rp); }
+        }
         merged.players = allPlayers;
         // Merge jars — take higher values
         if (remote.jars || (localData && localData.jars)) {
