@@ -583,9 +583,13 @@
     const oc = np ? 'onclick="flashPrompt(); return false;"' : '';
 
     // Language-specific games
-    const acctLang = isGuest ? 'hebrew' : (getAccountData().language || 'hebrew');
+    const acctLang = isGuest ? 'both' : (getAccountData().language || 'hebrew');
     let langLabel, langTiles;
-    if (acctLang === 'spanish') {
+    if (acctLang === 'both') {
+      langLabel = 'Language';
+      langTiles = `<a class="${cls}" ${href('Hebrew.html')} ${oc}><span class="game-tile-icon">אב</span><div class="game-tile-info"><div class="game-tile-name">Hebrew Letters & Words</div><div class="game-tile-pts">2-5 pts</div></div></a>
+        <a class="${cls}" ${href('Spanish.html')} ${oc}><span class="game-tile-icon">🇪🇸</span><div class="game-tile-info"><div class="game-tile-name">Spanish Words & Phrases</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
+    } else if (acctLang === 'spanish') {
       langLabel = 'Spanish';
       langTiles = `<a class="${cls}" ${href('Spanish.html')} ${oc}><span class="game-tile-icon">🇪🇸</span><div class="game-tile-info"><div class="game-tile-name">Spanish Words & Phrases</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
     } else {
