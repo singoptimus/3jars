@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3 Jars Academy â Login</title>
+<title>3 Jars Academy — Login</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -71,7 +71,7 @@
     letter-spacing: 1.5px;
   }
 
-  /* === CONTENT AREA â overlaps the video === */
+  /* === CONTENT AREA — overlaps the video === */
   .content {
     position: relative;
     z-index: 2;
@@ -560,7 +560,7 @@
 <!-- Full-width video banner -->
 <div class="hero">
   <div class="brand">
-    <div class="brand-name">ð¯ 3 JARS ACADEMY</div>
+    <div class="brand-name">🍯 3 JARS ACADEMY</div>
   </div>
   <img class="hero-poster" src="hero-3jars.png" alt="3 Jars">
   <video class="hero-video hidden" src="hero-3jars.mp4" autoplay muted loop playsinline></video>
@@ -583,12 +583,12 @@
 
   <div class="founder-note">
     <div class="founder-quote">
-      <p>I built 3Jars for my kids because I wanted Math and second language practice to lead to the things that actually matter. Instead of just "get gifts" â kids can earn <em>experiences</em>.</p>
+      <p>I built 3Jars for my kids because I wanted Math and second language practice to lead to the things that actually matter. Instead of just "get gifts" — kids can earn <em>experiences</em>.</p>
       <p>Kids play toward a goal of <strong>10,000 points</strong>. When they hit it, they unlock their 3 Jars:</p>
       <ul>
-        <li><strong>ð The Family Jar</strong> â We skip the "stuff" and choose a memory: movie nights, the arcade, or ice cream (whatever your family likes).</li>
-        <li><strong>ð° The Investing Jar</strong> â They get their first taste of investing and learn how to track it with the parents.</li>
-        <li><strong>ð The Giving Jar</strong> â They experience the joy of choosing a cause and giving back to the community.</li>
+        <li><strong>🎉 The Family Jar</strong> — We skip the "stuff" and choose a memory: movie nights, the arcade, or ice cream (whatever your family likes).</li>
+        <li><strong>💰 The Investing Jar</strong> — They get their first taste of investing and learn how to track it with the parents.</li>
+        <li><strong>💝 The Giving Jar</strong> — They experience the joy of choosing a cause and giving back to the community.</li>
       </ul>
       <p class="founder-example">Every family is different, so you decide the reward. In our home, 10,000 points unlocks <strong>$50</strong> for a family outing, <strong>$10</strong> for their portfolio, and <strong>$10</strong> for charity.</p>
     </div>
@@ -598,7 +598,7 @@
   <div class="login-container" id="app"></div>
 
   <div class="report-section">
-    <button class="report-btn" onclick="openReportModal()">ð Report an Issue</button>
+    <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
   </div>
 </div>
 
@@ -618,7 +618,7 @@ function saveAccounts(accounts) {
 }
 
 function hashPassword(pw) {
-  // Simple hash for local use â NOT secure for production, just for localStorage demo
+  // Simple hash for local use — NOT secure for production, just for localStorage demo
   let hash = 0;
   for (let i = 0; i < pw.length; i++) {
     const char = pw.charCodeAt(i);
@@ -672,17 +672,17 @@ function render() {
 
   app.innerHTML = `
     <div class="tabs">
-      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">ð® Just Play</button>
+      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
         <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
         <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
     </div>
 
     ${mode === 'guest' ? `
       <div class="guest-panel">
-        <div class="guest-panel-icon">ð®</div>
+        <div class="guest-panel-icon">🎮</div>
         <div class="guest-panel-title">Try the games instantly</div>
         <div class="guest-panel-desc">No account needed. Jump straight into Math, Language, and Puzzle games to see what 3Jars is all about.</div>
-        <button class="guest-panel-btn" onclick="guestPlay()">Start Playing â</button>
+        <button class="guest-panel-btn" onclick="guestPlay()">Start Playing →</button>
         <div class="guest-panel-note">Create an account later to earn points & unlock rewards</div>
       </div>
     ` : mode === 'login' ? `
@@ -714,8 +714,8 @@ function render() {
       <div class="form-group">
         <label class="form-label">Second Language</label>
         <select class="form-input" id="newLanguage">
-          <option value="hebrew">ð®ð± Hebrew</option>
-          <option value="spanish">ðªð¸ Spanish</option>
+          <option value="hebrew">🇮🇱 Hebrew</option>
+          <option value="spanish">🇪🇸 Spanish</option>
         </select>
       </div>
       <div class="form-group">
@@ -896,7 +896,7 @@ async function doSignup() {
 
   const language = document.getElementById('newLanguage').value || 'hebrew';
 
-  // Create account â keyed by email
+  // Create account — keyed by email
   accounts[email] = {
     passwordHash: hashPassword(password),
     displayName: name,
@@ -918,7 +918,7 @@ async function doSignup() {
     console.log('Email notification failed:', e);
   }
 
-  // Auto-login â send new accounts to settings to set up jars
+  // Auto-login — send new accounts to settings to set up jars
   sessionStorage.setItem('km_currentAccount', email);
   localStorage.setItem('km_currentAccount_backup', email);
   window.location.href = 'settings.html?welcome=1';
@@ -969,9 +969,9 @@ function seedDefaults() {
       displayName: 'Adam',
       email: 'adam.s@taboola.com',
       players: [
-        { name: 'Ozzy', emoji: 'ð', color: '#667eea' },
-        { name: 'Elinor', emoji: 'ð', color: '#f472b6' },
-        { name: 'Adam', emoji: 'ð', color: '#34d399' }
+        { name: 'Ozzy', emoji: '🏀', color: '#667eea' },
+        { name: 'Elinor', emoji: '🏊', color: '#f472b6' },
+        { name: 'Adam', emoji: '🏃', color: '#34d399' }
       ],
       createdAt: Date.now()
     };
