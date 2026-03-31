@@ -11,24 +11,117 @@
   body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    background: #1a1a2e;
+  }
+
+  /* === FULL-WIDTH VIDEO HERO === */
+  .hero {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+  }
+  .hero-video {
+    width: 100%;
+    display: block;
+  }
+  /* Dark gradient at bottom to blend into page */
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 100px;
+    background: linear-gradient(to top, #1a1a2e, transparent);
+    pointer-events: none;
+  }
+  /* Subtle gradient at top */
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50px;
+    background: linear-gradient(to bottom, rgba(26,26,46,0.35), transparent);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .brand {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    text-align: center;
+  }
+  .brand-name {
+    font-size: 0.95em;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    letter-spacing: 1.5px;
+  }
+
+  /* === CONTENT AREA — overlaps the video === */
+  .content {
+    position: relative;
+    z-index: 2;
+    margin-top: -50px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
-    gap: 0;
+    padding: 0 20px 40px;
   }
 
-  .login-container {
+  .tagline {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .tagline h1 {
+    font-size: 1.4em;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 6px;
+  }
+  .tagline p {
+    font-size: 0.82em;
+    color: rgba(255,255,255,0.55);
+    line-height: 1.6;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .tagline strong {
+    color: rgba(255,255,255,0.85);
+  }
+
+  .pills {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 11px;
+    border-radius: 50px;
     background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(20px);
     border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 28px;
-    padding: 50px 44px;
-    max-width: 440px;
+    font-size: 0.7em;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* === COMPACT LOGIN CARD === */
+  .login-container {
+    background: rgba(255,255,255,0.07);
+    backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 22px;
+    padding: 28px 32px;
+    max-width: 380px;
     width: 100%;
     text-align: center;
+    box-shadow: 0 16px 64px rgba(0,0,0,0.3);
     animation: fadeUp 0.6s ease both;
   }
   @keyframes fadeUp {
@@ -36,37 +129,24 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
-  .logo { font-size: 3em; margin-bottom: 10px; }
-  h1 {
-    color: white;
-    font-size: 1.8em;
-    font-weight: 800;
-    margin-bottom: 6px;
-  }
-  .subtitle {
-    color: rgba(255,255,255,0.45);
-    font-size: 0.95em;
-    margin-bottom: 30px;
-  }
-
   .tabs {
     display: flex;
     gap: 4px;
     background: rgba(255,255,255,0.08);
-    border-radius: 14px;
-    padding: 4px;
-    margin-bottom: 28px;
+    border-radius: 12px;
+    padding: 3px;
+    margin-bottom: 20px;
   }
   .tab {
     flex: 1;
-    padding: 10px;
+    padding: 8px;
     border: none;
     background: none;
     color: rgba(255,255,255,0.5);
-    font-size: 0.95em;
+    font-size: 0.88em;
     font-weight: 600;
     cursor: pointer;
-    border-radius: 11px;
+    border-radius: 10px;
     transition: all 0.2s;
   }
   .tab.active {
@@ -78,27 +158,27 @@
   }
 
   .form-group {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     text-align: left;
   }
   .form-label {
     display: block;
-    color: rgba(255,255,255,0.5);
-    font-size: 0.8em;
+    color: rgba(255,255,255,0.45);
+    font-size: 0.72em;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 6px;
-    padding-left: 4px;
+    margin-bottom: 4px;
+    padding-left: 2px;
   }
   .form-input {
     width: 100%;
-    padding: 14px 18px;
+    padding: 11px 14px;
     background: rgba(255,255,255,0.08);
     border: 2px solid rgba(255,255,255,0.1);
-    border-radius: 14px;
+    border-radius: 12px;
     color: white;
-    font-size: 1.05em;
+    font-size: 0.95em;
     outline: none;
     transition: border-color 0.2s;
   }
@@ -111,16 +191,16 @@
 
   .submit-btn {
     width: 100%;
-    padding: 16px;
+    padding: 13px;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     border: none;
-    border-radius: 14px;
+    border-radius: 12px;
     color: #1a1a2e;
-    font-size: 1.15em;
+    font-size: 1.05em;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
-    margin-top: 8px;
+    margin-top: 6px;
   }
   .submit-btn:hover {
     transform: translateY(-2px);
@@ -129,42 +209,42 @@
 
   .error-msg {
     color: #f87171;
-    font-size: 0.9em;
-    margin-top: 12px;
-    min-height: 24px;
+    font-size: 0.85em;
+    margin-top: 10px;
+    min-height: 20px;
   }
   .success-msg {
     color: #34d399;
-    font-size: 0.9em;
-    margin-top: 12px;
+    font-size: 0.85em;
+    margin-top: 10px;
   }
 
   .accounts-list {
-    margin-top: 24px;
+    margin-top: 16px;
     border-top: 1px solid rgba(255,255,255,0.08);
-    padding-top: 20px;
+    padding-top: 14px;
   }
   .accounts-title {
-    color: rgba(255,255,255,0.35);
-    font-size: 0.75em;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.68em;
     text-transform: uppercase;
     letter-spacing: 2px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }
   .account-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    padding: 12px 18px;
+    padding: 10px 14px;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
+    border-radius: 10px;
     color: white;
-    font-size: 1em;
+    font-size: 0.9em;
     cursor: pointer;
     transition: all 0.2s;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     text-align: left;
   }
   .account-btn:hover {
@@ -172,102 +252,59 @@
     border-color: rgba(251,191,36,0.3);
   }
   .account-btn .acct-icon {
-    width: 36px; height: 36px;
+    width: 32px; height: 32px;
     border-radius: 50%;
     background: linear-gradient(135deg, #667eea, #764ba2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1em;
+    font-size: 0.9em;
     font-weight: 700;
     flex-shrink: 0;
   }
-  .account-btn .acct-name { font-weight: 600; }
+  .account-btn .acct-name { font-weight: 600; font-size: 0.9em; }
   .account-btn .acct-email {
-    font-size: 0.8em;
+    font-size: 0.72em;
     color: rgba(255,255,255,0.4);
   }
   .account-btn .acct-players {
-    font-size: 0.75em;
+    font-size: 0.68em;
     color: rgba(255,255,255,0.3);
   }
 
-  .divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 20px 0;
-    color: rgba(255,255,255,0.25);
-    font-size: 0.8em;
-  }
-  .divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: rgba(255,255,255,0.1);
-  }
-
-  /* ---- LANDING HERO ---- */
-  .landing-hero {
-    position: relative;
-    text-align: center;
-    padding: 20px 20px 16px;
-    max-width: 560px; width: 100%;
-  }
-  .hero-image {
-    width: 100%; max-width: 520px;
-    border-radius: 18px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-  }
-  .landing-headline {
-    font-size: 1.5em; font-weight: 800; color: white;
-    margin-bottom: 10px; line-height: 1.3;
-  }
-  .landing-headline em {
-    font-style: normal;
-    background: linear-gradient(135deg, #fbbf24, #f472b6);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .landing-sub {
-    font-size: 0.9em; color: rgba(255,255,255,0.55);
-    max-width: 480px; margin: 0 auto 14px; line-height: 1.7;
-  }
-  .landing-sub strong {
-    color: rgba(255,255,255,0.8);
-  }
-  .landing-pills {
-    display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 10px;
-  }
-  .landing-pill {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 12px; border-radius: 50px;
-    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
-    font-size: 0.75em; color: rgba(255,255,255,0.5);
-  }
-
   @media (max-width: 480px) {
-    .login-container { padding: 36px 24px; }
-    h1 { font-size: 1.5em; }
+    .login-container { padding: 24px 20px; }
+    .tagline h1 { font-size: 1.2em; }
   }
 </style>
 </head>
 <body>
 
-<div class="landing-hero">
-  <video class="hero-image" src="hero-3jars.mp4" autoplay muted loop playsinline></video>
-  <div class="landing-headline">Every Game Fills a Jar.</div>
-  <p class="landing-sub">Kids earn points — and fill <strong>3 jars</strong> that shape how they grow.<br><strong>Family Experiences. Investing. Giving Back.</strong></p>
-  <div class="landing-pills">
-    <span class="landing-pill">🧮 Math &amp; Logic</span>
-    <span class="landing-pill">🇮🇱 Hebrew</span>
-    <span class="landing-pill">🏆 Real Rewards</span>
-    <span class="landing-pill">💛 Give Back</span>
+<!-- Full-width video banner -->
+<div class="hero">
+  <div class="brand">
+    <div class="brand-name">🍯 3 JARS ACADEMY</div>
   </div>
+  <video class="hero-video" src="hero-3jars.mp4" autoplay muted loop playsinline></video>
 </div>
 
-<div class="login-container" id="app"></div>
+<!-- Content overlaps video bottom -->
+<div class="content">
+  <div class="tagline">
+    <h1>Every Game Fills a Jar.</h1>
+    <p>Kids earn points — and fill <strong>3 jars</strong> that shape how they grow.<br>
+    <strong>Family Experiences. Investing. Giving Back.</strong></p>
+  </div>
+
+  <div class="pills">
+    <span class="pill">🧮 Math &amp; Logic</span>
+    <span class="pill">🇮🇱 Hebrew</span>
+    <span class="pill">🏆 Real Rewards</span>
+    <span class="pill">💛 Give Back</span>
+  </div>
+
+  <div class="login-container" id="app"></div>
+</div>
 
 <script src="firebase-sync.js"></script>
 <script>
@@ -336,10 +373,6 @@ function render() {
   ` : '';
 
   app.innerHTML = `
-    <div class="logo">🍯</div>
-    <h1>3 Jars Academy</h1>
-    <div class="subtitle">Math, Hebrew & Everything In Between</div>
-
     <div class="tabs">
       <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
       <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
@@ -541,9 +574,6 @@ function migrateAccounts() {
     delete accounts['adam'];
     changed = true;
   }
-
-  // Also migrate any other username-only accounts that don't look like emails
-  // (leave them as-is for now, they can still log in)
 
   if (changed) saveAccounts(accounts);
 }
