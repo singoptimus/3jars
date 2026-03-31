@@ -122,6 +122,67 @@
     color: rgba(0,0,0,0.5);
   }
 
+  /* === FOUNDER NOTE === */
+  .founder-note {
+    max-width: 520px;
+    width: 100%;
+    margin-bottom: 28px;
+    background: white;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 18px;
+    padding: 28px 28px 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    text-align: left;
+  }
+  .founder-quote p {
+    font-size: 0.88em;
+    color: rgba(0,0,0,0.6);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+  .founder-quote em {
+    font-style: italic;
+    color: rgba(0,0,0,0.7);
+  }
+  .founder-quote strong {
+    color: rgba(0,0,0,0.75);
+  }
+  .founder-quote ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .founder-quote ul li {
+    font-size: 0.85em;
+    color: rgba(0,0,0,0.55);
+    line-height: 1.6;
+    padding: 12px 14px;
+    background: rgba(251,191,36,0.06);
+    border-radius: 12px;
+    border-left: 3px solid #fbbf24;
+  }
+  .founder-quote ul li strong {
+    color: rgba(0,0,0,0.7);
+  }
+  .founder-example {
+    font-size: 0.82em !important;
+    color: rgba(0,0,0,0.45) !important;
+    font-style: italic;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    padding-top: 12px;
+    margin-bottom: 0 !important;
+  }
+  .founder-sig {
+    text-align: right;
+    font-size: 0.82em;
+    color: rgba(0,0,0,0.4);
+    font-style: italic;
+    margin-top: 8px;
+  }
+
   /* === EXPLAINER SECTION === */
   .explainer {
     max-width: 520px;
@@ -359,15 +420,20 @@
 <div class="content">
   <div class="tagline">
     <h1>Every Game Fills a Jar.</h1>
-    <p>Kids earn points — and fill <strong>3 jars</strong> that shape how they grow.<br>
-    <strong>Family Experiences. Investing. Giving Back.</strong></p>
   </div>
 
-  <div class="pills">
-    <span class="pill">🧮 Math &amp; Logic</span>
-    <span class="pill">🇮🇱 Hebrew</span>
-    <span class="pill">🏆 Real Rewards</span>
-    <span class="pill">💛 Give Back</span>
+  <div class="founder-note">
+    <div class="founder-quote">
+      <p>I built 3Jars for my kids because I wanted Math and Hebrew practice to lead to the things that actually matter. Instead of just "get gifts" — kids can earn <em>experiences</em>.</p>
+      <p>Kids play toward a goal of <strong>10,000 points</strong>. When they hit it, they unlock their 3 Jars:</p>
+      <ul>
+        <li><strong>🎉 The Family Jar</strong> — We skip the "stuff" and choose a memory: movie nights, the arcade, or ice cream (whatever your family likes).</li>
+        <li><strong>💰 The Investing Jar</strong> — They get their first taste of investing and learn how to track it with the parents.</li>
+        <li><strong>💝 The Giving Jar</strong> — They experience the joy of choosing a cause and giving back to the community.</li>
+      </ul>
+      <p class="founder-example">Every family is different, so you decide the reward. In our home, 10,000 points unlocks <strong>$50</strong> for a family outing, <strong>$10</strong> for their portfolio, and <strong>$10</strong> for charity.</p>
+    </div>
+    <div class="founder-sig">— Adam, founder &amp; dad of 3</div>
   </div>
 
   <div class="explainer">
