@@ -274,6 +274,59 @@
   .tab:hover:not(.active) {
     color: rgba(0,0,0,0.65);
   }
+  .tab.guest-tab {
+    color: #b45309;
+    font-weight: 700;
+  }
+  .tab.guest-tab.active {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+  }
+
+  /* Just Play panel inside the card */
+  .guest-panel {
+    text-align: center;
+    padding: 20px 0 8px;
+  }
+  .guest-panel-icon {
+    font-size: 2.8em;
+    margin-bottom: 10px;
+  }
+  .guest-panel-title {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #2d2d2d;
+    margin-bottom: 6px;
+  }
+  .guest-panel-desc {
+    font-size: 0.85em;
+    color: rgba(0,0,0,0.45);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .guest-panel-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    border-radius: 12px;
+    color: #2d2d2d;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .guest-panel-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(251,191,36,0.3);
+  }
+  .guest-panel-note {
+    font-size: 0.75em;
+    color: rgba(0,0,0,0.35);
+    margin-top: 12px;
+  }
 
   .form-group {
     margin-bottom: 12px;
@@ -535,11 +588,6 @@
 
   <div class="login-container" id="app"></div>
 
-  <div class="guest-play-section">
-    <button class="guest-play-btn" onclick="guestPlay()">🎮 Just Play</button>
-    <div class="guest-play-hint">Try the games without an account — no points earned</div>
-  </div>
-
   <div class="report-section">
     <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
   </div>
@@ -615,9 +663,18 @@ function render() {
     <div class="tabs">
       <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
       <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
+      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
     </div>
 
-    ${mode === 'login' ? `
+    ${mode === 'guest' ? `
+      <div class="guest-panel">
+        <div class="guest-panel-icon">🎮</div>
+        <div class="guest-panel-title">Try the games instantly</div>
+        <div class="guest-panel-desc">No account needed. Jump straight into Math, Language, and Puzzle games to see what 3Jars is all about.</div>
+        <button class="guest-panel-btn" onclick="guestPlay()">Start Playing →</button>
+        <div class="guest-panel-note">Create an account later to earn points & unlock rewards</div>
+      </div>
+    ` : mode === 'login' ? `
       <div class="form-group">
         <label class="form-label">Email</label>
         <input class="form-input" id="email" type="email" placeholder="Enter your email" autocomplete="email"
