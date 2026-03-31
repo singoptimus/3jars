@@ -484,6 +484,7 @@
         <p>Keep playing to earn more rewards!</p>
     </div>
 
+    <script src="firebase-sync.js"></script>
     <script>
         // Auth check — same pattern as all game files
         if (!sessionStorage.getItem('km_currentAccount')) {
@@ -583,6 +584,16 @@
 
         // Back button
         document.getElementById('backButton').href = 'index.html';
+
+        // Sync account data (jars) from Firebase on load
+        if (typeof firebaseSyncAccountData === 'function') {
+            const accountData = { jars: getJars() };
+            firebaseSyncAccountData(accountId, accountData, function(merged) {
+                if (merged && merged.jars) {
+                    localStorage.setItem('km_' + accountId + '_jars', JSON.stringify(merged.jars));
+                }
+            });
+        }
 
         // Init
         loadJarData();

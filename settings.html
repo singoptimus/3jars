@@ -194,6 +194,7 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="firebase-sync.js"></script>
 <script>
   // Auth
   if (!sessionStorage.getItem('km_currentAccount')) {
@@ -238,11 +239,23 @@
       givebackAmount: Math.max(0, parseInt(document.getElementById('givebackAmount').value) || 10)
     };
     saveConfig(cfg);
+    if (typeof firebaseSaveConfig === 'function') firebaseSaveConfig(accountId, cfg);
     if (isWelcome) {
       window.location.href = 'index.html';
     } else {
       showToast('Settings saved!');
     }
+  }
+
+  // Sync config from Firebase on load
+  if (typeof firebaseSyncConfig === 'function') {
+    firebaseSyncConfig(accountId, getConfig(), function(merged) {
+      localStorage.setItem('km_' + accountId + '_config', JSON.stringify(merged));
+      // Update UI with merged values
+      document.getElementById('experienceAmount').value = merged.experienceAmount ?? 50;
+      document.getElementById('investingAmount').value = merged.investingAmount ?? 10;
+      document.getElementById('givebackAmount').value = merged.givebackAmount ?? 10;
+    });
   }
 
   function showToast(msg) {

@@ -307,6 +307,7 @@
 <div class="error-bar-container" id="errorBar" style="display:none;"></div>
 
 <div class="game-container" id="app"></div>
+<script src="firebase-sync.js"></script>
 
 <script>
 if (!sessionStorage.getItem('km_currentAccount')) {
@@ -324,7 +325,10 @@ function getScores() {
   try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
   return {};
 }
-function saveScores(scores) { localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores)); }
+function saveScores(scores) {
+  localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores));
+  if (typeof firebaseSaveScores === 'function') firebaseSaveScores(accountId, scores);
+}
 function addPoints(pts) {
   if (!currentPlayer) return;
   const scores = getScores();
@@ -338,7 +342,10 @@ function getStats() {
   } catch(e) {}
   return {};
 }
-function saveStats(stats) { localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats)); }
+function saveStats(stats) {
+  localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats));
+  if (typeof firebaseSaveStats === 'function') firebaseSaveStats(accountId, stats);
+}
 function recordAttempt(isCorrect) {
   if (!currentPlayer) return;
   const stats = getStats();
@@ -373,6 +380,13 @@ function getTotalPoints() {
 
 const currentPlayer = getPlayerFromURL();
 const app = document.getElementById('app');
+
+// Sync scores from Firebase
+if (typeof firebaseSyncScores === 'function') {
+  firebaseSyncScores(accountId, getScores(), function(merged) {
+    localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(merged));
+  });
+}
 
 let state = {
   screen: 'setup', // setup | play | results

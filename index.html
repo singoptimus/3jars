@@ -347,6 +347,7 @@
 <div class="account-bar" id="accountBar"></div>
 <div class="container" id="app"></div>
 
+<script src="firebase-sync.js"></script>
 <script>
   // ---- Account check ----
   let currentAccountId = sessionStorage.getItem('km_currentAccount');
@@ -716,6 +717,25 @@
 
   // ---- Init ----
   fixScoreMigration();
+
+  // Sync scores and account data from Firebase
+  if (typeof firebaseSyncScores === 'function') {
+    firebaseSyncScores(currentAccountId, getScores(), function(merged) {
+      localStorage.setItem('km_' + currentAccountId + '_scores', JSON.stringify(merged));
+    });
+  }
+  if (typeof firebaseSyncAccountData === 'function') {
+    const accountData = { players: getPlayers(), jars: getJars() };
+    firebaseSyncAccountData(currentAccountId, accountData, function(merged) {
+      if (merged && merged.players) {
+        localStorage.setItem('km_' + currentAccountId + '_players', JSON.stringify(merged.players));
+      }
+      if (merged && merged.jars) {
+        localStorage.setItem('km_' + currentAccountId + '_jars', JSON.stringify(merged.jars));
+      }
+    });
+  }
+
   updateAccountBar(); render(); updateErrorBar(); checkCelebrations();
 </script>
 </body>
