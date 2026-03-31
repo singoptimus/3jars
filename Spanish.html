@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spanish Words & Phrases</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #dc2626 0%, #ea580c 50%, #f59e0b 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 36px 20px 20px 20px;
+  }
+  .game-container {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+    direction: ltr;
+  }
+  h1 { font-size: 2.2em; color: #1e3a5f; margin-bottom: 8px; }
+  .subtitle { color: #888; font-size: 1.1em; margin-bottom: 24px; }
+
+  /* Player banner */
+  .player-banner {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #fed7aa, #fecaca);
+    border: 2px solid #fdba74; border-radius: 50px;
+    padding: 8px 20px 8px 10px; margin-bottom: 20px; font-size: 1em;
+  }
+  .pb-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.9em; color: white;
+  }
+  .pb-avatar.ozzy { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .pb-avatar.elinor { background: linear-gradient(135deg, #f472b6, #e94560); }
+  .pb-avatar.adam { background: linear-gradient(135deg, #34d399, #059669); }
+  .pb-name { font-weight: 700; color: #1e3a5f; }
+  .pb-pts { color: #dc2626; font-weight: 700; }
+
+  /* Score bar */
+  .score-bar {
+    display: flex; justify-content: center; gap: 30px;
+    margin-bottom: 24px; font-size: 1.05em; color: #6b7280;
+    direction: ltr;
+  }
+  .score-bar span { font-weight: 700; color: #1e3a5f; }
+
+  /* Setup screen */
+  .setup { margin-bottom: 30px; }
+  .setup label {
+    font-size: 1.2em; color: #555; display: block; margin-bottom: 12px;
+  }
+  .difficulty-toggle {
+    display: flex; gap: 8px; justify-content: center;
+    margin-top: 12px; margin-bottom: 6px;
+  }
+  .diff-btn {
+    padding: 8px 18px; border-radius: 20px;
+    border: 2px solid #fed7aa; background: white;
+    color: #1e3a5f; font-weight: 600; cursor: pointer;
+    font-size: 0.9em; transition: all 0.2s;
+  }
+  .diff-btn:hover { background: #fef3c7; }
+  .diff-btn.active {
+    background: #dc2626; color: white; border-color: #dc2626;
+  }
+  .go-btn {
+    background: linear-gradient(135deg, #dc2626, #ea580c);
+    color: white; border: none;
+    padding: 14px 48px; font-size: 1.3em;
+    border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 16px;
+  }
+  .go-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(220,38,38,0.4); }
+
+  /* Problem area */
+  .problem-area {
+    background: #fff7ed; border: 3px solid #fed7aa;
+    border-radius: 20px; padding: 30px 20px; margin: 20px 0 28px;
+    direction: ltr;
+  }
+  .spanish-big {
+    font-size: 5em; font-weight: 700; color: #dc2626;
+    line-height: 1.2; margin-bottom: 8px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .prompt-text {
+    font-size: 1.3em; color: #555; margin-bottom: 16px;
+  }
+  .hint-text {
+    font-size: 0.95em; color: #fdba74; margin-top: 8px;
+  }
+
+  /* Multiple choice */
+  .choices {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 10px; max-width: 400px; margin: 16px auto 0;
+  }
+  .choice-btn {
+    padding: 14px 10px; border-radius: 14px;
+    border: 2px solid #e5e7eb; background: white;
+    color: #1e3a5f; font-weight: 600; cursor: pointer;
+    font-size: 1.1em; transition: all 0.2s;
+  }
+  .choice-btn:hover { background: #fff7ed; border-color: #fdba74; transform: translateY(-2px); }
+  .choice-btn.correct-choice { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+  .choice-btn.wrong-choice { background: #fef2f2; border-color: #f87171; color: #991b1b; }
+  .choice-btn.disabled { pointer-events: none; opacity: 0.6; }
+  .choice-btn.highlight-correct { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+
+  /* Text input for spelling */
+  .answer-input {
+    font-size: 2.2em; font-weight: 700; text-align: center;
+    width: 280px; padding: 10px 16px;
+    border: 3px solid #fbbf24; border-radius: 16px;
+    background: #fffbeb; color: #92400e; outline: none; transition: all 0.2s;
+    direction: ltr;
+  }
+  .answer-input:focus {
+    border-color: #f59e0b; box-shadow: 0 0 0 4px rgba(251,191,36,0.3);
+  }
+  .answer-input.correct { border-color: #34d399; background: #ecfdf5; color: #065f46; }
+  .answer-input.incorrect {
+    border-color: #f87171; background: #fef2f2; color: #991b1b;
+    animation: shake 0.4s ease;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  /* Fill-in display */
+  .word-display {
+    font-size: 3em; color: #dc2626; direction: ltr;
+    letter-spacing: 8px; font-weight: 700; margin: 10px 0;
+  }
+  .word-display .blank {
+    display: inline-block;
+    width: 0.7em; height: 0.08em;
+    background: #f59e0b;
+    vertical-align: -0.05em;
+    border-radius: 3px;
+    margin: 0 2px;
+  }
+  .letter-choices {
+    display: flex; gap: 8px; justify-content: center;
+    flex-wrap: wrap; max-width: 400px; margin: 16px auto 0;
+  }
+  .letter-choice-btn {
+    width: 52px; height: 52px; border-radius: 12px;
+    border: 2px solid #e5e7eb; background: white;
+    color: #dc2626; font-weight: 700; cursor: pointer;
+    font-size: 1.6em; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .letter-choice-btn:hover { background: #fff7ed; border-color: #fdba74; transform: scale(1.1); }
+  .letter-choice-btn.correct-choice { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+  .letter-choice-btn.wrong-choice { background: #fef2f2; border-color: #f87171; color: #991b1b; }
+  .letter-choice-btn.disabled { pointer-events: none; opacity: 0.6; }
+  .letter-choice-btn.highlight-correct { background: #ecfdf5; border-color: #34d399; color: #065f46; }
+
+  .check-btn {
+    background: linear-gradient(135deg, #34d399, #059669);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 20px;
+  }
+  .check-btn:hover { transform: scale(1.05); }
+  .next-btn {
+    background: linear-gradient(135deg, #dc2626, #ea580c);
+    color: white; border: none; padding: 14px 48px;
+    font-size: 1.2em; border-radius: 50px; cursor: pointer;
+    font-weight: 700; transition: all 0.2s; margin-top: 12px;
+  }
+  .next-btn:hover { transform: scale(1.05); }
+
+  .result { margin-top: 16px; font-size: 1.4em; font-weight: 700; min-height: 44px; }
+  .result.success { color: #059669; }
+  .result.tryagain { color: #dc2626; }
+  .points-earned { font-size: 1.05em; color: #f59e0b; font-weight: 700; margin-top: 4px; min-height: 22px; }
+  .correct-answer { font-size: 1.1em; color: #6b7280; margin-top: 6px; min-height: 20px; }
+
+  .controls {
+    margin-top: 20px; display: flex; gap: 12px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .secondary-btn {
+    background: #f3f4f6; color: #6b7280;
+    border: 2px solid #e5e7eb; padding: 10px 28px;
+    font-size: 1em; border-radius: 50px;
+    cursor: pointer; font-weight: 600; transition: all 0.2s;
+  }
+  .secondary-btn:hover { background: #e5e7eb; }
+  .home-btn { background: #fef3c7; color: #92400e; border-color: #fbbf24; }
+  .home-btn:hover { background: #fde68a; }
+
+  /* Confetti */
+  .confetti-container {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 999; overflow: hidden;
+  }
+  .confetti-piece {
+    position: absolute; width: 10px; height: 10px; border-radius: 2px;
+    animation: confettiFall 1.5s ease-out forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg) scale(0.3); opacity: 0; }
+  }
+
+  /* Error rate bar */
+  .error-bar-container {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 9000;
+    background: rgba(30,30,60,0.95);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8em;
+    backdrop-filter: blur(8px);
+  }
+  .error-bar-label {
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+    white-space: nowrap;
+    min-width: 70px;
+  }
+  .error-bar-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 5px;
+    position: relative;
+    overflow: visible;
+  }
+  .error-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease, background 0.5s ease;
+  }
+  .error-bar-threshold {
+    position: absolute;
+    left: 75%;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #fbbf24;
+    border-radius: 1px;
+  }
+  .error-bar-threshold::after {
+    content: '75%';
+    position: absolute;
+    top: -16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.75em;
+    color: #fbbf24;
+    white-space: nowrap;
+  }
+  .error-bar-pct {
+    color: white;
+    font-weight: 700;
+    min-width: 45px;
+    text-align: right;
+  }
+  .error-bar-pts {
+    color: #fbbf24;
+    font-weight: 700;
+    min-width: 60px;
+    text-align: right;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<div class="error-bar-container" id="errorBar" style="display:none;"></div>
+
+<div class="game-container" id="app"></div>
+
+<script src="firebase-sync.js"></script>
+<script>
+if (!sessionStorage.getItem('km_currentAccount')) {
+  const backup = localStorage.getItem('km_currentAccount_backup');
+  if (backup) { sessionStorage.setItem('km_currentAccount', backup); }
+  else if (!sessionStorage.getItem('km_guest')) { window.location.href = 'login.html'; }
+}
+const isGuest = sessionStorage.getItem('km_guest') === 'true';
+const accountId = sessionStorage.getItem('km_currentAccount') || 'guest';
+
+// ---- Player & score management ----
+function getPlayerFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('player') || '';
+}
+function getScores() {
+  try { const raw = localStorage.getItem('km_' + accountId + '_scores'); if (raw) return JSON.parse(raw); } catch(e) {}
+  return {};
+}
+function saveScores(scores) {
+  localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(scores));
+  if (typeof firebaseSaveScores === 'function') firebaseSaveScores(accountId, scores);
+}
+function addPoints(pts) {
+  if (isGuest) return;
+  if (!currentPlayer) return;
+  const scores = getScores();
+  scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
+  saveScores(scores);
+}
+function getTotalPoints() {
+  if (!currentPlayer) return 0;
+  return getScores()[currentPlayer] || 0;
+}
+
+function getStats() {
+  try {
+    const raw = localStorage.getItem('km_' + accountId + '_stats');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return {};
+}
+function saveStats(stats) {
+  localStorage.setItem('km_' + accountId + '_stats', JSON.stringify(stats));
+  if (typeof firebaseSaveStats === 'function') firebaseSaveStats(accountId, stats);
+}
+function recordAttempt(isCorrect) {
+  if (isGuest) return;
+  if (!currentPlayer) return;
+  const stats = getStats();
+  if (!stats[currentPlayer]) stats[currentPlayer] = { correct: 0, total: 0 };
+  stats[currentPlayer].total++;
+  if (isCorrect) stats[currentPlayer].correct++;
+  saveStats(stats);
+  updateErrorBar();
+}
+
+function updateErrorBar() {
+  if (!currentPlayer) { document.getElementById('errorBar').style.display = 'none'; return; }
+  const stats = getStats();
+  const s = stats[currentPlayer] || { correct: 0, total: 0 };
+  const totalPts = getTotalPoints();
+  const accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 100;
+  const barColor = accuracy >= 75 ? '#34d399' : accuracy >= 50 ? '#fbbf24' : '#f87171';
+  const bar = document.getElementById('errorBar');
+  bar.style.display = 'flex';
+  bar.innerHTML = '<span class="error-bar-label">Accuracy</span>' +
+    '<div class="error-bar-track">' +
+    '<div class="error-bar-fill" style="width:' + accuracy + '%;background:' + barColor + ';"></div>' +
+    '<div class="error-bar-threshold"></div>' +
+    '</div>' +
+    '<span class="error-bar-pct" style="color:' + barColor + ';">' + accuracy + '%</span>' +
+    '<span class="error-bar-pts">' + totalPts.toLocaleString() + ' points</span>';
+}
+
+const currentPlayer = getPlayerFromURL();
+const app = document.getElementById('app');
+
+// Sync scores from Firebase
+if (typeof firebaseSyncScores === 'function') {
+  firebaseSyncScores(accountId, getScores(), function(merged) {
+    localStorage.setItem('km_' + accountId + '_scores', JSON.stringify(merged));
+  });
+}
+
+// ---- Spanish data ----
+const spanishSounds = [
+  { letter: 'ñ', name: 'eñe', sound: '"ny" like in onion' },
+  { letter: 'll', name: 'elle', sound: '"y" like in yellow' },
+  { letter: 'rr', name: 'erre', sound: 'rolled "r"' },
+  { letter: 'ch', name: 'che', sound: '"ch" like in cheese' },
+  { letter: 'gu', name: 'gu (before e/i)', sound: 'hard "g"' },
+  { letter: 'á', name: 'a with accent', sound: 'stressed "a"' },
+  { letter: 'é', name: 'e with accent', sound: 'stressed "e"' },
+  { letter: 'í', name: 'i with accent', sound: 'stressed "i"' },
+  { letter: 'ó', name: 'o with accent', sound: 'stressed "o"' },
+  { letter: 'ú', name: 'u with accent', sound: 'stressed "u"' },
+];
+
+// Vocabulary words for medium & hard
+const vocabulary = [
+  // Greetings & Common Phrases
+  { spanish: 'hola', english: 'Hello', hint: 'A greeting' },
+  { spanish: 'adiós', english: 'Goodbye', hint: 'When leaving' },
+  { spanish: 'gracias', english: 'Thank you', hint: 'To be polite' },
+  { spanish: 'por favor', english: 'Please', hint: 'When asking nicely' },
+  { spanish: 'de nada', english: 'You are welcome', hint: 'After thanks' },
+  { spanish: 'lo siento', english: 'I am sorry', hint: 'When apologizing' },
+  { spanish: 'disculpa', english: 'Excuse me', hint: 'To get attention' },
+  { spanish: 'buenas días', english: 'Good morning', hint: 'Early in day' },
+  { spanish: 'buenas noches', english: 'Good night', hint: 'Before sleep' },
+  { spanish: '¿cómo estás?', english: 'How are you?', hint: 'Asking how someone is' },
+  { spanish: 'bien', english: 'Good/Well', hint: 'Doing fine' },
+  { spanish: 'mal', english: 'Bad', hint: 'Not well' },
+  { spanish: 'sí', english: 'Yes', hint: 'Affirmative' },
+  { spanish: 'no', english: 'No', hint: 'Negative' },
+  { spanish: 'tal vez', english: 'Maybe', hint: 'Not sure' },
+  { spanish: '¿qué tal?', english: 'What is up?', hint: 'Casual greeting' },
+  { spanish: 'hasta luego', english: 'See you later', hint: 'Goodbye for now' },
+  { spanish: 'nos vemos', english: 'See you later', hint: 'Until we meet again' },
+  { spanish: 'mucho gusto', english: 'Nice to meet you', hint: 'Introducing yourself' },
+  { spanish: 'bienvenido', english: 'Welcome', hint: 'To a guest' },
+  { spanish: '¡claro!', english: 'Of course!', hint: 'Definitely!' },
+
+  // Family & People
+  { spanish: 'mamá', english: 'Mom', hint: 'Your mother' },
+  { spanish: 'papá', english: 'Dad', hint: 'Your father' },
+  { spanish: 'hermano', english: 'Brother', hint: 'Male sibling' },
+  { spanish: 'hermana', english: 'Sister', hint: 'Female sibling' },
+  { spanish: 'abuelo', english: 'Grandfather', hint: 'Father\'s father' },
+  { spanish: 'abuela', english: 'Grandmother', hint: 'Father\'s mother' },
+  { spanish: 'tío', english: 'Uncle', hint: 'Parent\'s brother' },
+  { spanish: 'tía', english: 'Aunt', hint: 'Parent\'s sister' },
+  { spanish: 'primo', english: 'Cousin (male)', hint: 'Relative your age' },
+  { spanish: 'prima', english: 'Cousin (female)', hint: 'Relative your age' },
+  { spanish: 'bebé', english: 'Baby', hint: 'Very small child' },
+  { spanish: 'familia', english: 'Family', hint: 'All your relatives' },
+  { spanish: 'hijo', english: 'Son', hint: 'Male child' },
+  { spanish: 'hija', english: 'Daughter', hint: 'Female child' },
+  { spanish: 'esposo', english: 'Husband', hint: 'Married man' },
+  { spanish: 'esposa', english: 'Wife', hint: 'Married woman' },
+  { spanish: 'amigo', english: 'Friend (male)', hint: 'Someone you play with' },
+  { spanish: 'amiga', english: 'Friend (female)', hint: 'Someone you play with' },
+  { spanish: 'maestro', english: 'Teacher (male)', hint: 'Teaches at school' },
+  { spanish: 'maestra', english: 'Teacher (female)', hint: 'Teaches at school' },
+  { spanish: 'doctor', english: 'Doctor (male)', hint: 'Helps when sick' },
+  { spanish: 'doctora', english: 'Doctor (female)', hint: 'Helps when sick' },
+  { spanish: 'vecino', english: 'Neighbor (male)', hint: 'Lives next to you' },
+  { spanish: 'vecina', english: 'Neighbor (female)', hint: 'Lives next to you' },
+
+  // Animals
+  { spanish: 'perro', english: 'Dog', hint: 'A pet that barks' },
+  { spanish: 'gato', english: 'Cat', hint: 'A pet that meows' },
+  { spanish: 'pez', english: 'Fish', hint: 'Swims in water' },
+  { spanish: 'pájaro', english: 'Bird', hint: 'Has wings and flies' },
+  { spanish: 'caballo', english: 'Horse', hint: 'Large farm animal' },
+  { spanish: 'vaca', english: 'Cow', hint: 'Gives us milk' },
+  { spanish: 'cerdo', english: 'Pig', hint: 'Farm animal' },
+  { spanish: 'gallina', english: 'Hen', hint: 'Lays eggs' },
+  { spanish: 'gallo', english: 'Rooster', hint: 'Crows in morning' },
+  { spanish: 'conejo', english: 'Rabbit', hint: 'Has long ears' },
+  { spanish: 'ratón', english: 'Mouse', hint: 'Small and gray' },
+  { spanish: 'serpiente', english: 'Snake', hint: 'Long and scaly' },
+  { spanish: 'tortuga', english: 'Turtle', hint: 'Has a hard shell' },
+  { spanish: 'oso', english: 'Bear', hint: 'Big and furry' },
+  { spanish: 'león', english: 'Lion', hint: 'King of animals' },
+  { spanish: 'tigre', english: 'Tiger', hint: 'Striped wild cat' },
+  { spanish: 'elefante', english: 'Elephant', hint: 'Has a long trunk' },
+  { spanish: 'mono', english: 'Monkey', hint: 'Swings on trees' },
+  { spanish: 'delfín', english: 'Dolphin', hint: 'Smart sea mammal' },
+  { spanish: 'ballena', english: 'Whale', hint: 'Huge sea creature' },
+  { spanish: 'araña', english: 'Spider', hint: 'Makes webs' },
+  { spanish: 'mariposa', english: 'Butterfly', hint: 'Colorful and flies' },
+  { spanish: 'abeja', english: 'Bee', hint: 'Makes honey' },
+  { spanish: 'hormiga', english: 'Ant', hint: 'Tiny insect' },
+  { spanish: 'rana', english: 'Frog', hint: 'Hops and croaks' },
+
+  // Food & Drink
+  { spanish: 'pan', english: 'Bread', hint: 'Baked food' },
+  { spanish: 'leche', english: 'Milk', hint: 'White drink' },
+  { spanish: 'agua', english: 'Water', hint: 'You drink it' },
+  { spanish: 'manzana', english: 'Apple', hint: 'Red round fruit' },
+  { spanish: 'plátano', english: 'Banana', hint: 'Yellow fruit' },
+  { spanish: 'naranja', english: 'Orange', hint: 'Citrus fruit' },
+  { spanish: 'uva', english: 'Grape', hint: 'Small round fruit' },
+  { spanish: 'fresa', english: 'Strawberry', hint: 'Red and sweet' },
+  { spanish: 'limón', english: 'Lemon', hint: 'Sour yellow fruit' },
+  { spanish: 'tomate', english: 'Tomato', hint: 'Red vegetable' },
+  { spanish: 'zanahoria', english: 'Carrot', hint: 'Orange vegetable' },
+  { spanish: 'cebolla', english: 'Onion', hint: 'Makes you cry' },
+  { spanish: 'ajo', english: 'Garlic', hint: 'Pungent spice' },
+  { spanish: 'papa', english: 'Potato', hint: 'Brown vegetable' },
+  { spanish: 'arroz', english: 'Rice', hint: 'White grain food' },
+  { spanish: 'pollo', english: 'Chicken', hint: 'Bird meat' },
+  { spanish: 'carne', english: 'Meat', hint: 'Animal protein' },
+  { spanish: 'pescado', english: 'Fish (food)', hint: 'From the sea' },
+  { spanish: 'huevo', english: 'Egg', hint: 'Breakfast food' },
+  { spanish: 'queso', english: 'Cheese', hint: 'Yellow and tasty' },
+  { spanish: 'mantequilla', english: 'Butter', hint: 'Yellow spread' },
+  { spanish: 'miel', english: 'Honey', hint: 'Sweet golden liquid' },
+  { spanish: 'azúcar', english: 'Sugar', hint: 'Sweet granules' },
+  { spanish: 'chocolate', english: 'Chocolate', hint: 'Brown sweet' },
+  { spanish: 'pastel', english: 'Cake', hint: 'Birthday dessert' },
+  { spanish: 'galleta', english: 'Cookie', hint: 'Sweet treat' },
+  { spanish: 'helado', english: 'Ice cream', hint: 'Cold and sweet' },
+  { spanish: 'pizza', english: 'Pizza', hint: 'Cheesy food' },
+  { spanish: 'sopa', english: 'Soup', hint: 'Hot liquid meal' },
+  { spanish: 'café', english: 'Coffee', hint: 'Hot brown drink' },
+  { spanish: 'té', english: 'Tea', hint: 'Hot herbal drink' },
+  { spanish: 'jugo', english: 'Juice', hint: 'Fruit drink' },
+
+  // Body Parts
+  { spanish: 'cabeza', english: 'Head', hint: 'Top of body' },
+  { spanish: 'ojo', english: 'Eye', hint: 'You see with' },
+  { spanish: 'oreja', english: 'Ear', hint: 'You hear with' },
+  { spanish: 'nariz', english: 'Nose', hint: 'You smell with' },
+  { spanish: 'boca', english: 'Mouth', hint: 'You eat with' },
+  { spanish: 'diente', english: 'Tooth', hint: 'In your mouth' },
+  { spanish: 'lengua', english: 'Tongue', hint: 'In your mouth' },
+  { spanish: 'pelo', english: 'Hair', hint: 'On your head' },
+  { spanish: 'cara', english: 'Face', hint: 'Front of head' },
+  { spanish: 'cuello', english: 'Neck', hint: 'Connects head and body' },
+  { spanish: 'hombro', english: 'Shoulder', hint: 'Top of arm' },
+  { spanish: 'brazo', english: 'Arm', hint: 'You lift things' },
+  { spanish: 'mano', english: 'Hand', hint: 'End of arm' },
+  { spanish: 'dedo', english: 'Finger', hint: 'On your hand' },
+  { spanish: 'espalda', english: 'Back', hint: 'Rear of body' },
+  { spanish: 'estómago', english: 'Stomach', hint: 'Front lower body' },
+  { spanish: 'pecho', english: 'Chest', hint: 'Front upper body' },
+  { spanish: 'corazón', english: 'Heart', hint: 'Pumps blood' },
+  { spanish: 'cerebro', english: 'Brain', hint: 'You think with' },
+  { spanish: 'pierna', english: 'Leg', hint: 'You walk with' },
+  { spanish: 'pie', english: 'Foot', hint: 'Bottom of leg' },
+  { spanish: 'rodilla', english: 'Knee', hint: 'Bends your leg' },
+
+  // Nature & Weather
+  { spanish: 'sol', english: 'Sun', hint: 'Bright in sky' },
+  { spanish: 'luna', english: 'Moon', hint: 'Shines at night' },
+  { spanish: 'estrella', english: 'Star', hint: 'Twinkles at night' },
+  { spanish: 'cielo', english: 'Sky', hint: 'Above us' },
+  { spanish: 'nube', english: 'Cloud', hint: 'Floats in sky' },
+  { spanish: 'lluvia', english: 'Rain', hint: 'Water from clouds' },
+  { spanish: 'nieve', english: 'Snow', hint: 'White and cold' },
+  { spanish: 'viento', english: 'Wind', hint: 'Moves air' },
+  { spanish: 'mar', english: 'Sea', hint: 'Salty water' },
+  { spanish: 'río', english: 'River', hint: 'Flowing water' },
+  { spanish: 'lago', english: 'Lake', hint: 'Surrounded by land' },
+  { spanish: 'playa', english: 'Beach', hint: 'By the water' },
+  { spanish: 'montaña', english: 'Mountain', hint: 'Very tall and rocky' },
+  { spanish: 'árbol', english: 'Tree', hint: 'Has leaves and branches' },
+  { spanish: 'flor', english: 'Flower', hint: 'Colorful and pretty' },
+  { spanish: 'hierba', english: 'Grass', hint: 'Green plants' },
+  { spanish: 'hoja', english: 'Leaf', hint: 'Part of tree' },
+  { spanish: 'tierra', english: 'Soil/Earth', hint: 'Dirt' },
+  { spanish: 'roca', english: 'Rock', hint: 'Hard stone' },
+  { spanish: 'arena', english: 'Sand', hint: 'Fine granules' },
+  { spanish: 'hielo', english: 'Ice', hint: 'Frozen water' },
+  { spanish: 'rayo', english: 'Lightning', hint: 'Electric strike' },
+  { spanish: 'trueno', english: 'Thunder', hint: 'Loud sound in sky' },
+  { spanish: 'arcoíris', english: 'Rainbow', hint: 'After rain' },
+
+  // Colors
+  { spanish: 'rojo', english: 'Red', hint: 'Color of apples' },
+  { spanish: 'azul', english: 'Blue', hint: 'Color of sky' },
+  { spanish: 'verde', english: 'Green', hint: 'Color of grass' },
+  { spanish: 'amarillo', english: 'Yellow', hint: 'Color of sun' },
+  { spanish: 'blanco', english: 'White', hint: 'Color of snow' },
+  { spanish: 'negro', english: 'Black', hint: 'Darkest color' },
+  { spanish: 'naranja', english: 'Orange', hint: 'Color of orange fruit' },
+  { spanish: 'morado', english: 'Purple', hint: 'Mix red and blue' },
+  { spanish: 'rosa', english: 'Pink', hint: 'Light red' },
+  { spanish: 'marrón', english: 'Brown', hint: 'Color of earth' },
+  { spanish: 'gris', english: 'Gray', hint: 'Between white and black' },
+
+  // Numbers
+  { spanish: 'uno', english: 'One', hint: 'The number 1' },
+  { spanish: 'dos', english: 'Two', hint: 'The number 2' },
+  { spanish: 'tres', english: 'Three', hint: 'The number 3' },
+  { spanish: 'cuatro', english: 'Four', hint: 'The number 4' },
+  { spanish: 'cinco', english: 'Five', hint: 'The number 5' },
+  { spanish: 'seis', english: 'Six', hint: 'The number 6' },
+  { spanish: 'siete', english: 'Seven', hint: 'The number 7' },
+  { spanish: 'ocho', english: 'Eight', hint: 'The number 8' },
+  { spanish: 'nueve', english: 'Nine', hint: 'The number 9' },
+  { spanish: 'diez', english: 'Ten', hint: 'The number 10' },
+  { spanish: 'veinte', english: 'Twenty', hint: 'The number 20' },
+  { spanish: 'treinta', english: 'Thirty', hint: 'The number 30' },
+  { spanish: 'cien', english: 'One hundred', hint: 'The number 100' },
+
+  // Days & Time
+  { spanish: 'lunes', english: 'Monday', hint: 'Day of week' },
+  { spanish: 'martes', english: 'Tuesday', hint: 'Day of week' },
+  { spanish: 'miércoles', english: 'Wednesday', hint: 'Day of week' },
+  { spanish: 'jueves', english: 'Thursday', hint: 'Day of week' },
+  { spanish: 'viernes', english: 'Friday', hint: 'Day of week' },
+  { spanish: 'sábado', english: 'Saturday', hint: 'Day of week' },
+  { spanish: 'domingo', english: 'Sunday', hint: 'Day of week' },
+  { spanish: 'día', english: 'Day', hint: '24 hours' },
+  { spanish: 'noche', english: 'Night', hint: 'Dark time' },
+  { spanish: 'mañana', english: 'Morning', hint: 'Early day' },
+  { spanish: 'tarde', english: 'Afternoon', hint: 'Middle of day' },
+  { spanish: 'hora', english: 'Hour', hint: '60 minutes' },
+  { spanish: 'minuto', english: 'Minute', hint: '60 seconds' },
+
+  // School & Learning
+  { spanish: 'escuela', english: 'School', hint: 'Place to learn' },
+  { spanish: 'clase', english: 'Class', hint: 'Where you study' },
+  { spanish: 'libro', english: 'Book', hint: 'Has pages' },
+  { spanish: 'lápiz', english: 'Pencil', hint: 'Can be erased' },
+  { spanish: 'bolígrafo', english: 'Pen', hint: 'Writing tool' },
+  { spanish: 'papel', english: 'Paper', hint: 'Write on it' },
+  { spanish: 'pizarra', english: 'Blackboard', hint: 'Teacher writes here' },
+  { spanish: 'tarea', english: 'Homework', hint: 'Work to do at home' },
+  { spanish: 'examen', english: 'Exam', hint: 'Check knowledge' },
+  { spanish: 'computadora', english: 'Computer', hint: 'Electronic device' },
+  { spanish: 'cuaderno', english: 'Notebook', hint: 'For writing notes' },
+  { spanish: 'matemáticas', english: 'Mathematics', hint: 'Numbers and equations' },
+  { spanish: 'ciencia', english: 'Science', hint: 'Study of nature' },
+  { spanish: 'historia', english: 'History', hint: 'Past events' },
+
+  // Home & Living
+  { spanish: 'casa', english: 'House', hint: 'Where you live' },
+  { spanish: 'puerta', english: 'Door', hint: 'You open it to enter' },
+  { spanish: 'ventana', english: 'Window', hint: 'Let light in' },
+  { spanish: 'pared', english: 'Wall', hint: 'Holds the roof' },
+  { spanish: 'habitación', english: 'Room', hint: 'Part of house' },
+  { spanish: 'dormitorio', english: 'Bedroom', hint: 'Where you sleep' },
+  { spanish: 'cocina', english: 'Kitchen', hint: 'Cook here' },
+  { spanish: 'baño', english: 'Bathroom', hint: 'Toilet and tub' },
+  { spanish: 'sala', english: 'Living room', hint: 'For relaxing' },
+  { spanish: 'escaleras', english: 'Stairs', hint: 'Go up and down' },
+  { spanish: 'techo', english: 'Roof', hint: 'Top of house' },
+  { spanish: 'jardín', english: 'Garden', hint: 'Outside space' },
+  { spanish: 'mesa', english: 'Table', hint: 'Flat surface' },
+  { spanish: 'silla', english: 'Chair', hint: 'For sitting' },
+  { spanish: 'cama', english: 'Bed', hint: 'For sleeping' },
+  { spanish: 'almohada', english: 'Pillow', hint: 'Under your head' },
+  { spanish: 'manta', english: 'Blanket', hint: 'Keeps you warm' },
+  { spanish: 'espejo', english: 'Mirror', hint: 'See yourself' },
+  { spanish: 'lámpara', english: 'Lamp', hint: 'Gives light' },
+
+  // Clothing
+  { spanish: 'ropa', english: 'Clothes', hint: 'Wear on body' },
+  { spanish: 'camisa', english: 'Shirt', hint: 'Tops' },
+  { spanish: 'pantalón', english: 'Pants', hint: 'Bottom wear' },
+  { spanish: 'vestido', english: 'Dress', hint: 'For girls' },
+  { spanish: 'zapato', english: 'Shoe', hint: 'Wears on foot' },
+  { spanish: 'calcetín', english: 'Sock', hint: 'Inside shoe' },
+  { spanish: 'chaqueta', english: 'Jacket', hint: 'Over shirt' },
+  { spanish: 'abrigo', english: 'Coat', hint: 'Warm outer layer' },
+  { spanish: 'sombrero', english: 'Hat', hint: 'Wears on head' },
+  { spanish: 'guantes', english: 'Gloves', hint: 'On hands' },
+  { spanish: 'bufanda', english: 'Scarf', hint: 'Around neck' },
+  { spanish: 'cinturón', english: 'Belt', hint: 'Holds pants up' },
+  { spanish: 'falda', english: 'Skirt', hint: 'For girls' },
+  { spanish: 'corbata', english: 'Tie', hint: 'Around neck' },
+
+  // Sports & Games
+  { spanish: 'pelota', english: 'Ball', hint: 'Round toy' },
+  { spanish: 'fútbol', english: 'Soccer', hint: 'Sport with feet' },
+  { spanish: 'baloncesto', english: 'Basketball', hint: 'Shoot through hoop' },
+  { spanish: 'nadar', english: 'Swimming', hint: 'In water' },
+  { spanish: 'correr', english: 'Running', hint: 'Fast movement' },
+  { spanish: 'saltar', english: 'Jumping', hint: 'Up and down' },
+  { spanish: 'juego', english: 'Game', hint: 'For fun' },
+  { spanish: 'juguete', english: 'Toy', hint: 'To play with' },
+  { spanish: 'muñeca', english: 'Doll', hint: 'Like a person' },
+  { spanish: 'bicicleta', english: 'Bicycle', hint: 'Two wheels' },
+
+  // Transportation
+  { spanish: 'coche', english: 'Car', hint: 'Four wheels' },
+  { spanish: 'autobús', english: 'Bus', hint: 'Many passengers' },
+  { spanish: 'camión', english: 'Truck', hint: 'Carries cargo' },
+  { spanish: 'motocicleta', english: 'Motorcycle', hint: 'Two wheels' },
+  { spanish: 'tren', english: 'Train', hint: 'Tracks and cars' },
+  { spanish: 'avión', english: 'Airplane', hint: 'Flies in sky' },
+  { spanish: 'barco', english: 'Boat', hint: 'Small vessel' },
+  { spanish: 'taxi', english: 'Taxi', hint: 'Pays to ride' },
+
+  // Emotions & Adjectives
+  { spanish: 'feliz', english: 'Happy', hint: 'Joyful feeling' },
+  { spanish: 'triste', english: 'Sad', hint: 'Unhappy feeling' },
+  { spanish: 'asustado', english: 'Scared', hint: 'Afraid' },
+  { spanish: 'enojado', english: 'Angry', hint: 'Mad feeling' },
+  { spanish: 'cansado', english: 'Tired', hint: 'Need sleep' },
+  { spanish: 'grande', english: 'Big', hint: 'Not small' },
+  { spanish: 'pequeño', english: 'Small', hint: 'Not big' },
+  { spanish: 'nuevo', english: 'New', hint: 'Fresh' },
+  { spanish: 'viejo', english: 'Old', hint: 'Not new' },
+  { spanish: 'bonito', english: 'Pretty', hint: 'Attractive' },
+  { spanish: 'feo', english: 'Ugly', hint: 'Not attractive' },
+  { spanish: 'bueno', english: 'Good', hint: 'Positive' },
+  { spanish: 'malo', english: 'Bad', hint: 'Negative' },
+  { spanish: 'fácil', english: 'Easy', hint: 'Not hard' },
+  { spanish: 'difícil', english: 'Difficult', hint: 'Hard' },
+  { spanish: 'rápido', english: 'Fast', hint: 'Quick' },
+  { spanish: 'lento', english: 'Slow', hint: 'Not fast' },
+  { spanish: 'caliente', english: 'Hot', hint: 'High temperature' },
+  { spanish: 'frío', english: 'Cold', hint: 'Low temperature' },
+  { spanish: 'limpio', english: 'Clean', hint: 'Not dirty' },
+  { spanish: 'sucio', english: 'Dirty', hint: 'Not clean' },
+
+  // Actions/Verbs
+  { spanish: 'comer', english: 'To eat', hint: 'Food action' },
+  { spanish: 'beber', english: 'To drink', hint: 'Liquid action' },
+  { spanish: 'dormir', english: 'To sleep', hint: 'Rest action' },
+  { spanish: 'caminar', english: 'To walk', hint: 'Movement' },
+  { spanish: 'hablar', english: 'To speak', hint: 'Say words' },
+  { spanish: 'escuchar', english: 'To listen', hint: 'Hear sounds' },
+  { spanish: 'leer', english: 'To read', hint: 'Look at words' },
+  { spanish: 'escribir', english: 'To write', hint: 'Put words on paper' },
+  { spanish: 'jugar', english: 'To play', hint: 'Have fun' },
+  { spanish: 'ver', english: 'To see', hint: 'Use eyes' },
+  { spanish: 'cantar', english: 'To sing', hint: 'Make music' },
+  { spanish: 'bailar', english: 'To dance', hint: 'Move to music' },
+  { spanish: 'cocinar', english: 'To cook', hint: 'Make food' },
+  { spanish: 'limpiar', english: 'To clean', hint: 'Make tidy' },
+  { spanish: 'abrir', english: 'To open', hint: 'Unlock' },
+  { spanish: 'cerrar', english: 'To close', hint: 'Shut' },
+  { spanish: 'dar', english: 'To give', hint: 'Pass to someone' },
+  { spanish: 'tomar', english: 'To take', hint: 'Get something' },
+  { spanish: 'contar', english: 'To count', hint: 'Numbers in order' },
+];
+
+// State
+let state = {
+  screen: 'setup',
+  difficulty: 'easy',
+  score: 0,
+  streak: 0,
+  round: 0,
+  checked: false,
+  isCorrect: false,
+  resultMsg: '',
+  resultClass: '',
+  pointsMsg: '',
+  showCorrect: '',
+  // Current question data
+  questionType: '', // 'name' | 'sound' | 'meaning' | 'meaning-reverse' | 'spell'
+  currentSound: null,
+  currentWord: null,
+  choices: [],
+  correctChoice: '',
+  missingIndex: -1,
+  letterChoices: [],
+  correctLetter: '',
+};
+
+function randInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function getDifficultyPoints() {
+  return state.difficulty === 'easy' ? 2 : state.difficulty === 'medium' ? 3 : 5;
+}
+
+function generateQuestion() {
+  state.checked = false;
+  state.isCorrect = false;
+  state.resultMsg = '';
+  state.resultClass = '';
+  state.pointsMsg = '';
+  state.showCorrect = '';
+  state.round++;
+
+  if (state.difficulty === 'easy') {
+    generateEasyQuestion();
+  } else if (state.difficulty === 'medium') {
+    generateMediumQuestion();
+  } else {
+    generateHardQuestion();
+  }
+}
+
+function generateEasyQuestion() {
+  // Show a Spanish sound/letter and pick the correct pronunciation
+  const type = 'sound'; // For now, just sound pronunciation
+  const idx = randInt(0, spanishSounds.length - 1);
+  const correct = spanishSounds[idx];
+  state.currentSound = correct;
+  state.questionType = type;
+
+  // Pick 3 wrong answers from other sounds
+  let pool = spanishSounds.filter((_, i) => i !== idx);
+  pool = shuffle(pool).slice(0, 3);
+  state.choices = shuffle([correct, ...pool]).map(s => s.sound);
+  state.correctChoice = correct.sound;
+}
+
+function generateMediumQuestion() {
+  // Random type: translate Spanish->English or English->Spanish
+  const type = Math.random() < 0.5 ? 'meaning' : 'meaning-reverse';
+  const wordObj = vocabulary[randInt(0, vocabulary.length - 1)];
+  state.currentWord = wordObj;
+  state.questionType = type;
+
+  if (type === 'meaning') {
+    // Spanish to English: show Spanish, pick 4 English options
+    let pool = vocabulary.filter(w => w.english !== wordObj.english);
+    pool = shuffle(pool).slice(0, 3);
+    state.choices = shuffle([wordObj, ...pool]).map(w => w.english);
+    state.correctChoice = wordObj.english;
+  } else {
+    // English to Spanish: show English, pick 4 Spanish options
+    let pool = vocabulary.filter(w => w.spanish !== wordObj.spanish);
+    pool = shuffle(pool).slice(0, 3);
+    state.choices = shuffle([wordObj, ...pool]).map(w => w.spanish);
+    state.correctChoice = wordObj.spanish;
+  }
+}
+
+function generateHardQuestion() {
+  // Type the Spanish word
+  state.questionType = 'spell';
+  const wordObj = vocabulary[randInt(0, vocabulary.length - 1)];
+  state.currentWord = wordObj;
+}
+
+function renderPlayerBanner() {
+  if (!currentPlayer) return '';
+  const avatarClass = currentPlayer.toLowerCase();
+  const initial = currentPlayer[0];
+  const totalPts = getTotalPoints();
+  return `
+    <div class="player-banner">
+      <div class="pb-avatar ${avatarClass}">${initial}</div>
+      <span class="pb-name">${currentPlayer}</span>
+      <span style="color:#ccc;">|</span>
+      <span class="pb-pts">${totalPts.toLocaleString()} points</span>
+    </div>
+  `;
+}
+
+function render() {
+  if (state.screen === 'setup') renderSetup();
+  else renderPlay();
+}
+
+function renderSetup() {
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>🎉 Spanish Words & Phrases</h1>
+    <p class="subtitle">Learn Spanish with fun games and activities!</p>
+    <div class="setup">
+      <label>Difficulty Level:</label>
+      <div class="difficulty-toggle">
+        <button class="diff-btn ${state.difficulty === 'easy' ? 'active' : ''}" onclick="setDifficulty('easy')">Easy <span style="color:#f59e0b;font-size:0.85em;">★★ 2pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'medium' ? 'active' : ''}" onclick="setDifficulty('medium')">Medium <span style="color:#f59e0b;font-size:0.85em;">★★★ 3pts</span></button>
+        <button class="diff-btn ${state.difficulty === 'hard' ? 'active' : ''}" onclick="setDifficulty('hard')">Hard <span style="color:#f59e0b;font-size:0.85em;">★★★★★ 5pts</span></button>
+      </div>
+      <p style="color:#aaa;font-size:0.85em;margin-top:6px;">Easy: Spanish sounds · Medium: Vocabulary · Hard: Type Spanish words</p>
+      <br>
+      <button class="go-btn" onclick="startGame()">Let's Go!</button>
+    </div>
+    <div class="controls">
+      <button class="secondary-btn home-btn" onclick="goHome()">Back Home</button>
+    </div>
+  `;
+}
+
+function renderPlay() {
+  const pts = getDifficultyPoints();
+  let questionHTML = '';
+
+  if (state.questionType === 'sound') {
+    questionHTML = renderEasyQuestion();
+  } else if (state.questionType === 'meaning' || state.questionType === 'meaning-reverse') {
+    questionHTML = renderMediumQuestion();
+  } else if (state.questionType === 'spell') {
+    questionHTML = renderHardQuestion();
+  }
+
+  app.innerHTML = `
+    ${renderPlayerBanner()}
+    <h1>🎉 Spanish Words & Phrases</h1>
+    <div class="score-bar">
+      <div>Score: <span>${state.score}</span></div>
+      <div>Streak: <span>${state.streak} 🔥</span></div>
+      <div>Round: <span>${state.round}</span></div>
+    </div>
+    <p class="subtitle">
+      ${state.difficulty === 'easy' ? 'What sound or name?' : state.difficulty === 'medium' ? 'What is the translation?' : 'Type the Spanish word'}
+      <span style="color:#f59e0b;">+${pts} points</span>
+    </p>
+    ${questionHTML}
+    <div class="result ${state.resultClass}">${state.resultMsg}</div>
+    <div class="points-earned">${state.pointsMsg}</div>
+    <div class="correct-answer">${state.showCorrect}</div>
+    ${state.checked ? '<button class="next-btn" onclick="nextQuestion()">Next Question →</button>' : ''}
+    <div class="controls">
+      <button class="secondary-btn" onclick="changeDifficulty()">Change Difficulty</button>
+      <button class="secondary-btn home-btn" onclick="goHome()">Back Home</button>
+    </div>
+  `;
+
+  if (state.questionType === 'spell' && !state.checked) {
+    const inp = document.getElementById('spellInput');
+    if (inp) inp.focus();
+  }
+  updateErrorBar();
+}
+
+function renderEasyQuestion() {
+  const s = state.currentSound;
+  const prompt = 'What is the pronunciation?';
+
+  return `
+    <div class="problem-area">
+      <div class="spanish-big">${s.letter}</div>
+      <div class="prompt-text">${prompt}</div>
+      <div class="choices">
+        ${state.choices.map(c => {
+          let cls = 'choice-btn';
+          if (state.checked) {
+            if (c === state.correctChoice) cls += ' highlight-correct';
+            cls += ' disabled';
+          }
+          return `<button class="${cls}" onclick="pickChoice(this.dataset.val)" data-val="${c.replace(/"/g, '&quot;')}">${c}</button>`;
+        }).join('')}
+      </div>
+      ${!state.checked ? `<div class="hint-text">Name: ${s.name}</div>` : ''}
+    </div>
+  `;
+}
+
+function renderMediumQuestion() {
+  const w = state.currentWord;
+  const prompt = state.questionType === 'meaning'
+    ? 'What is the English translation?'
+    : 'What is the Spanish word?';
+  const displayValue = state.questionType === 'meaning' ? w.spanish : w.english;
+
+  return `
+    <div class="problem-area">
+      <div class="prompt-text">${prompt}</div>
+      <div class="spanish-big" style="font-size:3em;">${displayValue}</div>
+      <div class="hint-text">${w.hint}</div>
+      <div class="choices">
+        ${state.choices.map(c => {
+          let cls = 'choice-btn';
+          if (state.checked) {
+            if (c === state.correctChoice) cls += ' highlight-correct';
+            cls += ' disabled';
+          }
+          return `<button class="${cls}" onclick="pickChoice(this.dataset.val)" data-val="${c.replace(/"/g, '&quot;')}">${c}</button>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderHardQuestion() {
+  const w = state.currentWord;
+  const inputClass = state.checked ? (state.isCorrect ? 'correct' : 'incorrect') : '';
+
+  return `
+    <div class="problem-area">
+      <div class="prompt-text">Type in Spanish:</div>
+      <div style="font-size:1.8em; font-weight:700; color:#1e3a5f; margin:8px 0;">"${w.english}"</div>
+      <div class="hint-text" style="margin-bottom:14px;">${w.hint}</div>
+      <input type="text" class="answer-input ${inputClass}" id="spellInput"
+        oninput="onSpellInput(this.value)"
+        onkeydown="if(event.key==='Enter'){event.preventDefault(); ${state.checked ? 'nextQuestion()' : 'checkSpelling()'}; }"
+        ${state.checked ? 'disabled' : ''}
+        placeholder="Type here..."
+        dir="ltr">
+    </div>
+    ${!state.checked ? '<button class="check-btn" onclick="checkSpelling()">✓ Check</button>' : ''}
+  `;
+}
+
+// ---- Actions ----
+function pickChoice(choice) {
+  if (state.checked) return;
+  state.checked = true;
+
+  if (choice === state.correctChoice) {
+    recordAttempt(true);
+    handleCorrect();
+  } else {
+    recordAttempt(false);
+    handleWrong();
+    if (state.questionType === 'sound') {
+      state.showCorrect = `The answer is: ${state.currentSound.sound}`;
+    } else if (state.questionType === 'meaning') {
+      state.showCorrect = `The answer is: ${state.currentWord.english}`;
+    } else if (state.questionType === 'meaning-reverse') {
+      state.showCorrect = `The answer is: ${state.currentWord.spanish}`;
+    }
+  }
+  render();
+}
+
+let spellValue = '';
+function onSpellInput(val) { spellValue = val; }
+
+function checkSpelling() {
+  const trimmed = spellValue.trim().toLowerCase();
+  if (!trimmed) {
+    state.resultMsg = 'Type the Spanish word first!';
+    state.resultClass = 'tryagain';
+    render();
+    return;
+  }
+
+  state.checked = true;
+  if (trimmed === state.currentWord.spanish.toLowerCase()) {
+    recordAttempt(true);
+    handleCorrect();
+  } else {
+    recordAttempt(false);
+    handleWrong();
+    state.showCorrect = `The correct spelling is: ${state.currentWord.spanish}`;
+  }
+  render();
+}
+
+function handleCorrect() {
+  state.isCorrect = true;
+  state.streak++;
+  const earnedPts = getDifficultyPoints();
+  state.score += earnedPts;
+  addPoints(earnedPts);
+
+  const cheers = ['Excellent!', 'Great job!', 'Nice!', 'Perfect!', 'Brilliant!', 'Amazing!'];
+  const cheer = cheers[Math.floor(Math.random() * cheers.length)];
+  const stars = state.streak >= 5 ? '🌟🌟🌟' : state.streak >= 3 ? '⭐⭐⭐' : state.streak >= 2 ? '⭐⭐' : '⭐';
+  state.resultMsg = `${cheer} ${stars}`;
+  state.resultClass = 'success';
+  state.pointsMsg = `+${earnedPts} points!`;
+  launchConfetti();
+}
+
+function handleWrong() {
+  state.isCorrect = false;
+  state.streak = 0;
+  state.resultMsg = 'Keep trying! 💪';
+  state.resultClass = 'tryagain';
+  state.pointsMsg = '';
+}
+
+function setDifficulty(d) { state.difficulty = d; render(); }
+
+function startGame() {
+  state.screen = 'play';
+  state.score = 0;
+  state.streak = 0;
+  state.round = 0;
+  spellValue = '';
+  generateQuestion();
+  render();
+}
+
+function changeDifficulty() {
+  state.screen = 'setup';
+  render();
+}
+
+function nextQuestion() {
+  spellValue = '';
+  generateQuestion();
+  render();
+}
+
+function goHome() { window.location.href = 'index.html'; }
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.className = 'confetti-container';
+  document.body.appendChild(container);
+  const colors = ['#dc2626', '#f59e0b', '#34d399', '#818cf8', '#f472b6', '#0ea5e9'];
+  for (let i = 0; i < 40; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.top = '-10px';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    piece.style.animationDuration = (1 + Math.random()) + 's';
+    piece.style.width = (6 + Math.random() * 8) + 'px';
+    piece.style.height = (6 + Math.random() * 8) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    container.appendChild(piece);
+  }
+  setTimeout(() => container.remove(), 2500);
+}
+
+// Start
+render();
+</script>
+</body>
+</html>
