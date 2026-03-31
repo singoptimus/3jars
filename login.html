@@ -636,7 +636,7 @@ function normalizeEmail(email) {
 // ---- State ----
 const urlParams = new URLSearchParams(window.location.search);
 const isPaidTraffic = urlParams.has('utm_source') || urlParams.has('utm_campaign') || urlParams.has('ref');
-let mode = isPaidTraffic ? 'guest' : 'login';
+let mode = 'guest';
 
 function switchMode(m) {
   mode = m;
@@ -672,15 +672,9 @@ function render() {
 
   app.innerHTML = `
     <div class="tabs">
-      ${isPaidTraffic ? `
-        <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
+      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
         <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
         <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
-      ` : `
-        <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
-        <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
-        <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
-      `}
     </div>
 
     ${mode === 'guest' ? `
