@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>3 Jars Academy — Login</title>
+<title>3 Jars Academy â Login</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -71,7 +71,7 @@
     letter-spacing: 1.5px;
   }
 
-  /* === CONTENT AREA — overlaps the video === */
+  /* === CONTENT AREA â overlaps the video === */
   .content {
     position: relative;
     z-index: 2;
@@ -560,7 +560,7 @@
 <!-- Full-width video banner -->
 <div class="hero">
   <div class="brand">
-    <div class="brand-name">🍯 3 JARS ACADEMY</div>
+    <div class="brand-name">ð¯ 3 JARS ACADEMY</div>
   </div>
   <img class="hero-poster" src="hero-3jars.png" alt="3 Jars">
   <video class="hero-video hidden" src="hero-3jars.mp4" autoplay muted loop playsinline></video>
@@ -583,12 +583,12 @@
 
   <div class="founder-note">
     <div class="founder-quote">
-      <p>I built 3Jars for my kids because I wanted Math and second language practice to lead to the things that actually matter. Instead of just "get gifts" — kids can earn <em>experiences</em>.</p>
+      <p>I built 3Jars for my kids because I wanted Math and second language practice to lead to the things that actually matter. Instead of just "get gifts" â kids can earn <em>experiences</em>.</p>
       <p>Kids play toward a goal of <strong>10,000 points</strong>. When they hit it, they unlock their 3 Jars:</p>
       <ul>
-        <li><strong>🎉 The Family Jar</strong> — We skip the "stuff" and choose a memory: movie nights, the arcade, or ice cream (whatever your family likes).</li>
-        <li><strong>💰 The Investing Jar</strong> — They get their first taste of investing and learn how to track it with the parents.</li>
-        <li><strong>💝 The Giving Jar</strong> — They experience the joy of choosing a cause and giving back to the community.</li>
+        <li><strong>ð The Family Jar</strong> â We skip the "stuff" and choose a memory: movie nights, the arcade, or ice cream (whatever your family likes).</li>
+        <li><strong>ð° The Investing Jar</strong> â They get their first taste of investing and learn how to track it with the parents.</li>
+        <li><strong>ð The Giving Jar</strong> â They experience the joy of choosing a cause and giving back to the community.</li>
       </ul>
       <p class="founder-example">Every family is different, so you decide the reward. In our home, 10,000 points unlocks <strong>$50</strong> for a family outing, <strong>$10</strong> for their portfolio, and <strong>$10</strong> for charity.</p>
     </div>
@@ -598,7 +598,7 @@
   <div class="login-container" id="app"></div>
 
   <div class="report-section">
-    <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
+    <button class="report-btn" onclick="openReportModal()">ð Report an Issue</button>
   </div>
 </div>
 
@@ -618,7 +618,7 @@ function saveAccounts(accounts) {
 }
 
 function hashPassword(pw) {
-  // Simple hash for local use — NOT secure for production, just for localStorage demo
+  // Simple hash for local use â NOT secure for production, just for localStorage demo
   let hash = 0;
   for (let i = 0; i < pw.length; i++) {
     const char = pw.charCodeAt(i);
@@ -672,17 +672,17 @@ function render() {
 
   app.innerHTML = `
     <div class="tabs">
-      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
+      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">ð® Just Play</button>
         <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Log In</button>
         <button class="tab ${mode === 'signup' ? 'active' : ''}" onclick="switchMode('signup')">Create Account</button>
     </div>
 
     ${mode === 'guest' ? `
       <div class="guest-panel">
-        <div class="guest-panel-icon">🎮</div>
+        <div class="guest-panel-icon">ð®</div>
         <div class="guest-panel-title">Try the games instantly</div>
         <div class="guest-panel-desc">No account needed. Jump straight into Math, Language, and Puzzle games to see what 3Jars is all about.</div>
-        <button class="guest-panel-btn" onclick="guestPlay()">Start Playing →</button>
+        <button class="guest-panel-btn" onclick="guestPlay()">Start Playing â</button>
         <div class="guest-panel-note">Create an account later to earn points & unlock rewards</div>
       </div>
     ` : mode === 'login' ? `
@@ -714,8 +714,8 @@ function render() {
       <div class="form-group">
         <label class="form-label">Second Language</label>
         <select class="form-input" id="newLanguage">
-          <option value="hebrew">🇮🇱 Hebrew</option>
-          <option value="spanish">🇪🇸 Spanish</option>
+          <option value="hebrew">ð®ð± Hebrew</option>
+          <option value="spanish">ðªð¸ Spanish</option>
         </select>
       </div>
       <div class="form-group">
@@ -748,7 +748,33 @@ function showMsg(text, isError) {
   }
 }
 
-function doLogin() {
+function sanitizeKey(email) {
+  return (email || 'default').replace(/[.#$\[\]\/]/g, '_');
+}
+
+async function firebaseLookupAccount(email) {
+  try {
+    if (typeof firebase === 'undefined' || !firebase.apps.length) return null;
+    const db = firebase.database();
+    const key = sanitizeKey(email);
+    const snapshot = await db.ref('accounts/' + key + '/accountData').once('value');
+    return snapshot.val();
+  } catch(e) {
+    console.warn('[3Jars] Firebase account lookup failed:', e);
+    return null;
+  }
+}
+
+function firebaseSaveCredentials(email, accountObj) {
+  try {
+    if (typeof firebase === 'undefined' || !firebase.apps.length) return;
+    const db = firebase.database();
+    const key = sanitizeKey(email);
+    db.ref('accounts/' + key + '/accountData').update(accountObj).catch(function(e) {});
+  } catch(e) {}
+}
+
+async function doLogin() {
   const email = normalizeEmail(document.getElementById('email').value);
   const password = document.getElementById('password').value || '';
 
@@ -763,7 +789,24 @@ function doLogin() {
   }
 
   const accounts = getAccounts();
-  const acct = accounts[email];
+  let acct = accounts[email];
+
+  if (!acct) {
+    showMsg('Checking account...', false);
+    const remoteAcct = await firebaseLookupAccount(email);
+    if (remoteAcct && remoteAcct.passwordHash) {
+      accounts[email] = {
+        passwordHash: remoteAcct.passwordHash,
+        displayName: remoteAcct.displayName || email,
+        email: remoteAcct.email || email,
+        players: remoteAcct.players || [],
+        createdAt: remoteAcct.createdAt || Date.now(),
+        language: remoteAcct.language || 'hebrew'
+      };
+      saveAccounts(accounts);
+      acct = accounts[email];
+    }
+  }
 
   if (!acct) {
     showMsg('Account not found. Create one first!', true);
@@ -781,12 +824,28 @@ function doLogin() {
   window.location.href = 'index.html';
 }
 
-function quickLogin(accountKey) {
+async function quickLogin(accountKey) {
   const password = prompt('Password for ' + accountKey + ':');
   if (password === null) return;
 
   const accounts = getAccounts();
-  const acct = accounts[accountKey];
+  let acct = accounts[accountKey];
+
+  if (!acct) {
+    const remoteAcct = await firebaseLookupAccount(accountKey);
+    if (remoteAcct && remoteAcct.passwordHash) {
+      accounts[accountKey] = {
+        passwordHash: remoteAcct.passwordHash,
+        displayName: remoteAcct.displayName || accountKey,
+        email: remoteAcct.email || accountKey,
+        players: remoteAcct.players || [],
+        createdAt: remoteAcct.createdAt || Date.now(),
+        language: remoteAcct.language || 'hebrew'
+      };
+      saveAccounts(accounts);
+      acct = accounts[accountKey];
+    }
+  }
 
   if (!acct || acct.passwordHash !== hashPassword(password)) {
     alert('Wrong password!');
@@ -802,7 +861,7 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-function doSignup() {
+async function doSignup() {
   const name = (document.getElementById('newName').value || '').trim();
   const email = normalizeEmail(document.getElementById('newEmail').value);
   const password = document.getElementById('newPassword').value || '';
@@ -837,7 +896,7 @@ function doSignup() {
 
   const language = document.getElementById('newLanguage').value || 'hebrew';
 
-  // Create account — keyed by email
+  // Create account â keyed by email
   accounts[email] = {
     passwordHash: hashPassword(password),
     displayName: name,
@@ -859,7 +918,7 @@ function doSignup() {
     console.log('Email notification failed:', e);
   }
 
-  // Auto-login — send new accounts to settings to set up jars
+  // Auto-login â send new accounts to settings to set up jars
   sessionStorage.setItem('km_currentAccount', email);
   localStorage.setItem('km_currentAccount_backup', email);
   window.location.href = 'settings.html?welcome=1';
@@ -910,9 +969,9 @@ function seedDefaults() {
       displayName: 'Adam',
       email: 'adam.s@taboola.com',
       players: [
-        { name: 'Ozzy', emoji: '🏀', color: '#667eea' },
-        { name: 'Elinor', emoji: '🏊', color: '#f472b6' },
-        { name: 'Adam', emoji: '🏃', color: '#34d399' }
+        { name: 'Ozzy', emoji: 'ð', color: '#667eea' },
+        { name: 'Elinor', emoji: 'ð', color: '#f472b6' },
+        { name: 'Adam', emoji: 'ð', color: '#34d399' }
       ],
       createdAt: Date.now()
     };
