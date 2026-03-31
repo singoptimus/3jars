@@ -390,6 +390,103 @@
     color: rgba(0,0,0,0.35);
   }
 
+  /* === JUST PLAY BUTTON === */
+  .guest-play-section {
+    text-align: center;
+    margin-top: 16px;
+    max-width: 380px;
+    width: 100%;
+  }
+  .guest-play-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 36px;
+    background: white;
+    border: 2px solid rgba(251,191,36,0.4);
+    border-radius: 12px;
+    color: #2d2d2d;
+    font-size: 1.05em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .guest-play-btn:hover {
+    background: rgba(251,191,36,0.08);
+    border-color: #fbbf24;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(251,191,36,0.15);
+  }
+  .guest-play-hint {
+    font-size: 0.78em;
+    color: rgba(0,0,0,0.4);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* === REPORT ISSUES === */
+  .report-section {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    max-width: 520px;
+    width: 100%;
+  }
+  .report-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    background: none;
+    border: 1px solid rgba(0,0,0,0.1);
+    border-radius: 20px;
+    color: rgba(0,0,0,0.4);
+    font-size: 0.78em;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .report-btn:hover {
+    border-color: rgba(0,0,0,0.25);
+    color: rgba(0,0,0,0.6);
+  }
+  .report-modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 9000;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeUp 0.3s ease;
+  }
+  .report-modal {
+    background: white; border-radius: 18px; padding: 28px;
+    max-width: 420px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  }
+  .report-modal h3 {
+    font-size: 1.1em; font-weight: 700; color: #2d2d2d; margin-bottom: 6px;
+  }
+  .report-modal p {
+    font-size: 0.82em; color: rgba(0,0,0,0.45); margin-bottom: 16px;
+  }
+  .report-modal textarea {
+    width: 100%; min-height: 100px; padding: 12px;
+    border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
+    font-family: inherit; font-size: 0.9em; color: #2d2d2d;
+    resize: vertical; outline: none;
+  }
+  .report-modal textarea:focus { border-color: rgba(251,191,36,0.5); }
+  .report-modal-buttons {
+    display: flex; gap: 10px; margin-top: 14px;
+  }
+  .report-modal-buttons button {
+    flex: 1; padding: 10px; border-radius: 10px; border: none;
+    font-size: 0.9em; font-weight: 600; cursor: pointer;
+  }
+  .report-send-btn {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #2d2d2d;
+  }
+  .report-cancel-btn {
+    background: rgba(0,0,0,0.06); color: #2d2d2d;
+  }
+
   @media (max-width: 480px) {
     .login-container { padding: 24px 20px; }
     .tagline h1 { font-size: 1.2em; }
@@ -424,7 +521,7 @@
 
   <div class="founder-note">
     <div class="founder-quote">
-      <p>I built 3Jars for my kids because I wanted Math and Hebrew practice to lead to the things that actually matter. Instead of just "get gifts" — kids can earn <em>experiences</em>.</p>
+      <p>I built 3Jars for my kids because I wanted Math and second language practice to lead to the things that actually matter. Instead of just "get gifts" — kids can earn <em>experiences</em>.</p>
       <p>Kids play toward a goal of <strong>10,000 points</strong>. When they hit it, they unlock their 3 Jars:</p>
       <ul>
         <li><strong>🎉 The Family Jar</strong> — We skip the "stuff" and choose a memory: movie nights, the arcade, or ice cream (whatever your family likes).</li>
@@ -437,6 +534,15 @@
 
 
   <div class="login-container" id="app"></div>
+
+  <div class="guest-play-section">
+    <button class="guest-play-btn" onclick="guestPlay()">🎮 Just Play</button>
+    <div class="guest-play-hint">Try the games without an account — no points earned</div>
+  </div>
+
+  <div class="report-section">
+    <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
+  </div>
 </div>
 
 <script src="firebase-sync.js"></script>
@@ -536,6 +642,13 @@ function render() {
         <label class="form-label">Email</label>
         <input class="form-input" id="newEmail" type="email" placeholder="e.g. you@email.com" autocomplete="email"
           onkeydown="if(event.key==='Enter'){document.getElementById('newPassword').focus();}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Second Language</label>
+        <select class="form-input" id="newLanguage">
+          <option value="hebrew">🇮🇱 Hebrew</option>
+          <option value="spanish">🇪🇸 Spanish</option>
+        </select>
       </div>
       <div class="form-group">
         <label class="form-label">Choose a Password</label>
@@ -654,11 +767,14 @@ function doSignup() {
     return;
   }
 
+  const language = document.getElementById('newLanguage').value || 'hebrew';
+
   // Create account — keyed by email
   accounts[email] = {
     passwordHash: hashPassword(password),
     displayName: name,
     email: email,
+    language: language,
     players: [],
     createdAt: Date.now()
   };
@@ -739,6 +855,46 @@ function seedDefaults() {
     if (oldStats) localStorage.setItem('km_adam.s@taboola.com_stats', oldStats);
     if (oldCelebs) localStorage.setItem('km_adam.s@taboola.com_celebrations', oldCelebs);
   }
+}
+
+// ---- Guest Play ----
+function guestPlay() {
+  sessionStorage.setItem('km_guest', 'true');
+  window.location.href = 'index.html';
+}
+
+// ---- Report Issues Modal ----
+function openReportModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'report-modal-overlay';
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+  overlay.innerHTML = `
+    <div class="report-modal">
+      <h3>Report an Issue</h3>
+      <p>Found a bug or have feedback? Let us know!</p>
+      <textarea id="reportText" placeholder="Describe the issue..."></textarea>
+      <div class="report-modal-buttons">
+        <button class="report-cancel-btn" onclick="this.closest('.report-modal-overlay').remove()">Cancel</button>
+        <button class="report-send-btn" onclick="sendReport()">Send Report</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  setTimeout(() => document.getElementById('reportText').focus(), 100);
+}
+
+function sendReport() {
+  const text = (document.getElementById('reportText').value || '').trim();
+  if (!text) { alert('Please describe the issue.'); return; }
+  try {
+    emailjs.send('service_oam7ctc', 'template_pxktrcf', {
+      user_name: 'Bug Report',
+      user_email: 'report@3jars.ai',
+      signup_time: new Date().toLocaleString() + '\\n\\n' + text
+    }, 'wlauNCpdFNdFs-izM');
+  } catch(e) { console.log('Report send failed:', e); }
+  document.querySelector('.report-modal-overlay').remove();
+  alert('Thanks! Your report has been sent.');
 }
 
 // ---- Check if already logged in ----

@@ -213,6 +213,21 @@
   .philosophy h3 { font-size: 1em; color: rgba(0,0,0,0.6); margin-bottom: 10px; }
   .philosophy p { font-size: 0.83em; color: rgba(0,0,0,0.45); line-height: 1.7; }
 
+  /* Guest banner */
+  .guest-banner {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9500;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #2d2d2d; text-align: center; padding: 10px 16px;
+    font-size: 0.88em; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+  }
+  .guest-banner a {
+    background: #2d2d2d; color: white; padding: 5px 16px;
+    border-radius: 20px; text-decoration: none; font-size: 0.85em;
+    font-weight: 700; transition: opacity 0.2s;
+  }
+  .guest-banner a:hover { opacity: 0.85; }
+
   .footer {
     text-align: center; padding: 24px 0; color: rgba(0,0,0,0.25); font-size: 0.8em;
   }
@@ -222,6 +237,38 @@
     transition: all 0.2s; margin-top: 10px;
   }
   .reset-btn:hover { border-color: rgba(220,38,38,0.3); color: rgba(220,38,38,0.6); }
+  .report-btn {
+    background: none; border: 1px solid rgba(0,0,0,0.1); color: rgba(0,0,0,0.3);
+    padding: 5px 14px; border-radius: 20px; font-size: 0.85em; cursor: pointer;
+    transition: all 0.2s; margin-top: 6px;
+  }
+  .report-btn:hover { border-color: rgba(0,0,0,0.25); color: rgba(0,0,0,0.5); }
+  .report-modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); z-index: 9000;
+    display: flex; align-items: center; justify-content: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .report-modal {
+    background: white; border-radius: 18px; padding: 28px;
+    max-width: 420px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  }
+  .report-modal h3 { font-size: 1.1em; font-weight: 700; color: #2d2d2d; margin-bottom: 6px; }
+  .report-modal p { font-size: 0.82em; color: rgba(0,0,0,0.45); margin-bottom: 16px; }
+  .report-modal textarea {
+    width: 100%; min-height: 100px; padding: 12px;
+    border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
+    font-family: inherit; font-size: 0.9em; color: #2d2d2d;
+    resize: vertical; outline: none; box-sizing: border-box;
+  }
+  .report-modal textarea:focus { border-color: rgba(251,191,36,0.5); }
+  .report-modal-buttons { display: flex; gap: 10px; margin-top: 14px; }
+  .report-modal-buttons button {
+    flex: 1; padding: 10px; border-radius: 10px; border: none;
+    font-size: 0.9em; font-weight: 600; cursor: pointer;
+  }
+  .report-send-btn { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #2d2d2d; }
+  .report-cancel-btn { background: rgba(0,0,0,0.06); color: #2d2d2d; }
 
   /* Modal overlay */
   .modal-overlay {
@@ -353,16 +400,28 @@
 <script src="firebase-sync.js"></script>
 <script>
   // ---- Account check ----
+  const isGuest = sessionStorage.getItem('km_guest') === 'true';
   let currentAccountId = sessionStorage.getItem('km_currentAccount');
-  if (!currentAccountId) {
+  if (!currentAccountId && !isGuest) {
     const backup = localStorage.getItem('km_currentAccount_backup');
     if (backup) { sessionStorage.setItem('km_currentAccount', backup); currentAccountId = backup; }
     else { window.location.href = 'login.html'; throw new Error('No account'); }
   }
   let selectedPlayer = '';
 
+  // Show guest banner
+  if (isGuest) {
+    const banner = document.createElement('div');
+    banner.className = 'guest-banner';
+    banner.innerHTML = '🎮 Guest Mode — points won\'t be saved <a href="login.html" onclick="sessionStorage.removeItem(\'km_guest\');">Create an Account to Earn Points</a>';
+    document.body.prepend(banner);
+    // Offset the error bar and account bar
+    document.body.style.paddingTop = '44px';
+  }
+
   // ---- Account-scoped data layer ----
   function getAccountData() {
+    if (isGuest) return { displayName: 'Guest', players: [{ name: 'Guest Player', emoji: '🎮', color: '#fbbf24' }] };
     try { const accts = JSON.parse(localStorage.getItem('km_accounts') || '{}'); return accts[currentAccountId] || {}; } catch(e) {} return {};
   }
   function updateAccountData(updates) {
@@ -410,7 +469,11 @@
   function getAccountPlayers() { return (getAccountData().players || []); }
   function getAccountDisplayName() { return getAccountData().displayName || 'Users'; }
 
-  selectedPlayer = getSelectedPlayer();
+  if (isGuest) {
+    selectedPlayer = 'Guest Player';
+  } else {
+    selectedPlayer = getSelectedPlayer();
+  }
 
   let audioCtx = null;
   function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
@@ -514,10 +577,21 @@
       </div>`;
 
     // Games
-    const np = !selectedPlayer;
+    const np = isGuest ? false : !selectedPlayer;
     const cls = np ? 'game-tile needs-player' : 'game-tile';
     const href = (file) => np ? '' : 'href="' + file + '?player=' + encodeURIComponent(selectedPlayer) + '"';
     const oc = np ? 'onclick="flashPrompt(); return false;"' : '';
+
+    // Language-specific games
+    const acctLang = isGuest ? 'hebrew' : (getAccountData().language || 'hebrew');
+    let langLabel, langTiles;
+    if (acctLang === 'spanish') {
+      langLabel = 'Spanish';
+      langTiles = `<a class="${cls}" ${href('Spanish.html')} ${oc}><span class="game-tile-icon">🇪🇸</span><div class="game-tile-info"><div class="game-tile-name">Spanish Words & Phrases</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
+    } else {
+      langLabel = 'Hebrew';
+      langTiles = `<a class="${cls}" ${href('Hebrew.html')} ${oc}><span class="game-tile-icon">אב</span><div class="game-tile-info"><div class="game-tile-name">Hebrew Letters & Words</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
+    }
     const gamesHTML = `
       <div class="games-heading">Choose a Game</div>
       <div class="games-grid">
@@ -527,8 +601,8 @@
         <a class="${cls}" ${href('MulFrac.html')} ${oc}><span class="game-tile-icon">✖️➗</span><div class="game-tile-info"><div class="game-tile-name">Multiply & Divide</div><div class="game-tile-pts">2-5 pts</div></div></a>
         <a class="${cls}" ${href('MathStories.html')} ${oc}><span class="game-tile-icon">📖</span><div class="game-tile-info"><div class="game-tile-name">Math Stories</div><div class="game-tile-pts">2-5 pts</div></div></a>
         <a class="${cls}" ${href('Geometry.html')} ${oc}><span class="game-tile-icon">📐</span><div class="game-tile-info"><div class="game-tile-name">Geometry</div><div class="game-tile-pts">2-5 pts</div></div></a>
-        <div class="cat-label">🔤 Hebrew</div>
-        <a class="${cls}" ${href('Hebrew.html')} ${oc}><span class="game-tile-icon">אב</span><div class="game-tile-info"><div class="game-tile-name">Hebrew Letters & Words</div><div class="game-tile-pts">2-5 pts</div></div></a>
+        <div class="cat-label">🔤 ${langLabel}</div>
+        ${langTiles}
         <div class="cat-label">🧠 Puzzles & IQ</div>
         <a class="${cls}" ${href('Patterns.html')} ${oc}><span class="game-tile-icon">🧩</span><div class="game-tile-info"><div class="game-tile-name">Shape Patterns</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
         <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
@@ -543,22 +617,23 @@
         <h1 class="hero-title">3 Jars</h1>
         <p class="hero-tagline">Every question fills a jar</p>
       </div>
-      <p class="prompt-msg ${!selectedPlayer ? 'active' : ''}" id="prompt">
+      ${isGuest ? '' : `<p class="prompt-msg ${!selectedPlayer ? 'active' : ''}" id="prompt">
         ${selectedPlayer ? '<strong>' + selectedPlayer + '</strong> is playing!' : 'Tap a player to start'}
       </p>
-      <div class="player-strip">${stripHTML}</div>
+      <div class="player-strip">${stripHTML}</div>`}
       <div class="games-area">${gamesHTML}</div>
-      <div class="jars-section-bottom">
+      ${isGuest ? '' : `<div class="jars-section-bottom">
         <div class="jars-bottom-heading">🍯 Your Jars</div>
         ${jarsHTML}
-      </div>
+      </div>`}
       <div class="philosophy">
         <h3>💡 Why 3 Jars?</h3>
-        <p>Every math problem, Hebrew word, and pattern earns points. At 10,000 points (75%+ accuracy), three things happen: you celebrate with a fun family experience (Experience with Family), you invest toward your first stock (Investing Jar), and you give back to the community (Give Back Jar). Parents can configure exactly how much goes into each jar in <a href="settings.html" style="color:#fbbf24;">Settings</a>. Because success isn't just about earning — it's about enjoying, growing, and being kind.</p>
+        <p>Every math problem, language lesson, and pattern earns points. At 10,000 points (75%+ accuracy), three things happen: you celebrate with a fun family experience (Experience with Family), you invest toward your first stock (Investing Jar), and you give back to the community (Give Back Jar). Parents can configure exactly how much goes into each jar in <a href="settings.html" style="color:#fbbf24;">Settings</a>. Because success isn't just about earning — it's about enjoying, growing, and being kind.</p>
       </div>
       <div class="footer">
         Made with love<br>
-        <button class="reset-btn" onclick="resetScores()">Reset Scores</button>
+        <button class="reset-btn" onclick="resetScores()">Reset Scores</button><br>
+        <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
       </div>`;
   }
 
@@ -627,11 +702,35 @@
   }
 
   function updateAccountBar() {
-    const acct = getAccountData();
     const bar = document.getElementById('accountBar');
+    if (isGuest) {
+      bar.innerHTML = '<span>🎮 Guest Mode</span> <a href="login.html" onclick="sessionStorage.removeItem(\'km_guest\');">Create Account</a>';
+      return;
+    }
+    const acct = getAccountData();
     bar.innerHTML = '<span>Logged in as <strong>' + (acct.displayName || 'Account') + '</strong> (' + (acct.email || currentAccountId) + ')</span> <a href="settings.html" style="margin-left:4px;">⚙️ Settings</a> <a onclick="logout();">Logout</a>';
   }
   function logout() { if (confirm('Logout?')) { sessionStorage.removeItem('km_currentAccount'); window.location.href = 'login.html'; } }
+
+  // ---- Report Issues ----
+  function openReportModal() {
+    const overlay = document.createElement('div');
+    overlay.className = 'report-modal-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = '<div class="report-modal"><h3>Report an Issue</h3><p>Found a bug or have feedback? Let us know!</p><textarea id="reportText" placeholder="Describe the issue..."></textarea><div class="report-modal-buttons"><button class="report-cancel-btn" onclick="this.closest(\'.report-modal-overlay\').remove()">Cancel</button><button class="report-send-btn" onclick="sendReport()">Send Report</button></div></div>';
+    document.body.appendChild(overlay);
+    setTimeout(() => document.getElementById('reportText').focus(), 100);
+  }
+  function sendReport() {
+    const text = (document.getElementById('reportText').value || '').trim();
+    if (!text) { alert('Please describe the issue.'); return; }
+    // Send via mailto fallback
+    const subject = encodeURIComponent('3Jars Bug Report');
+    const body = encodeURIComponent('Issue Report\\n' + new Date().toLocaleString() + '\\n\\n' + text);
+    window.open('mailto:singolda@gmail.com?subject=' + subject + '&body=' + body);
+    document.querySelector('.report-modal-overlay').remove();
+    alert('Thanks! Your default email app should open with the report.');
+  }
 
   // ---- Celebrations ----
   function launchConfettiRain() {
@@ -723,27 +822,29 @@
   }, 30000);
 
   // ---- Init ----
-  fixScoreMigration();
+  if (!isGuest) {
+    fixScoreMigration();
 
-  // Sync scores and account data from Firebase, then re-render
-  if (typeof firebaseSyncScores === 'function') {
-    firebaseSyncScores(currentAccountId, getScores(), function(merged) {
-      localStorage.setItem('km_' + currentAccountId + '_scores', JSON.stringify(merged));
-      console.log('[3Jars] Scores synced from Firebase:', merged);
-      render(); // re-render with updated scores
-    });
-  }
-  if (typeof firebaseSyncAccountData === 'function') {
-    const accountData = getAccountData();
-    firebaseSyncAccountData(currentAccountId, accountData, function(merged) {
-      if (merged) {
-        updateAccountData(merged);
-        render(); // re-render with updated player data
-      }
-    });
+    // Sync scores and account data from Firebase, then re-render
+    if (typeof firebaseSyncScores === 'function') {
+      firebaseSyncScores(currentAccountId, getScores(), function(merged) {
+        localStorage.setItem('km_' + currentAccountId + '_scores', JSON.stringify(merged));
+        console.log('[3Jars] Scores synced from Firebase:', merged);
+        render(); // re-render with updated scores
+      });
+    }
+    if (typeof firebaseSyncAccountData === 'function') {
+      const accountData = getAccountData();
+      firebaseSyncAccountData(currentAccountId, accountData, function(merged) {
+        if (merged) {
+          updateAccountData(merged);
+          render(); // re-render with updated player data
+        }
+      });
+    }
   }
 
-  updateAccountBar(); render(); updateErrorBar(); checkCelebrations();
+  updateAccountBar(); render(); updateErrorBar(); if (!isGuest) checkCelebrations();
 </script>
 </body>
 </html>
