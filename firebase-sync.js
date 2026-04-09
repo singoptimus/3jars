@@ -104,28 +104,27 @@
       });
     });
   };
-
-  // Fetch scores from Firebase and merge with local (take higher value per player)
+  // Fetch scores from Firebase and merge with local (cloud is always the source of truth)
   window.firebaseSyncScores = function(accountId, localScores, callback) {
     whenReady(function() {
     var key = sanitizeKey(accountId);
     db.ref('accounts/' + key + '/scores').once('value').then(function(snapshot) {
       const remote = snapshot.val() || {};
-      const merged = { ...localScores };
-      // Merge: take the higher score for each player
-      for (const player in remote) {
-        if (!merged[player] || remote[player] > merged[player]) {
-          merged[player] = remote[player];
+      const merged = { ...remote };
+      // Cloud always wins; only add local-only players to push them to cloud
+      for (const player in localScores) {
+          if (!(player in remote)) {
+            merged[player] = localScores[player];
+          }
         }
-      }
-      // Also push any local-only players back to remote
-      let needsUpdate = false;
-      for (const player in merged) {
-        if (!remote[player] || merged[player] > remote[player]) {
-          needsUpdate = true;
+        // Push local-only players to cloud
+        let needsUpdate = false;
+        for (const player in localScores) {
+          if (!(player in remote)) {
+            needsUpdate = true;
+          }
         }
-      }
-      if (needsUpdate) {
+        if (needsUpdate) {
         db.ref('accounts/' + key + '/scores').set(merged);
       }
       if (callback) callback(merged);
