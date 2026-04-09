@@ -698,8 +698,41 @@ function render() {
       </div>
       <button class="submit-btn" onclick="doLogin()">Log In</button>
       <div class="error-msg" id="msg"></div>
+      <div style="margin-top: 8px; text-align: center;">
+        <a href="#" onclick="switchMode('forgot'); return false;" style="color: rgba(0,0,0,0.4); font-size: 0.85em; text-decoration: none; transition: color 0.2s;"
+          onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='rgba(0,0,0,0.4)'">Forgot your password?</a>
+      </div>
 
       ${quickLogin}
+    ` : mode === 'forgot' ? `
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="resetEmail" type="email" placeholder="Enter your account email" autocomplete="email"
+          onkeydown="if(event.key==='Enter'){sendResetCode();}">
+      </div>
+      <button class="submit-btn" onclick="sendResetCode()" id="sendCodeBtn">Send Reset Code</button>
+      <div class="error-msg" id="msg"></div>
+      <div id="resetCodeSection" style="display:none; margin-top: 16px;">
+        <div class="form-group">
+          <label class="form-label">Reset Code</label>
+          <input class="form-input" id="resetCode" type="text" placeholder="Enter the 6-digit code from your email" maxlength="6"
+            onkeydown="if(event.key==='Enter'){document.getElementById('resetNewPassword').focus();}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input class="form-input" id="resetNewPassword" type="password" placeholder="At least 4 characters" autocomplete="new-password"
+            onkeydown="if(event.key==='Enter'){document.getElementById('resetConfirmPassword').focus();}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input class="form-input" id="resetConfirmPassword" type="password" placeholder="Type it again" autocomplete="new-password"
+            onkeydown="if(event.key==='Enter'){doResetPassword();}">
+        </div>
+        <button class="submit-btn" onclick="doResetPassword()">Reset Password</button>
+      </div>
+      <div style="margin-top: 12px; text-align: center;">
+        <a href="#" onclick="switchMode('login'); return false;" style="color: rgba(0,0,0,0.4); font-size: 0.85em; text-decoration: none;">← Back to Login</a>
+      </div>
     ` : `
       <div class="form-group">
         <label class="form-label">Your Name</label>
@@ -925,6 +958,115 @@ async function doSignup() {
   sessionStorage.setItem('km_currentAccount', email);
   localStorage.setItem('km_currentAccount_backup', email);
   window.location.href = 'settings.html?welcome=1';
+}
+
+// ---- Password Reset ----
+let pendingResetEmail = '';
+let pendingResetCode = '';
+
+async function sendResetCode() {
+  const email = normalizeEmail(document.getElementById('resetEmail').value);
+  if (!email) { showMsg('Please enter your email address.', true); return; }
+  if (!isValidEmail(email)) { showMsg('Please enter a valid email address.', true); return; }
+
+  const accounts = getAccounts();
+  let acct = accounts[email];
+  if (!acct) {
+    showMsg('Looking up account...', false);
+    const remoteAcct = await firebaseLookupAccount(email);
+    if (remoteAcct && remoteAcct.passwordHash) {
+      accounts[email] = { passwordHash: remoteAcct.passwordHash, displayName: remoteAcct.displayName || email, email: remoteAcct.email || email, players: remoteAcct.players || [], createdAt: remoteAcct.createdAt || Date.now(), language: remoteAcct.language || 'hebrew' };
+      saveAccounts(accounts);
+      acct = accounts[email];
+    }
+  }
+  if (!acct) { showMsg('No account found with that email.', true); return; }
+
+  const code = String(Math.floor(100000 + Math.random() * 900000));
+  pendingResetEmail = email;
+  pendingResetCode = code;
+
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+      const db = firebase.database();
+      const key = sanitizeKey(email);
+      await db.ref('accounts/' + key + '/resetCode').set({ code: code, expiresAt: Date.now() + 15 * 60 * 1000 });
+    }
+  } catch(e) { console.warn('[3Jars] Firebase save reset code failed:', e); }
+
+  const btn = document.getElementById('sendCodeBtn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    await emailjs.send('service_oam7ctc', 'template_pxktrcf', {
+      user_name: acct.displayName || email,
+      user_email: email,
+      to_email: email,
+      signup_time: 'Password Reset Code: ' + code + ' (expires in 15 minutes)'
+    }, 'wlauNCpdFNdFs-izM');
+    showMsg('Reset code sent to ' + email + '! Check your inbox.', false);
+  } catch(e) {
+    console.error('[3Jars] Reset email failed:', e);
+    showMsg('Could not send email. Your code is: ' + code, false);
+  }
+
+  document.getElementById('resetCodeSection').style.display = 'block';
+  btn.textContent = 'Resend Code';
+  btn.disabled = false;
+  setTimeout(function() { const ci = document.getElementById('resetCode'); if (ci) ci.focus(); }, 100);
+}
+
+async function doResetPassword() {
+  const enteredCode = (document.getElementById('resetCode').value || '').trim();
+  const newPassword = document.getElementById('resetNewPassword').value || '';
+  const confirmPassword = document.getElementById('resetConfirmPassword').value || '';
+
+  if (!enteredCode) { showMsg('Please enter the reset code.', true); return; }
+  if (newPassword.length < 4) { showMsg('New password must be at least 4 characters.', true); return; }
+  if (newPassword !== confirmPassword) { showMsg("Passwords don\'t match!", true); return; }
+
+  let codeValid = (enteredCode === pendingResetCode && pendingResetEmail);
+  if (!codeValid) {
+    try {
+      if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        const db = firebase.database();
+        const email = pendingResetEmail || normalizeEmail(document.getElementById('resetEmail').value);
+        const key = sanitizeKey(email);
+        const snapshot = await db.ref('accounts/' + key + '/resetCode').once('value');
+        const resetData = snapshot.val();
+        if (resetData && resetData.code === enteredCode && resetData.expiresAt > Date.now()) {
+          codeValid = true;
+          pendingResetEmail = email;
+        }
+      }
+    } catch(e) { console.warn('[3Jars] Firebase code verification failed:', e); }
+  }
+
+  if (!codeValid) { showMsg('Invalid or expired reset code.', true); return; }
+
+  const email = pendingResetEmail;
+  const accounts = getAccounts();
+  const acct = accounts[email];
+  if (!acct) { showMsg('Account not found. Please try again.', true); return; }
+
+  acct.passwordHash = hashPassword(newPassword);
+  accounts[email] = acct;
+  saveAccounts(accounts);
+  firebaseSaveCredentials(email, acct);
+
+  try {
+    if (typeof firebase !== 'undefined' && firebase.apps.length) {
+      const db = firebase.database();
+      const key = sanitizeKey(email);
+      db.ref('accounts/' + key + '/resetCode').remove();
+    }
+  } catch(e) {}
+
+  pendingResetCode = '';
+  pendingResetEmail = '';
+  showMsg('Password reset successfully! Redirecting to login...', false);
+  setTimeout(function() { switchMode('login'); }, 1500);
 }
 
 // ---- Migration: convert old username-keyed accounts to email-keyed ----
