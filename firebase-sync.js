@@ -65,74 +65,62 @@
 
   // ---- Sync functions exposed globally ----
 
-  // Write scores to Firebase
+  // Merge two score maps shaped like { player: { game: number, ... } }
+  // Keeps the higher per-game value across local + remote so a stale
+  // local cache can never overwrite a higher cloud score.
+  function mergeScoreMaps(a, b) {
+    var out = {};
+    var players = {};
+    for (var k in (a || {})) players[k] = true;
+    for (var k in (b || {})) players[k] = true;
+    for (var p in players) {
+      var ap = (a && a[p]) || {};
+      var bp = (b && b[p]) || {};
+      var games = {};
+      for (var g in ap) games[g] = true;
+      for (var g in bp) games[g] = true;
+      out[p] = {};
+      for (var g in games) {
+        var av = typeof ap[g] === "number" ? ap[g] : 0;
+        var bv = typeof bp[g] === "number" ? bp[g] : 0;
+        out[p][g] = Math.max(av, bv);
+      }
+    }
+    return out;
+  }
+
+  // Write scores to Firebase using read-merge-write so a stale local cache
+  // can never clobber a higher cloud value.
   window.firebaseSaveScores = function(accountId, scores) {
     whenReady(function() {
       var key = sanitizeKey(accountId);
-      db.ref('accounts/' + key + '/scores').set(scores).catch(function(e) {
-        console.warn('[3Jars] Firebase save scores failed:', e);
+      var ref = db.ref("accounts/" + key + "/scores");
+      ref.once("value").then(function(snap) {
+        var remote = snap.val() || {};
+        var merged = mergeScoreMaps(remote, scores || {});
+        ref.set(merged).catch(function(e) {
+          console.warn("[3Jars] Firebase save scores failed:", e);
+        });
+      }).catch(function(e) {
+        console.warn("[3Jars] Firebase save scores read failed:", e);
       });
     });
   };
 
-  // Write stats to Firebase
-  window.firebaseSaveStats = function(accountId, stats) {
-    whenReady(function() {
-      var key = sanitizeKey(accountId);
-      db.ref('accounts/' + key + '/stats').set(stats).catch(function(e) {
-        console.warn('[3Jars] Firebase save stats failed:', e);
-      });
-    });
-  };
-
-  // Write config (jar amounts) to Firebase
-  window.firebaseSaveConfig = function(accountId, config) {
-    whenReady(function() {
-      var key = sanitizeKey(accountId);
-      db.ref('accounts/' + key + '/config').set(config).catch(function(e) {
-        console.warn('[3Jars] Firebase save config failed:', e);
-      });
-    });
-  };
-
-  // Write account data (players, jars, etc.) to Firebase
-  window.firebaseSaveAccountData = function(accountId, data) {
-    whenReady(function() {
-      var key = sanitizeKey(accountId);
-      db.ref('accounts/' + key + '/accountData').set(data).catch(function(e) {
-        console.warn('[3Jars] Firebase save account data failed:', e);
-      });
-    });
-  };
-  // Fetch scores from Firebase and merge with local (cloud is always the source of truth)
+  // Fetch scores from Firebase and merge per-game (max wins on both sides).
   window.firebaseSyncScores = function(accountId, localScores, callback) {
     whenReady(function() {
-    var key = sanitizeKey(accountId);
-    db.ref('accounts/' + key + '/scores').once('value').then(function(snapshot) {
-      const remote = snapshot.val() || {};
-      const merged = { ...remote };
-      // Cloud always wins; only add local-only players to push them to cloud
-      for (const player in localScores) {
-          if (!(player in remote)) {
-            merged[player] = localScores[player];
-          }
-        }
-        // Push local-only players to cloud
-        let needsUpdate = false;
-        for (const player in localScores) {
-          if (!(player in remote)) {
-            needsUpdate = true;
-          }
-        }
-        if (needsUpdate) {
-        db.ref('accounts/' + key + '/scores').set(merged);
-      }
-      if (callback) callback(merged);
-    }).catch(function(e) {
-      console.warn('[3Jars] Firebase sync scores failed:', e);
-      if (callback) callback(localScores);
+      var key = sanitizeKey(accountId);
+      db.ref("accounts/" + key + "/scores").once("value").then(function(snapshot) {
+        var remote = snapshot.val() || {};
+        var merged = mergeScoreMaps(localScores || {}, remote);
+        db.ref("accounts/" + key + "/scores").set(merged);
+        if (callback) callback(merged);
+      }).catch(function(e) {
+        console.warn("[3Jars] Firebase sync scores failed:", e);
+        if (callback) callback(localScores);
+      });
     });
-    }); // end whenReady
   };
 
   // Fetch account data from Firebase and merge with local
