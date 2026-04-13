@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shrine Quest — 3 Jars Academy</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<script src="firebase-sync.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #0f1f3d 0%, #1d3b6f 40%, #4f8fd1 100%);
+    color: #f6faff;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 16px;
+  }
+  .topbar {
+    width: 100%; max-width: 720px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .topbar a { color: #cfe1ff; text-decoration: none; font-size: 0.95em; }
+  h1 {
+    font-size: 1.8em; text-align: center; margin: 4px 0 4px;
+    background: linear-gradient(90deg, #ffd86b 0%, #ffb84d 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .sub { text-align: center; color: #d6e4ff; font-size: 0.95em; margin-bottom: 10px; }
+  .target {
+    font-size: 1.2em; font-weight: 600; text-align: center;
+    background: rgba(255,255,255,0.08); padding: 8px 18px; border-radius: 12px;
+    margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.18);
+  }
+  .target b { color: #ffd86b; font-size: 1.3em; }
+  canvas {
+    background: #0a1730; border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    border: 2px solid rgba(255,216,107,0.35);
+    image-rendering: pixelated;
+    max-width: 100%; height: auto;
+  }
+  .stats {
+    display: flex; gap: 16px; margin-top: 10px; font-size: 0.95em;
+    color: #cfe1ff;
+  }
+  .stats b { color: #ffd86b; }
+  .acc-bar {
+    width: 240px; height: 6px; background: rgba(255,255,255,0.12);
+    border-radius: 3px; overflow: hidden; margin-top: 8px;
+  }
+  .acc-fill { height: 100%; background: linear-gradient(90deg,#34d399,#ffd86b); width: 0%; transition: width .3s; }
+  .help {
+    margin-top: 14px; font-size: 0.85em; color: #b8c8e0; text-align: center;
+    max-width: 520px;
+  }
+  .toast {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    background: rgba(15,31,61,0.95); color: #ffd86b;
+    padding: 18px 32px; border-radius: 16px;
+    font-size: 1.4em; font-weight: 700;
+    border: 2px solid #ffd86b; opacity: 0; pointer-events: none;
+    transition: opacity .3s, transform .3s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="index.html">← Home</a>
+    <span id="player-label" style="color:#ffd86b;font-weight:600;"></span>
+  </div>
+  <h1>🗡️ Shrine Quest</h1>
+  <div class="sub">Push the right number balls onto the plate so they sum to the target. Then walk through the door to the goal.</div>
+  <div class="target">Target sum: <b id="target">—</b> · Current: <span id="current">0</span></div>
+  <canvas id="cv" width="640" height="480"></canvas>
+  <div class="stats">
+    <span>Points: <b id="pts">0</b></span>
+    <span>Tries: <b id="tries">0</b></span>
+    <span>Correct: <b id="correct">0</b></span>
+  </div>
+  <div class="acc-bar"><div class="acc-fill" id="acc"></div></div>
+  <div class="help">Arrows / WASD to move · Space to pick up / drop a ball · Walk into balls to push.</div>
+  <div class="toast" id="toast">✨ Shrine cleared! +<span id="award">15</span></div>
+
+<script>
+(function(){
+  // ---- Account-scoped state ----
+  var account = localStorage.getItem('km_current_account') || 'guest';
+  var player = localStorage.getItem('kidsmath_current_player') || 'Player';
+  document.getElementById('player-label').textContent = '🏃 ' + player;
+
+  var TILE = 40;
+  var COLS = 16, ROWS = 12;
+
+  // Level: # wall, . floor, ~ pit, D door, P plate, G goal
+  var LEVEL = [
+    "################",
+    "#..............#",
+    "#..............#",
+    "#..............#",
+    "#.....PPPP.....#",
+    "#..............#",
+    "########D#######",
+    "#~~~~~~~.~~~~~~#",
+    "#~~~~~~~.~~~~~~#",
+    "#..............#",
+    "#............G.#",
+    "################",
+  ];
+  var grid = LEVEL.map(function(r){ return r.split(''); });
+
+  // Numbered balls scattered above the plate
+  var balls = [
+    {x: 3, y: 3, n: 3, alive: true, held: false},
+    {x: 5, y: 3, n: 4, alive: true, held: false},
+    {x: 7, y: 3, n: 5, alive: true, held: false},
+    {x: 9, y: 3, n: 7, alive: true, held: false},
+    {x: 11,y: 3, n: 8, alive: true, held: false},
+  ];
+
+  // Player starts at top
+  var hero = {x: 1, y: 1, dir: 'down'};
+
+  // Pick a target sum reachable from the available numbers
+  var targets = [12, 11, 9, 13, 10, 8, 15];
+  var target = targets[Math.floor(Math.random()*targets.length)];
+  document.getElementById('target').textContent = target;
+
+  var doorOpen = false;
+  var pts = 0, tries = 0, correct = 0;
+  var ended = false;
+
+  // Load existing stats from account-scoped storage
+  var statsKey = 'km_' + account + '_stats';
+  var scoresKey = 'km_' + account + '_scores';
+
+  function tileAt(x, y) {
+    if (y < 0 || y >= ROWS || x < 0 || x >= COLS) return '#';
+    return grid[y][x];
+  }
+
+  function ballAt(x, y) {
+    for (var i=0; i<balls.length; i++) {
+      if (balls[i].alive && !balls[i].held && balls[i].x === x && balls[i].y === y) return balls[i];
+    }
+    return null;
+  }
+
+  function objsOnPlate() {
+    var out = [];
+    for (var i=0; i<balls.length; i++) {
+      var b = balls[i];
+      if (b.alive && !b.held && tileAt(b.x, b.y) === 'P') out.push(b);
+    }
+    return out;
+  }
+
+  function updateSum() {
+    var sum = 0;
+    var on = objsOnPlate();
+    for (var i=0; i<on.length; i++) sum += on[i].n;
+    document.getElementById('current').textContent = sum;
+    var wasOpen = doorOpen;
+    doorOpen = (sum === target);
+    if (doorOpen && !wasOpen) {
+      // Door opens
+    }
+    return sum;
+  }
+
+  function recordAttempt(correctness) {
+    tries++;
+    if (correctness) correct++;
+    document.getElementById('tries').textContent = tries;
+    document.getElementById('correct').textContent = correct;
+    var acc = tries === 0 ? 0 : Math.round((correct/tries)*100);
+    document.getElementById('acc').style.width = acc + '%';
+  }
+
+  function awardPoints(amount) {
+    pts += amount;
+    document.getElementById('pts').textContent = pts;
+
+    // Persist to account-scoped scores
+    try {
+      var scores = JSON.parse(localStorage.getItem(scoresKey) || '{}');
+      if (!scores[player]) scores[player] = {};
+      scores[player]['Shrines'] = (scores[player]['Shrines'] || 0) + amount;
+      localStorage.setItem(scoresKey, JSON.stringify(scores));
+      if (window.firebaseSaveScores) window.firebaseSaveScores(account, scores);
+    } catch(e) { console.warn('persist failed', e); }
+
+    // Stats
+    try {
+      var stats = JSON.parse(localStorage.getItem(statsKey) || '{}');
+      if (!stats[player]) stats[player] = {};
+      if (!stats[player]['Shrines']) stats[player]['Shrines'] = {tries: 0, correct: 0};
+      stats[player]['Shrines'].tries = (stats[player]['Shrines'].tries||0) + tries;
+      stats[player]['Shrines'].correct = (stats[player]['Shrines'].correct||0) + correct;
+      localStorage.setItem(statsKey, JSON.stringify(stats));
+    } catch(e){}
+  }
+
+  function tryMove(dx, dy) {
+    if (ended) return;
+    var nx = hero.x + dx, ny = hero.y + dy;
+    var t = tileAt(nx, ny);
+
+    // Door blocks unless open
+    if (t === 'D' && !doorOpen) return;
+    if (t === '#') return;
+
+    // Pit: deadly only if not bridged (no bridge mechanic in this version) — block
+    if (t === '~') return;
+
+    // Goal
+    if (t === 'G') {
+      hero.x = nx; hero.y = ny;
+      finishShrine();
+      draw();
+      return;
+    }
+
+    // Push ball if present
+    var b = ballAt(nx, ny);
+    if (b) {
+      var bx = b.x + dx, by = b.y + dy;
+      var bt = tileAt(bx, by);
+      if (bt === '#' || bt === 'D' || bt === '~' || ballAt(bx, by)) return;
+      b.x = bx; b.y = by;
+      hero.x = nx; hero.y = ny;
+      updateSum();
+      draw();
+      return;
+    }
+
+    hero.x = nx; hero.y = ny;
+    draw();
+  }
+
+  function finishShrine() {
+    if (ended) return;
+    ended = true;
+    var acc = tries === 0 ? 1 : (correct/tries);
+    var award = 15;
+    if (acc >= 0.9) award = 25;
+    else if (acc >= 0.7) award = 20;
+    else if (acc >= 0.5) award = 15;
+    else award = 10;
+
+    recordAttempt(true); // arrival counts as success
+    awardPoints(award);
+
+    var toast = document.getElementById('toast');
+    document.getElementById('award').textContent = award;
+    toast.classList.add('show');
+    setTimeout(function(){
+      toast.classList.remove('show');
+      // Bounce home after a beat
+      setTimeout(function(){ window.location.href = 'index.html'; }, 600);
+    }, 1800);
+  }
+
+  // Track sum changes for attempt feedback (not pickup-based here; movement-based)
+  var lastSum = 0;
+  function checkAttempt() {
+    var s = updateSum();
+    // If learner just made the target, count it as a correct attempt.
+    if (s === target && lastSum !== target) {
+      recordAttempt(true);
+    } else if (s !== target && lastSum === target) {
+      // moved away — not penalized
+    } else if (objsOnPlate().length >= 2 && s !== target) {
+      // Each "completed but wrong" attempt — debounce by counting only on transitions
+    }
+    lastSum = s;
+  }
+
+  function draw() {
+    var cv = document.getElementById('cv');
+    var ctx = cv.getContext('2d');
+    ctx.clearRect(0,0,cv.width, cv.height);
+
+    for (var y=0; y<ROWS; y++) {
+      for (var x=0; x<COLS; x++) {
+        var t = grid[y][x];
+        var px = x*TILE, py = y*TILE;
+        if (t === '#') {
+          ctx.fillStyle = '#2a3552'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.strokeStyle = '#1a2138'; ctx.strokeRect(px, py, TILE, TILE);
+        } else if (t === '~') {
+          ctx.fillStyle = '#0a0f1f'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#1a2855'; ctx.fillRect(px+4, py+4, TILE-8, TILE-8);
+        } else if (t === 'D') {
+          if (doorOpen) {
+            ctx.fillStyle = '#3a4870'; ctx.fillRect(px, py, TILE, TILE);
+          } else {
+            ctx.fillStyle = '#8b6f3a'; ctx.fillRect(px, py, TILE, TILE);
+            ctx.fillStyle = '#5a4628'; ctx.fillRect(px+TILE/2-2, py+8, 4, TILE-16);
+          }
+        } else if (t === 'P') {
+          ctx.fillStyle = '#3a4870'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#ffd86b'; ctx.fillRect(px+6, py+6, TILE-12, TILE-12);
+          ctx.fillStyle = '#0a1730'; ctx.font = 'bold 14px Segoe UI'; ctx.textAlign='center';
+          ctx.fillText('●', px+TILE/2, py+TILE/2+5);
+        } else if (t === 'G') {
+          ctx.fillStyle = '#3a4870'; ctx.fillRect(px, py, TILE, TILE);
+          ctx.fillStyle = '#ffd86b'; ctx.font = 'bold 28px Segoe UI'; ctx.textAlign='center';
+          ctx.fillText('★', px+TILE/2, py+TILE/2+10);
+        } else {
+          ctx.fillStyle = '#3a4870'; ctx.fillRect(px, py, TILE, TILE);
+        }
+      }
+    }
+
+    // Balls
+    for (var i=0; i<balls.length; i++) {
+      var b = balls[i];
+      if (!b.alive || b.held) continue;
+      var px = b.x*TILE + TILE/2, py = b.y*TILE + TILE/2;
+      ctx.beginPath(); ctx.arc(px, py, TILE/2 - 6, 0, Math.PI*2);
+      ctx.fillStyle = '#ff8c5a'; ctx.fill();
+      ctx.strokeStyle = '#a3441e'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = 'bold 18px Segoe UI'; ctx.textAlign='center';
+      ctx.fillText(b.n, px, py+6);
+    }
+
+    // Hero
+    var hx = hero.x*TILE + TILE/2, hy = hero.y*TILE + TILE/2;
+    ctx.beginPath(); ctx.arc(hx, hy, TILE/2 - 6, 0, Math.PI*2);
+    ctx.fillStyle = '#34d399'; ctx.fill();
+    ctx.strokeStyle = '#0d6e4d'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '16px Segoe UI'; ctx.textAlign='center';
+    ctx.fillText('🏃', hx, hy+6);
+  }
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if (k === 'ArrowUp' || k === 'w' || k === 'W') { tryMove(0,-1); checkAttempt(); e.preventDefault(); }
+    else if (k === 'ArrowDown' || k === 's' || k === 'S') { tryMove(0,1); checkAttempt(); e.preventDefault(); }
+    else if (k === 'ArrowLeft' || k === 'a' || k === 'A') { tryMove(-1,0); checkAttempt(); e.preventDefault(); }
+    else if (k === 'ArrowRight' || k === 'd' || k === 'D') { tryMove(1,0); checkAttempt(); e.preventDefault(); }
+  });
+
+  updateSum();
+  draw();
+})();
+</script>
+</body>
+</html>
