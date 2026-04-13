@@ -1101,33 +1101,12 @@ function migrateAccounts() {
 }
 
 // ---- Seed default account if fresh install ----
+// Intentionally a no-op. Previously this seeded a hardcoded Adam/Ozzy/Elinor
+// account on every fresh device, which leaked Adam family to anyone visiting
+// the site for the first time. Now: fresh devices show login then users sign up
+// themselves, and Adam real account hydrates from Firebase on login.
 function seedDefaults() {
-  const accounts = getAccounts();
-  if (Object.keys(accounts).length === 0) {
-    // Check if there's existing data from the old non-account system
-    const oldScores = localStorage.getItem('kidsMathScores');
-    const oldStats = localStorage.getItem('kidsMathStats');
-    const oldCelebs = localStorage.getItem('kidsMathCelebrations');
-
-    // Create the default account keyed by email
-    accounts['adam.s@taboola.com'] = {
-      passwordHash: hashPassword('1234'),
-      displayName: 'Adam',
-      email: 'adam.s@taboola.com',
-      players: [
-        { name: 'Ozzy', emoji: '🏀', color: '#667eea' },
-        { name: 'Elinor', emoji: '🏊', color: '#f472b6' },
-        { name: 'Adam', emoji: '🏃', color: '#34d399' }
-      ],
-      createdAt: Date.now()
-    };
-    saveAccounts(accounts);
-
-    // Migrate old data to account-scoped keys
-    if (oldScores) localStorage.setItem('km_adam.s@taboola.com_scores', oldScores);
-    if (oldStats) localStorage.setItem('km_adam.s@taboola.com_stats', oldStats);
-    if (oldCelebs) localStorage.setItem('km_adam.s@taboola.com_celebrations', oldCelebs);
-  }
+  // no-op
 }
 
 // ---- Guest Play ----
