@@ -122,6 +122,35 @@
     });
   };
 
-// Initialize on load
+// Heal corrupted localStorage score entries on load
+  function healLocalScores() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var key = localStorage.key(i);
+        if (key && key.indexOf("km_") === 0 && key.indexOf("_scores") > 0) {
+          var raw = localStorage.getItem(key);
+          var obj;
+          try { obj = JSON.parse(raw); } catch(e) { obj = null; }
+          if (obj && typeof obj === "object") {
+            var changed = false;
+            for (var p in obj) {
+              var v = obj[p];
+              if (typeof v !== "number" || !isFinite(v)) {
+                obj[p] = coerceToNumber(v);
+                changed = true;
+              }
+            }
+            if (changed) {
+              localStorage.setItem(key, JSON.stringify(obj));
+              console.log("[firebase-sync] healed corrupted scores in " + key);
+            }
+          }
+        }
+      }
+    } catch(e) { console.warn("[firebase-sync] healLocalScores error", e); }
+  }
+
+  // Initialize on load
+  healLocalScores();
   initFirebase();
 })();
