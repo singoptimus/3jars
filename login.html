@@ -486,7 +486,52 @@
     line-height: 1.5;
   }
 
-  /* === REPORT ISSUES === */
+  
+    /* === BLOG BANNER === */
+    .blog-banner {
+      max-width: 520px;
+      width: 100%;
+      margin-top: 28px;
+      background: white;
+      border: 2px solid rgba(251,191,36,0.3);
+      border-radius: 18px;
+      padding: 24px 28px;
+      box-shadow: 0 4px 16px rgba(251,191,36,0.1);
+      text-align: center;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+    }
+    .blog-banner:hover {
+      border-color: #fbbf24;
+      box-shadow: 0 8px 28px rgba(251,191,36,0.2);
+      transform: translateY(-2px);
+    }
+    .blog-banner-icon { font-size: 1.8em; margin-bottom: 8px; }
+    .blog-banner-title {
+      font-size: 1.05em;
+      font-weight: 700;
+      color: #2d2d2d;
+      margin-bottom: 6px;
+    }
+    .blog-banner-desc {
+      font-size: 0.82em;
+      color: rgba(0,0,0,0.45);
+      line-height: 1.6;
+    }
+    .blog-banner-cta {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 8px 20px;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border-radius: 10px;
+      font-size: 0.85em;
+      font-weight: 700;
+      color: #2d2d2d;
+    }
+
+    /* === REPORT ISSUES === */
   .report-section {
     text-align: center;
     margin-top: 32px;
@@ -597,7 +642,15 @@
 
   <div class="login-container" id="app"></div>
 
-  <div class="report-section">
+  
+    <a class="blog-banner" href="blog/">
+      <div class="blog-banner-icon">📝</div>
+      <div class="blog-banner-title">Parent Tips & Articles</div>
+      <div class="blog-banner-desc">Math strategies, learning science, and tips to help your child thrive — from the 3 Jars team.</div>
+      <span class="blog-banner-cta">Read the Blog →</span>
+    </a>
+
+    <div class="report-section">
     <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
   </div>
 </div>
