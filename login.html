@@ -430,6 +430,28 @@
     .game-chip { font-size: 0.8em; padding: 8px 14px; }
     .login-container { padding: 24px 20px; }
   }
+
+  /* === SOCIAL LOGIN === */
+  .social-buttons { display: flex; flex-direction: column; gap: 8px; margin-bottom: 8px; }
+  .social-btn {
+    width: 100%; padding: 12px 16px;
+    background: white; border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
+    font-size: 0.95em; font-weight: 600; color: #2d2d2d;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .social-btn:hover { border-color: rgba(0,0,0,0.25); transform: translateY(-1px); }
+  .social-btn.google-btn:hover { border-color: #4285f4; }
+  .social-btn.facebook-btn:hover { border-color: #1877f2; }
+  .social-btn.twitter-btn:hover { border-color: #000; }
+  .social-btn svg { flex-shrink: 0; }
+  .social-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 18px 0 14px; color: rgba(0,0,0,0.3); font-size: 0.8em;
+  }
+  .social-divider::before, .social-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(0,0,0,0.1);
+  }
 </style>
 </head>
 <body>
@@ -645,6 +667,21 @@ function render() {
         <div class="guest-panel-note">Create an account later to earn points & unlock rewards</div>
       </div>
     ` : mode === 'login' ? `
+      <div class="social-buttons">
+        <button class="social-btn google-btn" onclick="socialLogin('google')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <button class="social-btn facebook-btn" onclick="socialLogin('facebook')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>
+          Continue with Facebook
+        </button>
+        <button class="social-btn twitter-btn" onclick="socialLogin('twitter')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#000"/></svg>
+          Continue with X
+        </button>
+      </div>
+      <div class="social-divider">or</div>
       <div class="form-group">
         <label class="form-label">Email</label>
         <input class="form-input" id="email" type="email" placeholder="Enter your email" autocomplete="email"
@@ -693,6 +730,21 @@ function render() {
         <a href="#" onclick="switchMode('login'); return false;" style="color: rgba(0,0,0,0.4); font-size: 0.85em; text-decoration: none;">← Back to Login</a>
       </div>
     ` : `
+      <div class="social-buttons">
+        <button class="social-btn google-btn" onclick="socialLogin('google')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <button class="social-btn facebook-btn" onclick="socialLogin('facebook')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>
+          Continue with Facebook
+        </button>
+        <button class="social-btn twitter-btn" onclick="socialLogin('twitter')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#000"/></svg>
+          Continue with X
+        </button>
+      </div>
+      <div class="social-divider">or</div>
       <div class="form-group">
         <label class="form-label">Your Name</label>
         <input class="form-input" id="newName" type="text" placeholder="e.g. The Smith Family" autocomplete="name"
@@ -808,6 +860,11 @@ async function doLogin() {
     return;
   }
 
+  if (acct.socialProvider && !acct.passwordHash) {
+    showMsg('This account uses ' + acct.socialProvider.replace('.com', '') + '. Use the sign-in button above.', true);
+    return;
+  }
+
   if (acct.passwordHash !== hashPassword(password)) {
     showMsg('Wrong password. Try again!', true);
     return;
@@ -839,6 +896,11 @@ async function quickLogin(accountKey) {
       saveAccounts(accounts);
       acct = accounts[accountKey];
     }
+  }
+
+  if (acct && acct.socialProvider && !acct.passwordHash) {
+    alert('This account uses ' + acct.socialProvider.replace('.com', '') + '. Use the sign-in button on the login page.');
+    return;
   }
 
   if (!acct || acct.passwordHash !== hashPassword(password)) {
@@ -1095,6 +1157,127 @@ function sendReport() {
   } catch(e) { console.log('Report send failed:', e); }
   document.querySelector('.report-modal-overlay').remove();
   alert('Thanks! Your report has been sent.');
+}
+
+// ---- Social Login ----
+function socialLogin(providerName) {
+  if (typeof window.firebaseReadyPromise === 'undefined') {
+    showMsg('Firebase not loaded. Please try again.', true);
+    return;
+  }
+  window.firebaseReadyPromise.then(function(ok) {
+    if (!ok || !window.firebaseAuth) {
+      showMsg('Firebase not available. Please try again.', true);
+      return;
+    }
+    var provider;
+    if (providerName === 'google') {
+      provider = new firebase.auth.GoogleAuthProvider();
+    } else if (providerName === 'facebook') {
+      provider = new firebase.auth.FacebookAuthProvider();
+      provider.addScope('email');
+    } else if (providerName === 'twitter') {
+      provider = new firebase.auth.TwitterAuthProvider();
+    }
+    showMsg('Opening ' + providerName + ' sign-in...', false);
+    window.firebaseAuth.signInWithPopup(provider).then(function(result) {
+      handleSocialLoginResult(result);
+    }).catch(function(error) {
+      handleSocialLoginError(error, provider);
+    });
+  });
+}
+
+function handleSocialLoginResult(result) {
+  if (!result || !result.user) return;
+  var user = result.user;
+  var email = user.email ? normalizeEmail(user.email) : (user.uid + '@social.3jars');
+  var displayName = user.displayName || email.split('@')[0];
+  finalizeSocialLogin(email, displayName, user);
+}
+
+async function finalizeSocialLogin(email, displayName, firebaseUser) {
+  var accounts = getAccounts();
+  var acct = accounts[email];
+
+  // Check Firebase RTDB if not found locally
+  if (!acct) {
+    var remoteAcct = await firebaseLookupAccount(email);
+    if (remoteAcct) {
+      accounts[email] = remoteAcct;
+      saveAccounts(accounts);
+      acct = accounts[email];
+    }
+  }
+
+  if (acct) {
+    // Existing account — merge: add social provider info, preserve everything else
+    acct.socialProvider = firebaseUser.providerData[0].providerId || 'social';
+    acct.firebaseUid = firebaseUser.uid;
+    accounts[email] = acct;
+    saveAccounts(accounts);
+    firebaseSaveCredentials(email, acct);
+    sessionStorage.setItem('km_currentAccount', email);
+    localStorage.setItem('km_currentAccount_backup', email);
+    window.location.href = 'index.html';
+  } else {
+    // New account via social login
+    var newAcct = {
+      passwordHash: '',
+      displayName: displayName,
+      email: email,
+      players: [],
+      createdAt: Date.now(),
+      language: 'hebrew',
+      socialProvider: firebaseUser.providerData[0].providerId || 'social',
+      firebaseUid: firebaseUser.uid
+    };
+    accounts[email] = newAcct;
+    saveAccounts(accounts);
+    firebaseSaveCredentials(email, newAcct);
+    // Send signup notification
+    try {
+      emailjs.send('service_oam7ctc', 'template_pxktrcf', {
+        user_name: displayName,
+        user_email: email,
+        to_email: 'singolda@gmail.com',
+        signup_time: new Date().toLocaleString() + ' (via ' + newAcct.socialProvider + ')'
+      }, 'wlauNCpdFNdFs-izM');
+    } catch(e) {}
+    sessionStorage.setItem('km_currentAccount', email);
+    localStorage.setItem('km_currentAccount_backup', email);
+    window.location.href = 'settings.html?welcome=1';
+  }
+}
+
+function handleSocialLoginError(error, provider) {
+  if (error.code === 'auth/account-exists-with-different-credential') {
+    showMsg('This email is linked to a different sign-in method. Try another provider.', true);
+  } else if (error.code === 'auth/popup-blocked') {
+    // Fallback to redirect
+    showMsg('Popup blocked — redirecting...', false);
+    window.firebaseAuth.signInWithRedirect(provider);
+  } else if (error.code === 'auth/popup-closed-by-user' || error.code === 'auth/cancelled-popup-request') {
+    showMsg('Sign-in cancelled.', true);
+  } else {
+    showMsg('Sign-in failed: ' + (error.message || 'Unknown error'), true);
+  }
+}
+
+// Handle redirect result (fallback when popup is blocked)
+if (typeof window.firebaseReadyPromise !== 'undefined') {
+  window.firebaseReadyPromise.then(function(ok) {
+    if (!ok || !window.firebaseAuth) return;
+    window.firebaseAuth.getRedirectResult().then(function(result) {
+      if (result && result.user) {
+        handleSocialLoginResult(result);
+      }
+    }).catch(function(error) {
+      if (error.code && error.code !== 'auth/no-auth-event') {
+        handleSocialLoginError(error, null);
+      }
+    });
+  });
 }
 
 // ---- Check if already logged in ----

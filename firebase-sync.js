@@ -33,11 +33,13 @@
   async function initFirebase() {
     try {
       await loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
+      await loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js');
       await loadScript('https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js');
       if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
       }
       db = firebase.database();
+      window.firebaseAuth = firebase.auth();
       firebaseReady = true;
       console.log('[3Jars] Firebase connected');
       _readyResolve(true);
@@ -202,6 +204,9 @@
       }
     } catch(e) { console.warn("[firebase-sync] healLocalScores error", e); }
   }
+
+  // Expose ready promise globally for login.html social auth
+  window.firebaseReadyPromise = firebaseReadyPromise;
 
   // Initialize on load
   healLocalScores();
