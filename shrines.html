@@ -187,7 +187,7 @@
     // Persist to account-scoped scores
     try {
       var scores = JSON.parse(localStorage.getItem(scoresKey) || '{}');
-      scores[player] = (scores[player] || 0) + amount;
+      scores[player] = (Number(scores[player]) || 0) + amount;
       localStorage.setItem(scoresKey, JSON.stringify(scores));
       if (window.firebaseSaveScores) window.firebaseSaveScores(account, scores);
     } catch(e) { console.warn('persist failed', e); }
