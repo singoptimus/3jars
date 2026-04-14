@@ -122,7 +122,60 @@
     });
   };
 
-// Heal corrupted localStorage score entries on load
+// ---- Jars sync (cloud-backed jar balances) ----
+  function jarTotal(pj) {
+    if (!pj || typeof pj !== "object") return 0;
+    return (pj.present && pj.present.balance || 0) +
+           (pj.investing && pj.investing.balance || 0) +
+           (pj.giveback && pj.giveback.balance || 0);
+  }
+
+  function mergeJars(a, b) {
+    var out = {};
+    var players = {};
+    for (var k in (a || {})) players[k] = true;
+    for (var k in (b || {})) players[k] = true;
+    for (var p in players) {
+      var aj = (a && a[p]) || null;
+      var bj = (b && b[p]) || null;
+      if (!aj) { out[p] = bj; }
+      else if (!bj) { out[p] = aj; }
+      else { out[p] = jarTotal(aj) >= jarTotal(bj) ? aj : bj; }
+    }
+    return out;
+  }
+
+  window.firebaseSaveJars = function(accountId, jars) {
+    if (!accountId) return;
+    var path = "accounts/" + sanitize(accountId) + "/jars";
+    firebaseReadyPromise.then(function() {
+      if (!db) { return; }
+      db.ref(path).once("value").then(function(snap) {
+        var remote = snap.val() || {};
+        var merged = mergeJars(remote, jars || {});
+        db.ref(path).set(merged);
+      }).catch(function(e) { console.warn("[firebase-sync] jars save error", e); });
+    });
+  };
+
+  window.firebaseSyncJars = function(accountId, localJars, callback) {
+    if (!accountId) { if (callback) callback(localJars); return; }
+    var path = "accounts/" + sanitize(accountId) + "/jars";
+    firebaseReadyPromise.then(function() {
+      if (!db) { if (callback) callback(localJars); return; }
+      db.ref(path).once("value").then(function(snap) {
+        var remote = snap.val() || {};
+        var merged = mergeJars(remote, localJars || {});
+        db.ref(path).set(merged);
+        if (callback) callback(merged);
+      }).catch(function(e) {
+        console.warn("[firebase-sync] jars sync error", e);
+        if (callback) callback(localJars);
+      });
+    });
+  };
+
+  // Heal corrupted localStorage score entries on load
   function healLocalScores() {
     try {
       for (var i = 0; i < localStorage.length; i++) {
