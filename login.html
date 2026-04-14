@@ -12,9 +12,10 @@
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     background: #FFF8F0;
+    color: #2d2d2d;
   }
 
-  /* === FULL-WIDTH VIDEO HERO === */
+  /* === VIDEO HERO === */
   .hero {
     position: relative;
     width: 100%;
@@ -24,43 +25,36 @@
     width: 100%;
     display: block;
   }
-  /* Fallback image shown while video loads */
   .hero-poster {
     width: 100%;
     display: block;
   }
-  .hero-poster.hidden {
-    display: none;
-  }
-  .hero-video.hidden {
-    display: none;
-  }
-  /* Dark gradient at bottom to blend into page */
+  .hero-poster.hidden { display: none; }
+  .hero-video.hidden { display: none; }
   .hero::after {
     content: '';
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 100px;
+    height: 120px;
     background: linear-gradient(to top, #FFF8F0, transparent);
     pointer-events: none;
+    z-index: 2;
   }
-  /* Subtle gradient at top */
   .hero::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 50px;
-    background: linear-gradient(to bottom, rgba(255,248,240,0.35), transparent);
-    z-index: 1;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.2), transparent);
+    z-index: 3;
     pointer-events: none;
   }
-
   .brand {
     position: absolute;
     top: 14px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 2;
+    z-index: 4;
     text-align: center;
   }
   .brand-name {
@@ -71,177 +65,115 @@
     letter-spacing: 1.5px;
   }
 
-  /* === CONTENT AREA — overlaps the video === */
+  /* === CONTENT AREA (overlaps video) === */
   .content {
     position: relative;
-    z-index: 2;
-    margin-top: -50px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 20px 40px;
+    z-index: 5;
+    margin-top: -60px;
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 24px 40px;
   }
 
-  .tagline {
+  /* === HEADLINE + CTA CARD === */
+  .hero-card {
+    background: white;
+    border-radius: 24px;
+    padding: 40px 36px 36px;
     text-align: center;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.1);
+    margin-bottom: 32px;
+  }
+  .hero-card h1 {
+    font-size: 2.2em;
+    font-weight: 900;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .hero-card h1 span {
+    background: linear-gradient(135deg, #fbbf24, #f472b6, #818cf8);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: grad 6s ease infinite;
+  }
+  @keyframes grad { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+  .hero-card p {
+    font-size: 1.05em;
+    color: rgba(0,0,0,0.5);
+    line-height: 1.6;
+    max-width: 480px;
+    margin: 0 auto 24px;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
     margin-bottom: 16px;
   }
-  .tagline h1 {
-    font-size: 1.4em;
-    font-weight: 800;
-    color: #2d2d2d;
-    margin-bottom: 6px;
-  }
-  .tagline p {
-    font-size: 0.82em;
-    color: rgba(0,0,0,0.5);
-    line-height: 1.6;
-    max-width: 420px;
-    margin: 0 auto;
-  }
-  .tagline strong {
-    color: rgba(0,0,0,0.7);
-  }
-
-  .pills {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-bottom: 22px;
-  }
-  .pill {
+  .btn {
+    padding: 14px 32px;
+    border-radius: 14px;
+    font-size: 1.05em;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+    text-decoration: none;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 11px;
-    border-radius: 50px;
-    background: rgba(0,0,0,0.04);
-    border: 1px solid rgba(0,0,0,0.08);
-    font-size: 0.7em;
-    color: rgba(0,0,0,0.5);
+    gap: 8px;
   }
-
-  /* === FOUNDER NOTE === */
-  .founder-note {
-    max-width: 520px;
-    width: 100%;
-    margin-bottom: 28px;
-    background: white;
-    border: 1px solid rgba(0,0,0,0.08);
-    border-radius: 18px;
-    padding: 28px 28px 22px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-    text-align: left;
-  }
-  .founder-quote p {
-    font-size: 0.88em;
-    color: rgba(0,0,0,0.6);
-    line-height: 1.7;
-    margin-bottom: 12px;
-  }
-  .founder-quote em {
-    font-style: italic;
-    color: rgba(0,0,0,0.7);
-  }
-  .founder-quote strong {
-    color: rgba(0,0,0,0.75);
-  }
-  .founder-quote ul {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .founder-quote ul li {
-    font-size: 0.85em;
-    color: rgba(0,0,0,0.55);
-    line-height: 1.6;
-    padding: 12px 14px;
-    background: rgba(251,191,36,0.06);
-    border-radius: 12px;
-    border-left: 3px solid #fbbf24;
-  }
-  .founder-quote ul li strong {
-    color: rgba(0,0,0,0.7);
-  }
-  .founder-example {
-    font-size: 0.82em !important;
-    color: rgba(0,0,0,0.45) !important;
-    font-style: italic;
-    border-top: 1px solid rgba(0,0,0,0.06);
-    padding-top: 12px;
-    margin-bottom: 0 !important;
-  }
-  .founder-sig {
-    text-align: right;
-    font-size: 0.82em;
-    color: rgba(0,0,0,0.4);
-    font-style: italic;
-    margin-top: 8px;
-  }
-
-  /* === EXPLAINER SECTION === */
-  .explainer {
-    max-width: 520px;
-    width: 100%;
-    margin-bottom: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  .explainer-heading {
-    text-align: center;
-    font-size: 0.68em;
-    text-transform: uppercase;
-    letter-spacing: 2.5px;
-    color: rgba(0,0,0,0.35);
-    margin-bottom: 2px;
-  }
-  .explainer-card {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    padding: 16px 18px;
-    background: white;
-    border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    border-radius: 16px;
-    text-align: left;
-  }
-  .explainer-icon {
-    font-size: 1.5em;
-    flex-shrink: 0;
-    width: 36px;
-    text-align: center;
-    line-height: 1.4;
-  }
-  .explainer-text h3 {
-    font-size: 0.92em;
-    font-weight: 700;
+  .btn-gold {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
     color: #2d2d2d;
-    margin-bottom: 4px;
   }
-  .explainer-text p {
-    font-size: 0.78em;
-    color: rgba(0,0,0,0.45);
-    line-height: 1.55;
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(251,191,36,0.35); }
+  .btn-outline {
+    background: white;
+    border: 2px solid rgba(0,0,0,0.1);
+    color: #2d2d2d;
   }
+  .btn-outline:hover { border-color: rgba(0,0,0,0.25); }
+  .btn-ghost {
+    background: none;
+    color: rgba(0,0,0,0.4);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 14px 20px;
+    border: none;
+    font-size: 0.95em;
+    cursor: pointer;
+  }
+  .btn-ghost:hover { color: rgba(0,0,0,0.7); }
+  .trust-strip {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 0.8em;
+    color: rgba(0,0,0,0.35);
+  }
+  .trust-strip span { display: flex; align-items: center; gap: 4px; }
 
-  /* === COMPACT LOGIN CARD === */
+  /* === LOGIN CARD === */
   .login-container {
     background: white;
-    backdrop-filter: blur(24px);
     border: 1px solid rgba(0,0,0,0.08);
     border-radius: 22px;
     padding: 28px 32px;
     max-width: 380px;
     width: 100%;
+    margin: 0 auto 48px;
     text-align: center;
     box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-    animation: fadeUp 0.6s ease both;
+    animation: fadeUp 0.4s ease both;
   }
+  .login-container:empty { display: none; }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -269,16 +201,11 @@
   }
   .tab.active {
     background: white;
-    color: #2d2d2d; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    color: #2d2d2d;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
-  .tab:hover:not(.active) {
-    color: rgba(0,0,0,0.65);
-  }
-  .tab.guest-tab {
-    color: #b45309;
-    font-weight: 700;
-    position: relative;
-  }
+  .tab:hover:not(.active) { color: rgba(0,0,0,0.65); }
+  .tab.guest-tab { color: #b45309; font-weight: 700; position: relative; }
   .tab.guest-tab:not(.active) {
     animation: gentle-pulse 2s ease-in-out infinite;
   }
@@ -292,271 +219,175 @@
     animation: none;
   }
 
-  /* Just Play panel inside the card */
-  .guest-panel {
-    text-align: center;
-    padding: 20px 0 8px;
-  }
-  .guest-panel-icon {
-    font-size: 2.8em;
-    margin-bottom: 10px;
-  }
-  .guest-panel-title {
-    font-size: 1.1em;
-    font-weight: 700;
-    color: #2d2d2d;
-    margin-bottom: 6px;
-  }
-  .guest-panel-desc {
-    font-size: 0.85em;
-    color: rgba(0,0,0,0.45);
-    margin-bottom: 18px;
-    line-height: 1.5;
-  }
+  .guest-panel { text-align: center; padding: 20px 0 8px; }
+  .guest-panel-icon { font-size: 2.8em; margin-bottom: 10px; }
+  .guest-panel-title { font-size: 1.1em; font-weight: 700; color: #2d2d2d; margin-bottom: 6px; }
+  .guest-panel-desc { font-size: 0.85em; color: rgba(0,0,0,0.45); margin-bottom: 18px; line-height: 1.5; }
   .guest-panel-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
+    display: inline-flex; align-items: center; gap: 8px;
     padding: 14px 40px;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    border: none;
-    border-radius: 12px;
-    color: #2d2d2d;
-    font-size: 1.1em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
+    border: none; border-radius: 12px;
+    color: #2d2d2d; font-size: 1.1em; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
   }
-  .guest-panel-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(251,191,36,0.3);
-  }
-  .guest-panel-note {
-    font-size: 0.75em;
-    color: rgba(0,0,0,0.35);
-    margin-top: 12px;
-  }
+  .guest-panel-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.3); }
+  .guest-panel-note { font-size: 0.75em; color: rgba(0,0,0,0.35); margin-top: 12px; }
 
-  .form-group {
-    margin-bottom: 12px;
-    text-align: left;
-  }
+  .form-group { margin-bottom: 12px; text-align: left; }
   .form-label {
-    display: block;
-    color: rgba(0,0,0,0.5);
-    font-size: 0.72em;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-    padding-left: 2px;
+    display: block; color: rgba(0,0,0,0.5);
+    font-size: 0.72em; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 4px; padding-left: 2px;
   }
   .form-input {
-    width: 100%;
-    padding: 11px 14px;
+    width: 100%; padding: 11px 14px;
     background: rgba(0,0,0,0.03);
-    border: 2px solid rgba(0,0,0,0.1);
-    border-radius: 12px;
-    color: #2d2d2d;
-    font-size: 0.95em;
-    outline: none;
+    border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
+    color: #2d2d2d; font-size: 0.95em; outline: none;
     transition: border-color 0.2s;
   }
-  .form-input:focus {
-    border-color: rgba(251,191,36,0.5);
-  }
-  .form-input::placeholder {
-    color: rgba(0,0,0,0.3);
-  }
+  .form-input:focus { border-color: rgba(251,191,36,0.5); }
+  .form-input::placeholder { color: rgba(0,0,0,0.3); }
 
   .submit-btn {
-    width: 100%;
-    padding: 13px;
+    width: 100%; padding: 13px;
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    border: none;
-    border-radius: 12px;
-    color: #2d2d2d;
-    font-size: 1.05em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 6px;
+    border: none; border-radius: 12px;
+    color: #2d2d2d; font-size: 1.05em; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; margin-top: 6px;
   }
-  .submit-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(251,191,36,0.3);
-  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(251,191,36,0.3); }
 
-  .error-msg {
-    color: #f87171;
-    font-size: 0.85em;
-    margin-top: 10px;
-    min-height: 20px;
-  }
-  .success-msg {
-    color: #34d399;
-    font-size: 0.85em;
-    margin-top: 10px;
-  }
+  .error-msg { color: #f87171; font-size: 0.85em; margin-top: 10px; min-height: 20px; }
+  .success-msg { color: #34d399; font-size: 0.85em; margin-top: 10px; }
 
-  .accounts-list {
-    margin-top: 16px;
-    border-top: 1px solid rgba(0,0,0,0.08);
-    padding-top: 14px;
-  }
-  .accounts-title {
-    color: rgba(0,0,0,0.35);
-    font-size: 0.68em;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-  }
+  .accounts-list { margin-top: 16px; border-top: 1px solid rgba(0,0,0,0.08); padding-top: 14px; }
+  .accounts-title { color: rgba(0,0,0,0.35); font-size: 0.68em; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
   .account-btn {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 10px 14px;
-    background: white;
-    border: 1px solid rgba(0,0,0,0.08); box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    border-radius: 10px;
-    color: #2d2d2d;
-    font-size: 0.9em;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: 6px;
-    text-align: left;
+    display: flex; align-items: center; gap: 10px;
+    width: 100%; padding: 10px 14px;
+    background: white; border: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-radius: 10px; color: #2d2d2d; font-size: 0.9em;
+    cursor: pointer; transition: all 0.2s; margin-bottom: 6px; text-align: left;
   }
-  .account-btn:hover {
-    background: rgba(251,191,36,0.06);
-    border-color: rgba(251,191,36,0.3);
-  }
+  .account-btn:hover { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.3); }
   .account-btn .acct-icon {
-    width: 32px; height: 32px;
-    border-radius: 50%;
+    width: 32px; height: 32px; border-radius: 50%;
     background: linear-gradient(135deg, #667eea, #764ba2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.9em;
-    font-weight: 700;
-    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9em; font-weight: 700; flex-shrink: 0;
   }
   .account-btn .acct-name { font-weight: 600; font-size: 0.9em; }
-  .account-btn .acct-email {
-    font-size: 0.72em;
-    color: rgba(0,0,0,0.45);
+  .account-btn .acct-email { font-size: 0.72em; color: rgba(0,0,0,0.45); }
+  .account-btn .acct-players { font-size: 0.68em; color: rgba(0,0,0,0.35); }
+
+  /* === SECTION HEADINGS === */
+  .section { padding: 48px 0; }
+  .section-label {
+    text-align: center; font-size: 0.7em;
+    text-transform: uppercase; letter-spacing: 4px;
+    color: rgba(0,0,0,0.3); margin-bottom: 8px;
   }
-  .account-btn .acct-players {
-    font-size: 0.68em;
-    color: rgba(0,0,0,0.35);
+  .section-title {
+    text-align: center; font-size: 1.8em;
+    font-weight: 800; margin-bottom: 12px;
+  }
+  .section-desc {
+    text-align: center; font-size: 1em;
+    color: rgba(0,0,0,0.45); max-width: 500px;
+    margin: 0 auto 36px; line-height: 1.6;
   }
 
-  /* === JUST PLAY BUTTON === */
-  .guest-play-section {
-    text-align: center;
-    margin-top: 16px;
-    max-width: 380px;
-    width: 100%;
+  /* === 3 JARS — HORIZONTAL CARDS === */
+  .jars-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
   }
-  .guest-play-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 13px 36px;
-    background: white;
-    border: 2px solid rgba(251,191,36,0.4);
-    border-radius: 12px;
-    color: #2d2d2d;
-    font-size: 1.05em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
+  .jar-card {
+    background: white; border-radius: 20px;
+    padding: 32px 20px; text-align: center;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
   }
-  .guest-play-btn:hover {
-    background: rgba(251,191,36,0.08);
-    border-color: #fbbf24;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(251,191,36,0.15);
-  }
-  .guest-play-hint {
-    font-size: 0.78em;
-    color: rgba(0,0,0,0.4);
-    margin-top: 8px;
-    line-height: 1.5;
-  }
+  .jar-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,0.08); }
+  .jar-card.family { border-color: rgba(251,191,36,0.2); }
+  .jar-card.family:hover { border-color: rgba(251,191,36,0.5); }
+  .jar-card.invest { border-color: rgba(52,211,153,0.2); }
+  .jar-card.invest:hover { border-color: rgba(52,211,153,0.5); }
+  .jar-card.give { border-color: rgba(167,139,250,0.2); }
+  .jar-card.give:hover { border-color: rgba(167,139,250,0.5); }
+  .jar-emoji { font-size: 2.6em; margin-bottom: 10px; display: block; }
+  .jar-name { font-size: 0.8em; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+  .jar-card.family .jar-name { color: #f59e0b; }
+  .jar-card.invest .jar-name { color: #34d399; }
+  .jar-card.give .jar-name { color: #a78bfa; }
+  .jar-desc { font-size: 0.85em; color: rgba(0,0,0,0.5); line-height: 1.6; }
 
-  
-    /* === BLOG BANNER === */
-    .blog-banner {
-      max-width: 520px;
-      width: 100%;
-      margin-top: 28px;
-      background: white;
-      border: 2px solid rgba(251,191,36,0.3);
-      border-radius: 18px;
-      padding: 24px 28px;
-      box-shadow: 0 4px 16px rgba(251,191,36,0.1);
-      text-align: center;
-      transition: all 0.3s;
-      text-decoration: none;
-      display: block;
-      cursor: pointer;
-    }
-    .blog-banner:hover {
-      border-color: #fbbf24;
-      box-shadow: 0 8px 28px rgba(251,191,36,0.2);
-      transform: translateY(-2px);
-    }
-    .blog-banner-icon { font-size: 1.8em; margin-bottom: 8px; }
-    .blog-banner-title {
-      font-size: 1.05em;
-      font-weight: 700;
-      color: #2d2d2d;
-      margin-bottom: 6px;
-    }
-    .blog-banner-desc {
-      font-size: 0.82em;
-      color: rgba(0,0,0,0.45);
-      line-height: 1.6;
-    }
-    .blog-banner-cta {
-      display: inline-block;
-      margin-top: 12px;
-      padding: 8px 20px;
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      border-radius: 10px;
-      font-size: 0.85em;
-      font-weight: 700;
-      color: #2d2d2d;
-    }
+  .example-callout {
+    text-align: center; margin-top: 24px;
+    padding: 16px 24px;
+    background: rgba(251,191,36,0.06);
+    border-radius: 14px;
+    border: 1px solid rgba(251,191,36,0.15);
+  }
+  .example-callout p { font-size: 0.88em; color: rgba(0,0,0,0.45); font-style: italic; line-height: 1.6; }
+  .example-callout strong { color: rgba(0,0,0,0.65); }
 
-    /* === REPORT ISSUES === */
+  /* === GAMES CHIPS === */
+  .games-strip {
+    display: flex; gap: 10px;
+    justify-content: center; flex-wrap: wrap;
+  }
+  .game-chip {
+    display: flex; align-items: center; gap: 6px;
+    padding: 10px 18px; background: white;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 50px; font-size: 0.88em; font-weight: 600;
+    transition: all 0.2s; cursor: default;
+  }
+  .game-chip:hover { border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.04); transform: translateY(-2px); }
+
+  /* === BLOG === */
+  .blog-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px; max-width: 640px; margin: 0 auto;
+  }
+  .blog-card {
+    background: white; border-radius: 16px; padding: 24px;
+    border: 1px solid rgba(0,0,0,0.06);
+    text-decoration: none; color: #2d2d2d; transition: all 0.2s;
+  }
+  .blog-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+  .blog-card-title { font-size: 0.95em; font-weight: 700; margin-bottom: 6px; }
+  .blog-card-desc { font-size: 0.8em; color: rgba(0,0,0,0.45); line-height: 1.5; }
+  .blog-card-link { font-size: 0.8em; color: #f59e0b; font-weight: 600; margin-top: 10px; display: block; }
+
+  /* === BOTTOM CTA === */
+  .bottom-cta {
+    text-align: center; padding: 56px 24px 40px;
+  }
+  .bottom-cta h2 { font-size: 1.6em; font-weight: 800; margin-bottom: 8px; }
+  .bottom-cta p { color: rgba(0,0,0,0.4); margin-bottom: 24px; }
+
+  /* === REPORT === */
   .report-section {
-    text-align: center;
-    margin-top: 32px;
-    padding-top: 20px;
+    text-align: center; margin-top: 32px; padding-top: 20px;
     border-top: 1px solid rgba(0,0,0,0.06);
-    max-width: 520px;
-    width: 100%;
   }
   .report-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 18px;
-    background: none;
-    border: 1px solid rgba(0,0,0,0.1);
-    border-radius: 20px;
-    color: rgba(0,0,0,0.4);
-    font-size: 0.78em;
-    cursor: pointer;
-    transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 18px; background: none;
+    border: 1px solid rgba(0,0,0,0.1); border-radius: 20px;
+    color: rgba(0,0,0,0.4); font-size: 0.78em;
+    cursor: pointer; transition: all 0.2s;
   }
-  .report-btn:hover {
-    border-color: rgba(0,0,0,0.25);
-    color: rgba(0,0,0,0.6);
-  }
+  .report-btn:hover { border-color: rgba(0,0,0,0.25); color: rgba(0,0,0,0.6); }
   .report-modal-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5); z-index: 9000;
@@ -567,12 +398,8 @@
     background: white; border-radius: 18px; padding: 28px;
     max-width: 420px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.15);
   }
-  .report-modal h3 {
-    font-size: 1.1em; font-weight: 700; color: #2d2d2d; margin-bottom: 6px;
-  }
-  .report-modal p {
-    font-size: 0.82em; color: rgba(0,0,0,0.45); margin-bottom: 16px;
-  }
+  .report-modal h3 { font-size: 1.1em; font-weight: 700; color: #2d2d2d; margin-bottom: 6px; }
+  .report-modal p { font-size: 0.82em; color: rgba(0,0,0,0.45); margin-bottom: 16px; }
   .report-modal textarea {
     width: 100%; min-height: 100px; padding: 12px;
     border: 2px solid rgba(0,0,0,0.1); border-radius: 12px;
@@ -580,29 +407,34 @@
     resize: vertical; outline: none;
   }
   .report-modal textarea:focus { border-color: rgba(251,191,36,0.5); }
-  .report-modal-buttons {
-    display: flex; gap: 10px; margin-top: 14px;
-  }
+  .report-modal-buttons { display: flex; gap: 10px; margin-top: 14px; }
   .report-modal-buttons button {
     flex: 1; padding: 10px; border-radius: 10px; border: none;
     font-size: 0.9em; font-weight: 600; cursor: pointer;
   }
-  .report-send-btn {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #2d2d2d;
-  }
-  .report-cancel-btn {
-    background: rgba(0,0,0,0.06); color: #2d2d2d;
+  .report-send-btn { background: linear-gradient(135deg, #fbbf24, #f59e0b); color: #2d2d2d; }
+  .report-cancel-btn { background: rgba(0,0,0,0.06); color: #2d2d2d; }
+
+  .footer {
+    text-align: center; padding: 24px;
+    color: rgba(0,0,0,0.2); font-size: 0.78em;
+    border-top: 1px solid rgba(0,0,0,0.06);
   }
 
-  @media (max-width: 480px) {
+  @media (max-width: 700px) {
+    .hero-card h1 { font-size: 1.7em; }
+    .hero-card { padding: 28px 20px; }
+    .jars-row { grid-template-columns: 1fr; max-width: 340px; margin: 0 auto; }
+    .blog-row { grid-template-columns: 1fr; }
+    .games-strip { gap: 8px; }
+    .game-chip { font-size: 0.8em; padding: 8px 14px; }
     .login-container { padding: 24px 20px; }
-    .tagline h1 { font-size: 1.2em; }
   }
 </style>
 </head>
 <body>
 
-<!-- Full-width video banner -->
+<!-- ========== VIDEO HERO ========== -->
 <div class="hero">
   <div class="brand">
     <div class="brand-name">🍯 3 JARS ACADEMY</div>
@@ -610,7 +442,6 @@
   <img class="hero-poster" src="hero-3jars.png" alt="3 Jars">
   <video class="hero-video hidden" src="hero-3jars.mp4" autoplay muted loop playsinline></video>
   <script>
-    // Swap poster for video once it can play
     var vid = document.querySelector('.hero-video');
     var poster = document.querySelector('.hero-poster');
     vid.addEventListener('canplay', function() {
@@ -620,40 +451,107 @@
   </script>
 </div>
 
-<!-- Content overlaps video bottom -->
+<!-- ========== CONTENT (overlaps video) ========== -->
 <div class="content">
-  <div class="tagline">
-    <h1>Every Game Fills a Jar.</h1>
-  </div>
 
-  <div class="founder-note">
-    <div class="founder-quote">
-      <p>I built 3Jars for my kids because I wanted Math and second language practice to lead to the things that actually matter. Instead of just "get gifts" — kids can earn <em>experiences</em>.</p>
-      <p>Kids play toward a goal of <strong>10,000 points</strong>. When they hit it, they unlock their 3 Jars:</p>
-      <ul>
-        <li><strong>🎉 The Family Jar</strong> — We skip the "stuff" and choose a memory: movie nights, the arcade, or ice cream (whatever your family likes).</li>
-        <li><strong>💰 The Investing Jar</strong> — They get their first taste of investing and learn how to track it with the parents.</li>
-        <li><strong>💝 The Giving Jar</strong> — They experience the joy of choosing a cause and giving back to the community.</li>
-      </ul>
-      <p class="founder-example">Every family is different, so you decide the reward. In our home, 10,000 points unlocks <strong>$50</strong> for a family outing, <strong>$10</strong> for their portfolio, and <strong>$10</strong> for charity.</p>
+  <!-- Hero CTA Card -->
+  <div class="hero-card">
+    <h1>Every Game Fills a <span>Jar</span>.</h1>
+    <p>Kids practice Math, Languages, and Puzzles — then earn real rewards split across Family, Investing, and Giving.</p>
+    <div class="hero-actions">
+      <button class="btn btn-gold" onclick="guestPlay()">▶ Start Playing Free</button>
+      <button class="btn btn-outline" onclick="showLoginCard('login')">Log In</button>
+      <button class="btn-ghost" onclick="showLoginCard('signup')">Create Account</button>
+    </div>
+    <div class="trust-strip">
+      <span>✅ Free</span>
+      <span>🚫 No Ads</span>
+      <span>📚 Real Skills</span>
+      <span>🎯 Goal-Based Rewards</span>
     </div>
   </div>
 
-
+  <!-- Login/Signup Card (hidden by default, shown when Log In or Create Account clicked) -->
   <div class="login-container" id="app"></div>
 
-  
-    <a class="blog-banner" href="blog/">
-      <div class="blog-banner-icon">📝</div>
-      <div class="blog-banner-title">Parent Tips & Articles</div>
-      <div class="blog-banner-desc">Math strategies, learning science, and tips to help your child thrive — from the 3 Jars team.</div>
-      <span class="blog-banner-cta">Read the Blog →</span>
-    </a>
+  <!-- 3 Jars Section -->
+  <div class="section" style="padding-top: 0;">
+    <div class="section-label">The 3 Jars</div>
+    <h2 class="section-title">10,000 Points. 3 Rewards.</h2>
+    <p class="section-desc">Kids don't earn "stuff" — they earn experiences, investments, and the joy of giving.</p>
+    <div class="jars-row">
+      <div class="jar-card family">
+        <span class="jar-emoji">🎉</span>
+        <div class="jar-name">Family Jar</div>
+        <p class="jar-desc">Skip the stuff, choose a memory — movie nights, the arcade, or ice cream.</p>
+      </div>
+      <div class="jar-card invest">
+        <span class="jar-emoji">💰</span>
+        <div class="jar-name">Investing Jar</div>
+        <p class="jar-desc">Their first taste of investing — learn to grow and track a real portfolio.</p>
+      </div>
+      <div class="jar-card give">
+        <span class="jar-emoji">💝</span>
+        <div class="jar-name">Giving Jar</div>
+        <p class="jar-desc">Pick a cause and give back to the community. Generosity is a skill too.</p>
+      </div>
+    </div>
+    <div class="example-callout">
+      <p>Every family is different — you set the rewards. In our home, 10,000 points unlocks <strong>$50</strong> for a family outing, <strong>$15</strong> for their portfolio, and <strong>$15</strong> for charity.</p>
+    </div>
+  </div>
 
-    <div class="report-section">
+  <!-- Games Section -->
+  <div class="section" style="padding-top: 0;">
+    <div class="section-label">The Games</div>
+    <h2 class="section-title">Learn by Playing</h2>
+    <div style="height: 12px;"></div>
+    <div class="games-strip">
+      <div class="game-chip">➕ Add & Subtract</div>
+      <div class="game-chip">✖️ Multiply & Fractions</div>
+      <div class="game-chip">📐 Geometry</div>
+      <div class="game-chip">🔢 Patterns</div>
+      <div class="game-chip">🇪🇸 Spanish</div>
+      <div class="game-chip">🇮🇱 Hebrew</div>
+      <div class="game-chip">⛩️ Shrine Quest</div>
+      <div class="game-chip">📖 Math Stories</div>
+    </div>
+  </div>
+
+  <!-- Blog Section -->
+  <div class="section">
+    <div class="section-label">From the Blog</div>
+    <h2 class="section-title" style="font-size: 1.4em;">Parent Tips & Articles</h2>
+    <div style="height: 16px;"></div>
+    <div class="blog-row">
+      <a class="blog-card" href="blog/2026-04-14-what-is-3-jars-academy.html">
+        <div class="blog-card-title">What is 3 Jars Academy?</div>
+        <p class="blog-card-desc">The story behind why we built a math game that teaches kids about family, investing, and charity.</p>
+        <span class="blog-card-link">Read →</span>
+      </a>
+      <a class="blog-card" href="blog/2026-04-14-why-math-games-beat-worksheets.html">
+        <div class="blog-card-title">Why Math Games Beat Worksheets</div>
+        <p class="blog-card-desc">Research shows gamified practice builds stronger retention than traditional drills.</p>
+        <span class="blog-card-link">Read →</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="bottom-cta">
+    <h2>Ready to try it?</h2>
+    <p>No account needed. Just play.</p>
+    <button class="btn btn-gold" style="font-size: 1.1em; padding: 16px 44px;" onclick="guestPlay()">▶ Start Playing Free</button>
+  </div>
+
+  <!-- Report Issues -->
+  <div class="report-section">
     <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
   </div>
+
 </div>
+
+<div class="footer">© 2026 3 Jars Academy</div>
 
 <script src="firebase-sync.js"></script>
 <script>
@@ -671,7 +569,6 @@ function saveAccounts(accounts) {
 }
 
 function hashPassword(pw) {
-  // Simple hash for local use — NOT secure for production, just for localStorage demo
   let hash = 0;
   for (let i = 0; i < pw.length; i++) {
     const char = pw.charCodeAt(i);
@@ -681,7 +578,6 @@ function hashPassword(pw) {
   return hash.toString(36);
 }
 
-// Normalize email to use as account key
 function normalizeEmail(email) {
   return (email || '').trim().toLowerCase();
 }
@@ -690,6 +586,16 @@ function normalizeEmail(email) {
 const urlParams = new URLSearchParams(window.location.search);
 const isPaidTraffic = urlParams.has('utm_source') || urlParams.has('utm_campaign') || urlParams.has('ref');
 let mode = 'guest';
+
+// Show login card when hero buttons are clicked
+function showLoginCard(m) {
+  mode = m;
+  render();
+  // Scroll to the login card
+  setTimeout(() => {
+    document.getElementById('app').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
 
 function switchMode(m) {
   mode = m;
@@ -907,7 +813,6 @@ async function doLogin() {
     return;
   }
 
-  // Login success!
   sessionStorage.setItem('km_currentAccount', email);
   localStorage.setItem('km_currentAccount_backup', email);
   window.location.href = 'index.html';
@@ -985,7 +890,6 @@ async function doSignup() {
 
   const language = document.getElementById('newLanguage').value || 'hebrew';
 
-  // Create account — keyed by email
   accounts[email] = {
     passwordHash: hashPassword(password),
     displayName: name,
@@ -1008,7 +912,6 @@ async function doSignup() {
     console.log('Email notification failed:', e);
   }
 
-  // Auto-login — send new accounts to settings to set up jars
   sessionStorage.setItem('km_currentAccount', email);
   localStorage.setItem('km_currentAccount_backup', email);
   window.location.href = 'settings.html?welcome=1';
@@ -1128,16 +1031,13 @@ function migrateAccounts() {
   const accounts = getAccounts();
   let changed = false;
 
-  // Migrate the default 'adam' account to email-keyed
   if (accounts['adam'] && !accounts['adam.s@taboola.com']) {
     const oldAcct = accounts['adam'];
-    // Create new email-keyed account with existing data
     accounts['adam.s@taboola.com'] = {
       ...oldAcct,
       email: 'adam.s@taboola.com',
       displayName: oldAcct.displayName || 'Adam'
     };
-    // Migrate account-scoped localStorage data
     const dataKeys = ['scores', 'stats', 'celebrations', 'player'];
     dataKeys.forEach(key => {
       const old = localStorage.getItem('km_adam_' + key);
@@ -1145,7 +1045,6 @@ function migrateAccounts() {
         localStorage.setItem('km_adam.s@taboola.com_' + key, old);
       }
     });
-    // Remove old account
     delete accounts['adam'];
     changed = true;
   }
@@ -1153,11 +1052,6 @@ function migrateAccounts() {
   if (changed) saveAccounts(accounts);
 }
 
-// ---- Seed default account if fresh install ----
-// Intentionally a no-op. Previously this seeded a hardcoded Adam/Ozzy/Elinor
-// account on every fresh device, which leaked Adam family to anyone visiting
-// the site for the first time. Now: fresh devices show login then users sign up
-// themselves, and Adam real account hydrates from Firebase on login.
 function seedDefaults() {
   // no-op
 }
@@ -1196,7 +1090,7 @@ function sendReport() {
       user_name: 'Bug Report',
       user_email: 'report@3jars.ai',
       to_email: 'singolda@gmail.com',
-      signup_time: new Date().toLocaleString() + '\\n\\n' + text
+      signup_time: new Date().toLocaleString() + '\n\n' + text
     }, 'wlauNCpdFNdFs-izM');
   } catch(e) { console.log('Report send failed:', e); }
   document.querySelector('.report-modal-overlay').remove();
@@ -1210,7 +1104,13 @@ if (currentAccount) {
 } else {
   seedDefaults();
   migrateAccounts();
-  render();
+  // Don't auto-render the login card — it shows when user clicks Log In or Create Account
+  // But if there are existing accounts, show the login card by default for returning users
+  const accounts = getAccounts();
+  if (Object.keys(accounts).length > 0) {
+    mode = 'login';
+    render();
+  }
 }
 </script>
 </body>
