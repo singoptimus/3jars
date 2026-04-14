@@ -147,7 +147,7 @@
 
   window.firebaseSaveJars = function(accountId, jars) {
     if (!accountId) return;
-    var path = "accounts/" + sanitize(accountId) + "/jars";
+    var path = "accounts/" + sanitizeKey(accountId) + "/jars";
     firebaseReadyPromise.then(function() {
       if (!db) { return; }
       db.ref(path).once("value").then(function(snap) {
@@ -160,7 +160,7 @@
 
   window.firebaseSyncJars = function(accountId, localJars, callback) {
     if (!accountId) { if (callback) callback(localJars); return; }
-    var path = "accounts/" + sanitize(accountId) + "/jars";
+    var path = "accounts/" + sanitizeKey(accountId) + "/jars";
     firebaseReadyPromise.then(function() {
       if (!db) { if (callback) callback(localJars); return; }
       db.ref(path).once("value").then(function(snap) {
