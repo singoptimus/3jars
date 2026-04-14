@@ -186,6 +186,20 @@
   }
   .game-tile.needs-player { opacity: 0.45; cursor: not-allowed; }
   .game-tile.needs-player:hover { transform: none; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  @keyframes shrineGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(255, 180, 50, 0.3), 0 2px 8px rgba(0,0,0,0.04); }
+    50% { box-shadow: 0 0 20px rgba(255, 180, 50, 0.6), 0 0 40px rgba(255, 140, 0, 0.2); }
+  }
+  .game-tile.shrine-glow {
+    animation: shrineGlow 2.5s ease-in-out infinite;
+    border-color: rgba(255, 180, 50, 0.4);
+    background: linear-gradient(135deg, #fff9f0 0%, #fff 100%);
+  }
+  .game-tile.shrine-glow:hover {
+    animation: none;
+    box-shadow: 0 0 24px rgba(255, 180, 50, 0.7), 0 4px 16px rgba(0,0,0,0.1);
+    transform: translateY(-3px);
+  }
   .game-tile-icon { font-size: 1.4em; flex-shrink: 0; width: 32px; text-align: center; }
   .game-tile-info { flex: 1; min-width: 0; }
   .game-tile-name { font-size: 0.9em; font-weight: 600; }
@@ -440,7 +454,7 @@
   function getCelebrations() { try { const r = localStorage.getItem('km_' + currentAccountId + '_celebrations'); if (r) return JSON.parse(r); } catch(e) {} return {}; }
   function saveCelebrations(c) { localStorage.setItem('km_' + currentAccountId + '_celebrations', JSON.stringify(c)); }
   function getJars() { try { const r = localStorage.getItem('km_' + currentAccountId + '_jars'); if (r) return JSON.parse(r); } catch(e) {} return {}; }
-  function saveJars(j) { localStorage.setItem('km_' + currentAccountId + '_jars', JSON.stringify(j)); }
+  function saveJars(j) { localStorage.setItem('km_' + currentAccountId + '_jars', JSON.stringify(j)); if (window.firebaseSaveJars) window.firebaseSaveJars(currentAccountId, j); }
 
   function getPlayerJars(playerName) {
     const jars = getJars();
@@ -611,7 +625,7 @@
         <a class="${cls}" ${href('Patterns.html')} ${oc}><span class="game-tile-icon">🧩</span><div class="game-tile-info"><div class="game-tile-name">Shape Patterns</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
         <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
         <div class="cat-label">🗡️ Adventure</div>
-        <a class="${cls}" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-25 pts</div></div></a>
+        <a class="${cls} shrine-glow" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-30 pts</div></div></a>
         <div class="exam-row">
           <a class="exam-btn ${np ? 'needs-player' : ''}" ${np ? '' : 'href="Exam.html?player=' + encodeURIComponent(selectedPlayer) + '"'} ${oc}>⏱️ 5-Minute Exam — score 75%+ for bonus points!</a>
         </div>
@@ -850,7 +864,16 @@
     }
   }
 
-  updateAccountBar(); render(); updateErrorBar(); if (!isGuest) checkCelebrations();
+  // Sync jars from Firebase
+  if (typeof firebaseSyncJars === 'function') {
+    firebaseSyncJars(currentAccountId, getJars(), function(merged) {
+      localStorage.setItem('km_' + currentAccountId + '_jars', JSON.stringify(merged));
+      console.log('[3Jars] Jars synced from Firebase:', merged);
+      render();
+    });
+  }
+
+    updateAccountBar(); render(); updateErrorBar(); if (!isGuest) checkCelebrations();
 </script>
 </body>
 </html>
