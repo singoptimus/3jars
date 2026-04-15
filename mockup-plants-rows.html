@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3 Jars — Plant Rows Mockup v2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base: #f8f5ef;
+    --ink-900: #1f1b2e;
+    --ink-700: #2b2440;
+    --ink-500: #64748b;
+    --ink-400: #94a3b8;
+    --ink-300: #cbd5e1;
+    --line: rgba(17, 24, 39, 0.06);
+
+    --math: #f59e0b;
+    --math-soft: #fde68a;
+    --lang: #ec4899;
+    --lang-soft: #fce7f3;
+    --chal: #6366f1;
+    --chal-soft: #e0e7ff;
+
+    --card-bg: rgba(255, 255, 255, 0.72);
+    --card-border: rgba(255, 255, 255, 0.85);
+    --card-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 8px 24px -12px rgba(17, 24, 39, 0.08);
+    --card-shadow-hover: 0 2px 4px rgba(17, 24, 39, 0.05), 0 14px 40px -16px rgba(124, 58, 237, 0.18);
+  }
+
+  html, body { min-height: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
+    color: var(--ink-900);
+    background: var(--bg-base);
+    padding: 60px 20px 80px;
+    position: relative;
+    overflow-x: hidden;
+    letter-spacing: -0.005em;
+  }
+
+  /* ---------------- Top accuracy bar ---------------- */
+  .topbar {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+    height: 36px;
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 18px;
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    font-size: 0.82em; letter-spacing: -0.005em;
+  }
+  .topbar-label {
+    font-weight: 700; color: var(--ink-700); white-space: nowrap;
+  }
+  .topbar-track {
+    flex: 1; height: 8px;
+    background: rgba(17, 24, 39, 0.06);
+    border-radius: 999px; overflow: hidden;
+    position: relative;
+  }
+  .topbar-fill {
+    position: absolute; inset: 0 auto 0 0;
+    background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+    border-radius: 999px;
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+  }
+  .topbar-goal {
+    position: absolute; top: -2px; bottom: -2px; width: 2px;
+    background: rgba(251, 191, 36, 0.8);
+    border-radius: 1px;
+  }
+  .topbar-pct {
+    font-weight: 800; color: #047857; font-variant-numeric: tabular-nums;
+    min-width: 40px; text-align: right;
+  }
+  .topbar-pts {
+    font-weight: 800; color: var(--math);
+    font-variant-numeric: tabular-nums; min-width: 64px; text-align: right;
+  }
+  .topbar-sep {
+    width: 1px; height: 18px; background: var(--line);
+  }
+  /* ambient mesh-gradient blobs — the "nice background" */
+  body::before, body::after {
+    content: ''; position: fixed; pointer-events: none; z-index: 0;
+    border-radius: 50%; filter: blur(100px);
+  }
+  body::before {
+    top: -240px; left: -200px; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(252, 211, 77, 0.45), transparent 70%);
+  }
+  body::after {
+    top: 300px; right: -300px; width: 720px; height: 720px;
+    background: radial-gradient(circle, rgba(244, 114, 182, 0.28), transparent 70%);
+  }
+  .bg-blob-3 {
+    content: ''; position: fixed; pointer-events: none; z-index: 0;
+    border-radius: 50%; filter: blur(110px);
+    bottom: -240px; left: 30%; width: 620px; height: 620px;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.3), transparent 70%);
+  }
+
+  .wrap {
+    max-width: 780px; margin: 0 auto; position: relative; z-index: 1;
+  }
+
+  /* ---------------- Hero ---------------- */
+  .hero {
+    text-align: center; padding: 4px 0 20px;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-size: 0.68em; letter-spacing: 0.28em;
+    color: var(--ink-400); font-weight: 600;
+    padding: 4px 12px; border-radius: 999px;
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+  .hero-title {
+    font-size: 3em; font-weight: 800; margin: 10px 0 2px;
+    letter-spacing: -0.035em;
+    background: linear-gradient(135deg, #7c3aed 0%, #ec4899 60%, #f59e0b 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-tag {
+    color: var(--ink-500); font-size: 0.98em; font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------------- Players ---------------- */
+  .players {
+    display: flex; gap: 8px; justify-content: center; padding: 22px 0 8px; flex-wrap: wrap;
+  }
+  .player {
+    padding: 5px 16px 5px 5px;
+    border: 1.5px solid transparent; border-radius: 999px;
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    font-size: 0.92em; font-weight: 600;
+    color: var(--ink-700);
+    box-shadow: 0 1px 2px rgba(17,24,39,0.04);
+    transition: all 0.2s;
+  }
+  .player:hover { background: rgba(255, 255, 255, 1); }
+  .player.active {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.18), 0 0 0 3px rgba(245, 158, 11, 0.08);
+  }
+  .player-dot {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; font-size: 0.95em;
+  }
+  .player-pts { color: var(--math); font-weight: 700; font-size: 0.76em; letter-spacing: 0.02em; }
+
+  /* ---------------- Summary strip ---------------- */
+  .summary {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 16px 22px;
+    margin: 22px 0 22px;
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow);
+  }
+  .summary-left { display: flex; flex-direction: column; }
+  .summary-title {
+    font-size: 0.7em; letter-spacing: 0.18em;
+    color: #7c3aed; font-weight: 700; text-transform: uppercase;
+  }
+  .summary-title::before { content: '🌿'; margin-right: 6px; filter: saturate(1.1); }
+  .summary-sub {
+    font-size: 0.84em; color: var(--ink-500);
+    margin-top: 4px; letter-spacing: -0.005em;
+  }
+  .summary-total {
+    font-size: 2em; font-weight: 800; color: var(--ink-900);
+    letter-spacing: -0.03em; line-height: 1;
+  }
+  .summary-total small {
+    font-size: 0.4em; color: var(--ink-400); font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-left: 6px;
+    display: inline-block; vertical-align: 0.4em;
+  }
+
+  /* ---------------- Choose a game header ---------------- */
+  .games-header {
+    text-align: center; font-size: 0.68em; letter-spacing: 0.22em; font-weight: 700;
+    color: var(--ink-400); margin: 10px 0 14px;
+  }
+
+  /* ---------------- Row cards ---------------- */
+  .cat-row {
+    display: grid; grid-template-columns: 118px 1fr; gap: 14px;
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    padding: 16px 20px 16px 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow);
+    align-items: center;
+    transition: box-shadow 0.3s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .cat-row::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    border-radius: inherit; opacity: 0.5;
+  }
+  .cat-row[data-cat="math"]::before {
+    background: linear-gradient(120deg, rgba(252, 211, 77, 0.12), transparent 40%);
+  }
+  .cat-row[data-cat="language"]::before {
+    background: linear-gradient(120deg, rgba(244, 114, 182, 0.1), transparent 40%);
+  }
+  .cat-row[data-cat="challenges"]::before {
+    background: linear-gradient(120deg, rgba(129, 140, 248, 0.12), transparent 40%);
+  }
+  .cat-row:hover { box-shadow: var(--card-shadow-hover); }
+
+  .cat-plant {
+    position: relative; width: 100%; height: 140px;
+  }
+  .cat-plant svg { width: 100%; height: 100%; display: block; }
+  .pct-badge {
+    position: absolute; top: 2px; right: 2px;
+    background: white; color: var(--ink-900); font-weight: 800; font-size: 0.72em;
+    padding: 3px 10px; border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(17,24,39,0.08);
+    border: 1px solid var(--line);
+    letter-spacing: -0.01em;
+  }
+  .cat-row[data-cat="math"] .pct-badge { color: #92400e; }
+  .cat-row[data-cat="language"] .pct-badge { color: #9d174d; }
+  .cat-row[data-cat="challenges"] .pct-badge { color: #3730a3; }
+
+  .cat-main { display: flex; flex-direction: column; gap: 10px; position: relative; }
+  .cat-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.72em; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-700);
+  }
+  .cat-head .cat-icon {
+    font-size: 1.4em; letter-spacing: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px; border-radius: 10px;
+  }
+  .cat-row[data-cat="math"] .cat-icon { background: var(--math-soft); }
+  .cat-row[data-cat="language"] .cat-icon { background: var(--lang-soft); }
+  .cat-row[data-cat="challenges"] .cat-icon { background: var(--chal-soft); }
+
+  .cat-name {
+    font-size: 1.08em; font-weight: 700; color: var(--ink-900);
+    letter-spacing: -0.015em; text-transform: none;
+  }
+  .cat-count {
+    margin-left: auto; color: var(--ink-400);
+    font-weight: 500; letter-spacing: 0.02em; text-transform: none;
+    font-size: 0.9em;
+  }
+
+  .tiles {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .tile {
+    background: white;
+    padding: 11px 13px;
+    border-radius: 12px;
+    font-size: 0.88em;
+    display: flex; align-items: center; gap: 11px;
+    border: 1px solid var(--line);
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+  .tile:hover {
+    border-color: rgba(17,24,39,0.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px -6px rgba(17,24,39,0.1);
+  }
+  .tile b {
+    display: block; font-size: 1em; color: var(--ink-900);
+    font-weight: 600; letter-spacing: -0.01em;
+  }
+  .tile span { font-size: 0.72em; color: var(--ink-400); font-weight: 500; }
+  .tile-ic {
+    font-size: 1.15em; width: 24px; text-align: center; flex-shrink: 0;
+  }
+
+  /* ---------------- Plant transitions (unchanged engine) ---------------- */
+  .stem, .leaf, .flower, .bud { transition: all 0.85s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: center bottom; }
+  .leaf, .flower, .bud { opacity: 0; transform: scale(0); transform-origin: center center; }
+  .seed { opacity: 0; transition: opacity 0.4s; }
+  .cat-plant[data-stage="0"] .seed { opacity: 1; animation: wiggle 3s ease-in-out infinite; }
+  @keyframes wiggle { 0%,100% { transform: rotate(0); } 50% { transform: rotate(2deg); } }
+
+  .cat-plant[data-stage="0"] .stem { transform: scaleY(0); }
+  .cat-plant[data-stage="1"] .stem { transform: scaleY(0.3); }
+  .cat-plant[data-stage="2"] .stem { transform: scaleY(0.55); }
+  .cat-plant[data-stage="3"] .stem { transform: scaleY(0.8); }
+  .cat-plant[data-stage="4"] .stem { transform: scaleY(1); }
+
+  .cat-plant[data-stage="1"] .leaf-1, .cat-plant[data-stage="1"] .leaf-2 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="2"] .leaf-1, .cat-plant[data-stage="2"] .leaf-2,
+  .cat-plant[data-stage="2"] .leaf-3, .cat-plant[data-stage="2"] .leaf-4 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="3"] .leaf-1, .cat-plant[data-stage="3"] .leaf-2, .cat-plant[data-stage="3"] .leaf-3,
+  .cat-plant[data-stage="3"] .leaf-4, .cat-plant[data-stage="3"] .leaf-5, .cat-plant[data-stage="3"] .leaf-6 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="3"] .bud { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="4"] .leaf-1, .cat-plant[data-stage="4"] .leaf-2, .cat-plant[data-stage="4"] .leaf-3,
+  .cat-plant[data-stage="4"] .leaf-4, .cat-plant[data-stage="4"] .leaf-5, .cat-plant[data-stage="4"] .leaf-6,
+  .cat-plant[data-stage="4"] .leaf-7, .cat-plant[data-stage="4"] .leaf-8 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="4"] .flower { opacity: 1; transform: scale(1); animation: sway 4s ease-in-out infinite; }
+  @keyframes sway { 0%,100% { transform: scale(1) rotate(-3deg); } 50% { transform: scale(1.05) rotate(3deg); } }
+
+  /* ---------------- Nudge ---------------- */
+  .nudge {
+    margin: 0 auto 18px;
+    padding: 12px 18px;
+    font-size: 0.88em;
+    color: #92400e;
+    background: linear-gradient(135deg, rgba(252, 211, 77, 0.28), rgba(251, 191, 36, 0.18));
+    backdrop-filter: blur(10px);
+    border-radius: 14px; text-align: center;
+    border: 1px solid rgba(252, 211, 77, 0.4);
+    max-width: 780px; letter-spacing: -0.005em;
+  }
+  .nudge.hidden { display: none; }
+
+  /* ---------------- Controls ---------------- */
+  .controls {
+    max-width: 780px; margin: 28px auto 0;
+    padding: 16px 18px;
+    background: white;
+    border-radius: 16px; border: 1px solid var(--line);
+    box-shadow: var(--card-shadow);
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    position: relative; z-index: 1;
+  }
+  .controls label {
+    font-size: 0.78em; color: var(--ink-500); font-weight: 600;
+    margin-right: 4px; letter-spacing: 0.05em; text-transform: uppercase;
+  }
+  .controls button {
+    padding: 7px 13px; border: 1.5px solid var(--line); background: white;
+    border-radius: 10px; cursor: pointer;
+    font-weight: 600; font-size: 0.86em; transition: all 0.15s;
+    color: var(--ink-700); letter-spacing: -0.005em;
+  }
+  .controls button:hover { background: #f8fafc; transform: translateY(-1px); }
+  .controls button.math { border-color: rgba(251, 191, 36, 0.5); color: #92400e; }
+  .controls button.language { border-color: rgba(244, 114, 182, 0.45); color: #9d174d; }
+  .controls button.challenges { border-color: rgba(129, 140, 248, 0.45); color: #3730a3; }
+  .controls button.reset { border-color: var(--ink-300); color: var(--ink-500); margin-left: auto; }
+  .counts {
+    width: 100%; font-size: 0.82em; color: var(--ink-500);
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--line); letter-spacing: -0.005em;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="topbar-label">Ozzy Accuracy</span>
+  <div class="topbar-track">
+    <div class="topbar-fill" style="width: 100%"></div>
+    <div class="topbar-goal" style="left: 75%"></div>
+  </div>
+  <span class="topbar-pct">100%</span>
+  <div class="topbar-sep"></div>
+  <span class="topbar-pts">10,125 pts</span>
+</div>
+
+<div class="bg-blob-3"></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="hero-eyebrow">WELCOME TO</div>
+    <div class="hero-title">3 Jars</div>
+    <div class="hero-tag">Every question grows your garden</div>
+  </div>
+
+  <div class="players">
+    <div class="player active"><span class="player-dot" style="background:#fed7aa">🏀</span>Ozzy <span class="player-pts">10,125 PTS</span></div>
+    <div class="player"><span class="player-dot" style="background:#fbcfe8">🦄</span>Elinor</div>
+    <div class="player"><span class="player-dot" style="background:#bbf7d0">🏃</span>Adam</div>
+  </div>
+
+  <div class="summary">
+    <div class="summary-left">
+      <div class="summary-title">Your garden · last 7 days</div>
+      <div class="summary-sub">Each plant grows with the questions you answer in that category</div>
+    </div>
+    <div class="summary-total"><span id="total">0</span><small>questions</small></div>
+  </div>
+
+  <div class="nudge hidden" id="nudge"></div>
+
+  <div class="games-header">CHOOSE A GAME</div>
+
+  <!-- ============ MATH ROW ============ -->
+  <div class="cat-row" data-cat="math">
+    <div class="cat-plant" data-cat="math" data-stage="0">
+      <div class="pct-badge" id="pct-math">—</div>
+      <svg viewBox="0 0 100 160" preserveAspectRatio="xMidYMid meet">
+        <ellipse class="seed" cx="50" cy="108" rx="4" ry="2.5" fill="#a16207"/>
+        <rect class="stem" x="48" y="30" width="4" height="80" fill="#16a34a" rx="2"/>
+        <ellipse class="leaf leaf-1" cx="40" cy="95" rx="8" ry="4" fill="#22c55e" transform="rotate(-20 40 95)"/>
+        <ellipse class="leaf leaf-2" cx="60" cy="88" rx="8" ry="4" fill="#22c55e" transform="rotate(20 60 88)"/>
+        <ellipse class="leaf leaf-3" cx="38" cy="75" rx="10" ry="5" fill="#16a34a" transform="rotate(-25 38 75)"/>
+        <ellipse class="leaf leaf-4" cx="62" cy="68" rx="10" ry="5" fill="#16a34a" transform="rotate(25 62 68)"/>
+        <ellipse class="leaf leaf-5" cx="36" cy="55" rx="11" ry="5.5" fill="#15803d" transform="rotate(-30 36 55)"/>
+        <ellipse class="leaf leaf-6" cx="64" cy="48" rx="11" ry="5.5" fill="#15803d" transform="rotate(30 64 48)"/>
+        <ellipse class="leaf leaf-7" cx="36" cy="38" rx="9" ry="4.5" fill="#16a34a" transform="rotate(-35 36 38)"/>
+        <ellipse class="leaf leaf-8" cx="64" cy="32" rx="9" ry="4.5" fill="#16a34a" transform="rotate(35 64 32)"/>
+        <circle class="bud" cx="50" cy="32" r="6" fill="#fbbf24"/>
+        <g class="flower">
+          <circle cx="50" cy="28" r="14" fill="#fbbf24"/>
+          <g fill="#fde047">
+            <ellipse cx="50" cy="12" rx="3" ry="6"/>
+            <ellipse cx="50" cy="44" rx="3" ry="6"/>
+            <ellipse cx="34" cy="28" rx="6" ry="3"/>
+            <ellipse cx="66" cy="28" rx="6" ry="3"/>
+            <ellipse cx="39" cy="17" rx="4" ry="4" transform="rotate(45 39 17)"/>
+            <ellipse cx="61" cy="17" rx="4" ry="4" transform="rotate(-45 61 17)"/>
+            <ellipse cx="39" cy="39" rx="4" ry="4" transform="rotate(-45 39 39)"/>
+            <ellipse cx="61" cy="39" rx="4" ry="4" transform="rotate(45 61 39)"/>
+          </g>
+          <circle cx="50" cy="28" r="6" fill="#78350f"/>
+        </g>
+        <path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="#c2410c"/>
+        <path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="url(#shadeM)" opacity="0.25"/>
+        <rect x="20" y="108" width="60" height="7" fill="#9a3412" rx="2"/>
+        <defs>
+          <linearGradient id="shadeM" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#000" stop-opacity="0"/>
+            <stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="cat-main">
+      <div class="cat-head">
+        <span class="cat-icon">📊</span>
+        <span class="cat-name">Math</span>
+        <span class="cat-count"><span id="count-math">0</span> questions</span>
+      </div>
+      <div class="tiles">
+        <div class="tile"><span class="tile-ic">🎯</span><div><b>Rule of X</b><span>1-3 pts</span></div></div>
+        <div class="tile"><span class="tile-ic">➕</span><div><b>Add & Subtract</b><span>1-3 pts</span></div></div>
+        <div class="tile"><span class="tile-ic">✖️</span><div><b>Multiply & Divide</b><span>2-5 pts</span></div></div>
+        <div class="tile"><span class="tile-ic">📖</span><div><b>Math Stories</b><span>2-5 pts</span></div></div>
+        <div class="tile"><span class="tile-ic">📐</span><div><b>Geometry</b><span>2-5 pts</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 2ND LANGUAGE ROW ============ -->
+  <div class="cat-row" data-cat="language">
+    <div class="cat-plant" data-cat="language" data-stage="0">
+      <div class="pct-badge" id="pct-language">—</div>
+      <svg viewBox="0 0 100 160" preserveAspectRatio="xMidYMid meet">
+        <ellipse class="seed" cx="50" cy="108" rx="4" ry="2.5" fill="#a16207"/>
+        <rect class="stem" x="48" y="30" width="4" height="80" fill="#15803d" rx="2"/>
+        <ellipse class="leaf leaf-1" cx="40" cy="95" rx="8" ry="4" fill="#22c55e" transform="rotate(-20 40 95)"/>
+        <ellipse class="leaf leaf-2" cx="60" cy="88" rx="8" ry="4" fill="#22c55e" transform="rotate(20 60 88)"/>
+        <ellipse class="leaf leaf-3" cx="38" cy="75" rx="10" ry="5" fill="#16a34a" transform="rotate(-25 38 75)"/>
+        <ellipse class="leaf leaf-4" cx="62" cy="68" rx="10" ry="5" fill="#16a34a" transform="rotate(25 62 68)"/>
+        <ellipse class="leaf leaf-5" cx="36" cy="55" rx="11" ry="5.5" fill="#15803d" transform="rotate(-30 36 55)"/>
+        <ellipse class="leaf leaf-6" cx="64" cy="48" rx="11" ry="5.5" fill="#15803d" transform="rotate(30 64 48)"/>
+        <ellipse class="leaf leaf-7" cx="36" cy="38" rx="9" ry="4.5" fill="#16a34a" transform="rotate(-35 36 38)"/>
+        <ellipse class="leaf leaf-8" cx="64" cy="32" rx="9" ry="4.5" fill="#16a34a" transform="rotate(35 64 32)"/>
+        <circle class="bud" cx="50" cy="32" r="6" fill="#f9a8d4"/>
+        <g class="flower">
+          <circle cx="50" cy="28" r="11" fill="#f472b6"/>
+          <g fill="#f9a8d4">
+            <ellipse cx="50" cy="18" rx="4" ry="6"/>
+            <ellipse cx="42" cy="24" rx="5" ry="4" transform="rotate(-30 42 24)"/>
+            <ellipse cx="58" cy="24" rx="5" ry="4" transform="rotate(30 58 24)"/>
+            <ellipse cx="44" cy="33" rx="5" ry="4" transform="rotate(30 44 33)"/>
+            <ellipse cx="56" cy="33" rx="5" ry="4" transform="rotate(-30 56 33)"/>
+          </g>
+          <circle cx="50" cy="28" r="3.5" fill="#be185d"/>
+        </g>
+        <path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="#c2410c"/>
+        <path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="url(#shadeL)" opacity="0.25"/>
+        <rect x="20" y="108" width="60" height="7" fill="#9a3412" rx="2"/>
+        <defs>
+          <linearGradient id="shadeL" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#000" stop-opacity="0"/>
+            <stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="cat-main">
+      <div class="cat-head">
+        <span class="cat-icon">🔤</span>
+        <span class="cat-name">2nd Language</span>
+        <span class="cat-count"><span id="count-language">0</span> questions</span>
+      </div>
+      <div class="tiles">
+        <div class="tile"><span class="tile-ic">אב</span><div><b>Hebrew Letters & Words</b><span>2-5 pts</span></div></div>
+        <div class="tile"><span class="tile-ic">🇪🇸</span><div><b>Spanish</b><span>2-5 pts</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CHALLENGES ROW ============ -->
+  <div class="cat-row" data-cat="challenges">
+    <div class="cat-plant" data-cat="challenges" data-stage="0">
+      <div class="pct-badge" id="pct-challenges">—</div>
+      <svg viewBox="0 0 100 160" preserveAspectRatio="xMidYMid meet">
+        <ellipse class="seed" cx="50" cy="108" rx="4" ry="2.5" fill="#a16207"/>
+        <rect class="stem" x="48" y="30" width="4" height="80" fill="#15803d" rx="2"/>
+        <ellipse class="leaf leaf-1" cx="40" cy="95" rx="8" ry="4" fill="#22c55e" transform="rotate(-20 40 95)"/>
+        <ellipse class="leaf leaf-2" cx="60" cy="88" rx="8" ry="4" fill="#22c55e" transform="rotate(20 60 88)"/>
+        <ellipse class="leaf leaf-3" cx="38" cy="75" rx="10" ry="5" fill="#16a34a" transform="rotate(-25 38 75)"/>
+        <ellipse class="leaf leaf-4" cx="62" cy="68" rx="10" ry="5" fill="#16a34a" transform="rotate(25 62 68)"/>
+        <ellipse class="leaf leaf-5" cx="36" cy="55" rx="11" ry="5.5" fill="#15803d" transform="rotate(-30 36 55)"/>
+        <ellipse class="leaf leaf-6" cx="64" cy="48" rx="11" ry="5.5" fill="#15803d" transform="rotate(30 64 48)"/>
+        <ellipse class="leaf leaf-7" cx="36" cy="38" rx="9" ry="4.5" fill="#16a34a" transform="rotate(-35 36 38)"/>
+        <ellipse class="leaf leaf-8" cx="64" cy="32" rx="9" ry="4.5" fill="#16a34a" transform="rotate(35 64 32)"/>
+        <circle class="bud" cx="50" cy="32" r="6" fill="#c4b5fd"/>
+        <g class="flower">
+          <g fill="#a78bfa">
+            <circle cx="50" cy="14" r="3"/>
+            <circle cx="46" cy="20" r="3.5"/>
+            <circle cx="54" cy="20" r="3.5"/>
+            <circle cx="50" cy="24" r="4"/>
+            <circle cx="44" cy="28" r="3.5"/>
+            <circle cx="56" cy="28" r="3.5"/>
+            <circle cx="50" cy="32" r="4"/>
+            <circle cx="46" cy="38" r="3"/>
+            <circle cx="54" cy="38" r="3"/>
+          </g>
+          <g fill="#8b5cf6">
+            <circle cx="50" cy="14" r="1.5"/>
+            <circle cx="50" cy="24" r="2"/>
+            <circle cx="50" cy="32" r="2"/>
+          </g>
+        </g>
+        <path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="#c2410c"/>
+        <path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="url(#shadeC)" opacity="0.25"/>
+        <rect x="20" y="108" width="60" height="7" fill="#9a3412" rx="2"/>
+        <defs>
+          <linearGradient id="shadeC" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#000" stop-opacity="0"/>
+            <stop offset="1" stop-color="#000" stop-opacity="0.5"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="cat-main">
+      <div class="cat-head">
+        <span class="cat-icon">🧠</span>
+        <span class="cat-name">Challenges</span>
+        <span class="cat-count"><span id="count-challenges">0</span> questions</span>
+      </div>
+      <div class="tiles">
+        <div class="tile"><span class="tile-ic">🧩</span><div><b>Shape Patterns</b><span>3-9 pts</span></div></div>
+        <div class="tile"><span class="tile-ic">🧠</span><div><b>Matrix Puzzles</b><span>3-9 pts</span></div></div>
+        <div class="tile"><span class="tile-ic">🗝️</span><div><b>Shrine Quest</b><span>10-30 pts</span></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <label>Try it</label>
+  <button class="math" onclick="addPlay('math')">+1 Math</button>
+  <button class="language" onclick="addPlay('language')">+1 Language</button>
+  <button class="challenges" onclick="addPlay('challenges')">+1 Challenge</button>
+  <button class="math" onclick="addPlays('math',5)">+5 Math</button>
+  <button class="language" onclick="addPlays('language',5)">+5 Language</button>
+  <button class="challenges" onclick="addPlays('challenges',5)">+5 Challenge</button>
+  <button class="reset" onclick="reset()">Reset</button>
+  <div class="counts" id="counts">Math: 0 · Language: 0 · Challenges: 0 (total 0)</div>
+</div>
+
+<script>
+  var plays = { math: 0, language: 0, challenges: 0 };
+  function addPlay(c){ plays[c]++; render(); }
+  function addPlays(c,n){ plays[c]+=n; render(); }
+  function reset(){ plays = { math:0, language:0, challenges:0 }; render(); }
+
+  function stageFor(pct, total){
+    if (total === 0) return 0;
+    if (pct >= 70) return 4;
+    if (pct >= 40) return 3;
+    if (pct >= 20) return 2;
+    if (pct >= 5)  return 1;
+    return 0;
+  }
+
+  function render(){
+    var total = plays.math + plays.language + plays.challenges;
+    document.getElementById('total').textContent = total;
+    document.getElementById('counts').textContent = 'Math: ' + plays.math + ' · Language: ' + plays.language + ' · Challenges: ' + plays.challenges + ' (total ' + total + ')';
+
+    var pcts = {};
+    ['math','language','challenges'].forEach(function(c){
+      pcts[c] = total ? (plays[c] / total * 100) : 0;
+      var plant = document.querySelector('.cat-plant[data-cat="' + c + '"]');
+      plant.dataset.stage = stageFor(pcts[c], total);
+      document.getElementById('pct-' + c).textContent = total === 0 ? '—' : Math.round(pcts[c]) + '%';
+      document.getElementById('count-' + c).textContent = plays[c];
+    });
+
+    var nudge = document.getElementById('nudge');
+    if (total >= 15) {
+      var thirsty = null;
+      ['math','language','challenges'].forEach(function(c){
+        if (pcts[c] < 20 && (!thirsty || pcts[c] < pcts[thirsty])) thirsty = c;
+      });
+      if (thirsty) {
+        var names = { math: 'Math', language: '2nd Language', challenges: 'Challenges' };
+        nudge.innerHTML = '🌱 Your <b>' + names[thirsty] + '</b> plant needs watering — try one ' + names[thirsty] + ' question next!';
+        nudge.classList.remove('hidden');
+      } else {
+        nudge.classList.add('hidden');
+      }
+    } else {
+      nudge.classList.add('hidden');
+    }
+  }
+
+  render();
+</script>
+
+</body>
+</html>

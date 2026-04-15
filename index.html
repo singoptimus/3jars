@@ -8,23 +8,32 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', system-ui, sans-serif;
     min-height: 100vh;
-    background: #FFF8F0;
-    color: #2d2d2d;
+    background: #f8f5ef;
+    color: #1f1b2e;
     overflow-x: hidden;
+    letter-spacing: -0.005em;
+    position: relative;
+  }
+  /* Ambient mesh-gradient blobs */
+  body::before, body::after {
+    content: ''; position: fixed; pointer-events: none; z-index: 0;
+    border-radius: 50%; filter: blur(100px);
   }
   body::before {
-    content: '';
-    position: fixed;
-    top: -10%;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 900px;
-    height: 900px;
-    background: radial-gradient(ellipse, rgba(251,191,36,0.06) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
+    top: -240px; left: -200px; width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(252, 211, 77, 0.45), transparent 70%);
+  }
+  body::after {
+    top: 260px; right: -300px; width: 720px; height: 720px;
+    background: radial-gradient(circle, rgba(244, 114, 182, 0.26), transparent 70%);
+  }
+  .bg-blob-3 {
+    position: fixed; pointer-events: none; z-index: 0;
+    border-radius: 50%; filter: blur(110px);
+    bottom: -240px; left: 30%; width: 620px; height: 620px;
+    background: radial-gradient(circle, rgba(129, 140, 248, 0.28), transparent 70%);
   }
 
   /* Account bar */
@@ -158,62 +167,163 @@
   }
   .prompt-msg.active { color: #fbbf24; font-weight: 600; }
 
-  /* ---- PLAY MIX BAR ---- */
-  .playmix {
-    max-width: 580px; margin: 4px auto 0;
-    padding: 16px 20px 18px;
-    background: rgba(255,255,255,0.55);
-    border: 1px solid rgba(0,0,0,0.06);
-    border-radius: 16px;
+  /* ---- GARDEN (Play Mix growing plants) ---- */
+  .garden-summary {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(14px);
+    border-radius: 18px;
+    padding: 14px 20px;
+    margin: 4px auto 16px;
+    max-width: 580px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 8px 24px -12px rgba(17, 24, 39, 0.08);
   }
-  .playmix-head {
-    display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 10px;
+  .garden-summary-title {
+    font-size: 0.68em; letter-spacing: 0.18em;
+    color: #7c3aed; font-weight: 700; text-transform: uppercase;
   }
-  .playmix-title {
-    font-size: 0.72em; text-transform: uppercase; letter-spacing: 2px;
-    color: rgba(0,0,0,0.45); font-weight: 700;
+  .garden-summary-title::before { content: '🌿'; margin-right: 6px; }
+  .garden-summary-sub {
+    font-size: 0.8em; color: #64748b; margin-top: 4px; letter-spacing: -0.005em;
   }
-  .playmix-count { font-size: 0.72em; color: rgba(0,0,0,0.35); }
-  .playmix-bar {
-    display: flex; height: 12px; border-radius: 6px; overflow: hidden;
-    background: rgba(0,0,0,0.05);
+  .garden-summary-total {
+    font-size: 1.9em; font-weight: 800; color: #1f1b2e;
+    letter-spacing: -0.03em; line-height: 1;
   }
-  .playmix-seg {
-    transition: flex-basis 0.6s ease, background 0.3s;
-    min-width: 0;
+  .garden-summary-total small {
+    font-size: 0.42em; color: #94a3b8; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-left: 6px;
+    display: inline-block; vertical-align: 0.4em;
   }
-  .playmix-seg.math { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
-  .playmix-seg.language { background: linear-gradient(90deg, #f472b6, #ec4899); }
-  .playmix-seg.challenges { background: linear-gradient(90deg, #818cf8, #6366f1); }
-  .playmix-legend {
-    display: flex; justify-content: space-between; gap: 8px;
-    margin-top: 10px; font-size: 0.75em;
+  .garden-nudge {
+    margin: 0 auto 16px;
+    padding: 11px 18px;
+    font-size: 0.86em;
+    color: #92400e;
+    background: linear-gradient(135deg, rgba(252, 211, 77, 0.28), rgba(251, 191, 36, 0.18));
+    backdrop-filter: blur(10px);
+    border-radius: 14px; text-align: center;
+    border: 1px solid rgba(252, 211, 77, 0.4);
+    max-width: 580px; letter-spacing: -0.005em;
   }
-  .playmix-legend-item {
-    display: flex; align-items: center; gap: 6px;
-    color: rgba(0,0,0,0.55);
-  }
-  .playmix-dot {
-    width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
-  }
-  .playmix-dot.math { background: #f59e0b; }
-  .playmix-dot.language { background: #ec4899; }
-  .playmix-dot.challenges { background: #6366f1; }
-  .playmix-legend-pct { color: #2d2d2d; font-weight: 700; }
-  .playmix-empty {
+  .garden-nudge.hidden { display: none; }
+  .garden-empty {
     text-align: center; font-size: 0.82em; color: rgba(0,0,0,0.4);
-    padding: 4px 0 2px;
+    padding: 10px 0 0;
   }
-  .playmix-nudge {
-    margin-top: 10px; padding: 8px 12px;
-    background: rgba(251,191,36,0.1);
-    border: 1px dashed rgba(251,191,36,0.35);
-    border-radius: 10px;
-    font-size: 0.78em; color: rgba(0,0,0,0.6);
-    text-align: center;
+
+  /* Category row cards */
+  .cat-row {
+    display: grid; grid-template-columns: 110px 1fr; gap: 12px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(14px);
+    border-radius: 20px;
+    padding: 14px 18px 14px 12px;
+    margin: 0 auto 12px;
+    max-width: 580px;
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 1px 2px rgba(17, 24, 39, 0.04), 0 8px 24px -12px rgba(17, 24, 39, 0.08);
+    align-items: center;
+    transition: box-shadow 0.3s, transform 0.2s;
+    position: relative;
+    overflow: hidden;
   }
-  .playmix-nudge strong { color: #b45309; }
+  .cat-row::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    border-radius: inherit; opacity: 0.55;
+  }
+  .cat-row[data-cat="math"]::before {
+    background: linear-gradient(120deg, rgba(252, 211, 77, 0.12), transparent 45%);
+  }
+  .cat-row[data-cat="language"]::before {
+    background: linear-gradient(120deg, rgba(244, 114, 182, 0.1), transparent 45%);
+  }
+  .cat-row[data-cat="challenges"]::before {
+    background: linear-gradient(120deg, rgba(129, 140, 248, 0.12), transparent 45%);
+  }
+  .cat-row:hover {
+    box-shadow: 0 2px 4px rgba(17,24,39,0.05), 0 14px 40px -16px rgba(124, 58, 237, 0.18);
+  }
+  .cat-plant {
+    position: relative; width: 100%; height: 136px;
+  }
+  .cat-plant svg { width: 100%; height: 100%; display: block; }
+  .pct-badge {
+    position: absolute; top: 0; right: 0;
+    background: white; color: #1f1b2e; font-weight: 800; font-size: 0.7em;
+    padding: 3px 9px; border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(17,24,39,0.08);
+    border: 1px solid rgba(17, 24, 39, 0.06);
+    letter-spacing: -0.01em;
+  }
+  .cat-row[data-cat="math"] .pct-badge { color: #92400e; }
+  .cat-row[data-cat="language"] .pct-badge { color: #9d174d; }
+  .cat-row[data-cat="challenges"] .pct-badge { color: #3730a3; }
+  .cat-main { display: flex; flex-direction: column; gap: 9px; position: relative; z-index: 1; }
+  .cat-head {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 0.72em; letter-spacing: 0.1em;
+    color: #2b2440;
+  }
+  .cat-head .cat-icon {
+    font-size: 1.25em; letter-spacing: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; border-radius: 10px;
+  }
+  .cat-row[data-cat="math"] .cat-icon { background: #fde68a; }
+  .cat-row[data-cat="language"] .cat-icon { background: #fce7f3; }
+  .cat-row[data-cat="challenges"] .cat-icon { background: #e0e7ff; }
+  .cat-name {
+    font-size: 1em; font-weight: 700; color: #1f1b2e;
+    letter-spacing: -0.015em; text-transform: none;
+  }
+  .cat-count {
+    margin-left: auto; color: #94a3b8;
+    font-weight: 500; letter-spacing: 0.02em; text-transform: none;
+    font-size: 0.88em;
+  }
+  .cat-tiles {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .cat-tiles .game-tile {
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    gap: 10px;
+  }
+  .cat-tiles .game-tile .game-tile-icon { font-size: 1.15em; width: 24px; }
+  .cat-tiles .game-tile .game-tile-name { font-size: 0.95em; }
+  .cat-tiles .game-tile .game-tile-pts { font-size: 0.72em; }
+
+  /* Plant growth transitions */
+  .stem, .leaf, .flower, .bud { transition: all 0.85s cubic-bezier(0.34, 1.56, 0.64, 1); transform-origin: center bottom; }
+  .leaf, .flower, .bud { opacity: 0; transform: scale(0); transform-origin: center center; }
+  .seed { opacity: 0; transition: opacity 0.4s; }
+  .cat-plant[data-stage="0"] .seed { opacity: 1; animation: seedWiggle 3s ease-in-out infinite; }
+  @keyframes seedWiggle { 0%,100% { transform: rotate(0); } 50% { transform: rotate(2deg); } }
+  .cat-plant[data-stage="0"] .stem { transform: scaleY(0); }
+  .cat-plant[data-stage="1"] .stem { transform: scaleY(0.3); }
+  .cat-plant[data-stage="2"] .stem { transform: scaleY(0.55); }
+  .cat-plant[data-stage="3"] .stem { transform: scaleY(0.8); }
+  .cat-plant[data-stage="4"] .stem { transform: scaleY(1); }
+  .cat-plant[data-stage="1"] .leaf-1, .cat-plant[data-stage="1"] .leaf-2 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="2"] .leaf-1, .cat-plant[data-stage="2"] .leaf-2,
+  .cat-plant[data-stage="2"] .leaf-3, .cat-plant[data-stage="2"] .leaf-4 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="3"] .leaf-1, .cat-plant[data-stage="3"] .leaf-2, .cat-plant[data-stage="3"] .leaf-3,
+  .cat-plant[data-stage="3"] .leaf-4, .cat-plant[data-stage="3"] .leaf-5, .cat-plant[data-stage="3"] .leaf-6 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="3"] .bud { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="4"] .leaf-1, .cat-plant[data-stage="4"] .leaf-2, .cat-plant[data-stage="4"] .leaf-3,
+  .cat-plant[data-stage="4"] .leaf-4, .cat-plant[data-stage="4"] .leaf-5, .cat-plant[data-stage="4"] .leaf-6,
+  .cat-plant[data-stage="4"] .leaf-7, .cat-plant[data-stage="4"] .leaf-8 { opacity: 1; transform: scale(1); }
+  .cat-plant[data-stage="4"] .flower { opacity: 1; transform: scale(1); animation: flowerSway 4s ease-in-out infinite; }
+  @keyframes flowerSway { 0%,100% { transform: scale(1) rotate(-3deg); } 50% { transform: scale(1.05) rotate(3deg); } }
+
+  @media (max-width: 600px) {
+    .cat-row { grid-template-columns: 92px 1fr; padding: 12px 14px 12px 8px; }
+    .cat-plant { height: 118px; }
+    .cat-tiles { grid-template-columns: 1fr; }
+  }
 
   /* ---- GAMES GRID ---- */
   .games-area { padding: 30px 0; }
@@ -466,6 +576,7 @@
 
 <div class="error-bar-container" id="errorBar" style="display:none;"></div>
 <div class="account-bar" id="accountBar"></div>
+<div class="bg-blob-3"></div>
 <div class="container" id="app"></div>
 
 <script src="firebase-sync.js"></script>
@@ -583,69 +694,132 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
-  function renderPlayMix(langLabel) {
-    // Always return the panel so its presence is consistent.
+  // Garden helpers: stage computation, plant SVGs, and row builder
+  function stageFor(pct, total) {
+    if (!total) return 0;
+    if (pct >= 70) return 4;
+    if (pct >= 40) return 3;
+    if (pct >= 20) return 2;
+    if (pct >= 5)  return 1;
+    return 0;
+  }
+  function plantSvg(cat) {
+    var common = '<ellipse class="seed" cx="50" cy="108" rx="4" ry="2.5" fill="#a16207"/>' +
+      '<rect class="stem" x="48" y="30" width="4" height="80" fill="#15803d" rx="2"/>' +
+      '<ellipse class="leaf leaf-1" cx="40" cy="95" rx="8" ry="4" fill="#22c55e" transform="rotate(-20 40 95)"/>' +
+      '<ellipse class="leaf leaf-2" cx="60" cy="88" rx="8" ry="4" fill="#22c55e" transform="rotate(20 60 88)"/>' +
+      '<ellipse class="leaf leaf-3" cx="38" cy="75" rx="10" ry="5" fill="#16a34a" transform="rotate(-25 38 75)"/>' +
+      '<ellipse class="leaf leaf-4" cx="62" cy="68" rx="10" ry="5" fill="#16a34a" transform="rotate(25 62 68)"/>' +
+      '<ellipse class="leaf leaf-5" cx="36" cy="55" rx="11" ry="5.5" fill="#15803d" transform="rotate(-30 36 55)"/>' +
+      '<ellipse class="leaf leaf-6" cx="64" cy="48" rx="11" ry="5.5" fill="#15803d" transform="rotate(30 64 48)"/>' +
+      '<ellipse class="leaf leaf-7" cx="36" cy="38" rx="9" ry="4.5" fill="#16a34a" transform="rotate(-35 36 38)"/>' +
+      '<ellipse class="leaf leaf-8" cx="64" cy="32" rx="9" ry="4.5" fill="#16a34a" transform="rotate(35 64 32)"/>';
+    var flower = '';
+    if (cat === 'math') {
+      flower = '<circle class="bud" cx="50" cy="32" r="6" fill="#fbbf24"/>' +
+        '<g class="flower">' +
+          '<circle cx="50" cy="28" r="14" fill="#fbbf24"/>' +
+          '<g fill="#fde047">' +
+            '<ellipse cx="50" cy="12" rx="3" ry="6"/>' +
+            '<ellipse cx="50" cy="44" rx="3" ry="6"/>' +
+            '<ellipse cx="34" cy="28" rx="6" ry="3"/>' +
+            '<ellipse cx="66" cy="28" rx="6" ry="3"/>' +
+            '<ellipse cx="39" cy="17" rx="4" ry="4" transform="rotate(45 39 17)"/>' +
+            '<ellipse cx="61" cy="17" rx="4" ry="4" transform="rotate(-45 61 17)"/>' +
+            '<ellipse cx="39" cy="39" rx="4" ry="4" transform="rotate(-45 39 39)"/>' +
+            '<ellipse cx="61" cy="39" rx="4" ry="4" transform="rotate(45 61 39)"/>' +
+          '</g>' +
+          '<circle cx="50" cy="28" r="6" fill="#78350f"/>' +
+        '</g>';
+    } else if (cat === 'language') {
+      flower = '<circle class="bud" cx="50" cy="32" r="6" fill="#f9a8d4"/>' +
+        '<g class="flower">' +
+          '<circle cx="50" cy="28" r="11" fill="#f472b6"/>' +
+          '<g fill="#f9a8d4">' +
+            '<ellipse cx="50" cy="18" rx="4" ry="6"/>' +
+            '<ellipse cx="42" cy="24" rx="5" ry="4" transform="rotate(-30 42 24)"/>' +
+            '<ellipse cx="58" cy="24" rx="5" ry="4" transform="rotate(30 58 24)"/>' +
+            '<ellipse cx="44" cy="33" rx="5" ry="4" transform="rotate(30 44 33)"/>' +
+            '<ellipse cx="56" cy="33" rx="5" ry="4" transform="rotate(-30 56 33)"/>' +
+          '</g>' +
+          '<circle cx="50" cy="28" r="3.5" fill="#be185d"/>' +
+        '</g>';
+    } else {
+      flower = '<circle class="bud" cx="50" cy="32" r="6" fill="#c4b5fd"/>' +
+        '<g class="flower">' +
+          '<g fill="#a78bfa">' +
+            '<circle cx="50" cy="14" r="3"/>' +
+            '<circle cx="46" cy="20" r="3.5"/>' +
+            '<circle cx="54" cy="20" r="3.5"/>' +
+            '<circle cx="50" cy="24" r="4"/>' +
+            '<circle cx="44" cy="28" r="3.5"/>' +
+            '<circle cx="56" cy="28" r="3.5"/>' +
+            '<circle cx="50" cy="32" r="4"/>' +
+            '<circle cx="46" cy="38" r="3"/>' +
+            '<circle cx="54" cy="38" r="3"/>' +
+          '</g>' +
+          '<g fill="#8b5cf6">' +
+            '<circle cx="50" cy="14" r="1.5"/>' +
+            '<circle cx="50" cy="24" r="2"/>' +
+            '<circle cx="50" cy="32" r="2"/>' +
+          '</g>' +
+        '</g>';
+    }
+    var pot = '<path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="#c2410c"/>' +
+      '<path d="M 22 110 L 30 150 L 70 150 L 78 110 Z" fill="url(#shade-' + cat + ')" opacity="0.25"/>' +
+      '<rect x="20" y="108" width="60" height="7" fill="#9a3412" rx="2"/>' +
+      '<defs><linearGradient id="shade-' + cat + '" x1="0" y1="0" x2="1" y2="0">' +
+        '<stop offset="0" stop-color="#000" stop-opacity="0"/>' +
+        '<stop offset="1" stop-color="#000" stop-opacity="0.5"/>' +
+      '</linearGradient></defs>';
+    return '<svg viewBox="0 0 100 160" preserveAspectRatio="xMidYMid meet">' + common + flower + pot + '</svg>';
+  }
+  function catRow(cat, icon, name, mix, total, tilesHTML) {
+    var count = mix[cat] || 0;
+    var pct = total ? (count / total) * 100 : 0;
+    var stage = stageFor(pct, total);
+    var pctDisplay = total === 0 ? '—' : Math.round(pct) + '%';
+    return '<div class="cat-row" data-cat="' + cat + '">' +
+      '<div class="cat-plant" data-stage="' + stage + '">' +
+        '<div class="pct-badge">' + pctDisplay + '</div>' +
+        plantSvg(cat) +
+      '</div>' +
+      '<div class="cat-main">' +
+        '<div class="cat-head">' +
+          '<span class="cat-icon">' + icon + '</span>' +
+          '<span class="cat-name">' + escapeHTML(name) + '</span>' +
+          '<span class="cat-count">' + count + ' question' + (count === 1 ? '' : 's') + '</span>' +
+        '</div>' +
+        '<div class="cat-tiles">' + tilesHTML + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+  function renderGardenSummary(total) {
     if (isGuest || !selectedPlayer) {
-      return '<div class="playmix"><div class="playmix-head"><div class="playmix-title">Your Play Mix · Last 7 Days</div></div><div class="playmix-empty">' +
-        (isGuest ? 'Sign in to track how your play spreads across Math, Language, and Challenges.' : 'Pick a player above to see their play mix.') +
-        '</div></div>';
+      return '<div class="garden-summary"><div><div class="garden-summary-title">Your Garden · Last 7 Days</div><div class="garden-summary-sub">' +
+        (isGuest ? 'Sign in to grow your garden across Math, Language, and Challenges.' : 'Pick a player above to see their garden.') +
+        '</div></div></div>';
     }
-    var mix = (window.getPlayMix ? window.getPlayMix(currentAccountId, selectedPlayer, 7) : { math: 0, language: 0, challenges: 0, total: 0 });
-    var total = mix.total || 0;
-
-    if (total === 0) {
-      return '<div class="playmix"><div class="playmix-head"><div class="playmix-title">Your Play Mix · Last 7 Days</div><div class="playmix-count">0 questions yet</div></div><div class="playmix-bar"><div class="playmix-seg" style="flex: 1 1 100%; background: rgba(0,0,0,0.06);"></div></div><div class="playmix-empty">No questions answered yet this week — pick a game below to get started!</div></div>';
-    }
-
-    var mathPct = (mix.math / total) * 100;
-    var langPct = (mix.language / total) * 100;
-    var chalPct = (mix.challenges / total) * 100;
-    var mR = Math.round(mathPct), lR = Math.round(langPct), cR = Math.round(chalPct);
-    // Fix rounding to always sum to 100 for display
-    var sum = mR + lR + cR;
-    if (sum !== 100) {
-      // nudge biggest bucket
-      var big = (mR >= lR && mR >= cR) ? 'm' : (lR >= cR ? 'l' : 'c');
-      var delta = 100 - sum;
-      if (big === 'm') mR += delta; else if (big === 'l') lR += delta; else cR += delta;
-    }
-
-    // Thirsty nudge: any NON-zero total category with < 20% share is "thirsty".
-    // If more than one, pick the smallest. If any category is 0 while others are not, treat that as thirstiest.
+    return '<div class="garden-summary">' +
+      '<div>' +
+        '<div class="garden-summary-title">Your Garden · Last 7 Days</div>' +
+        '<div class="garden-summary-sub">Each plant grows with the questions you answer</div>' +
+      '</div>' +
+      '<div class="garden-summary-total">' + total + '<small>question' + (total === 1 ? '' : 's') + '</small></div>' +
+    '</div>';
+  }
+  function renderGardenNudge(mix, total, gardenLabel) {
+    if (total < 15) return '';
     var cats = [
-      { id: 'math', label: 'Math', pct: mathPct, count: mix.math },
-      { id: 'language', label: langLabel, pct: langPct, count: mix.language },
-      { id: 'challenges', label: 'Challenges', pct: chalPct, count: mix.challenges }
+      { id: 'math', label: 'Math', pct: (mix.math / total) * 100, count: mix.math },
+      { id: 'language', label: gardenLabel, pct: (mix.language / total) * 100, count: mix.language },
+      { id: 'challenges', label: 'Challenges', pct: (mix.challenges / total) * 100, count: mix.challenges }
     ];
     cats.sort(function(a, b) { return a.count - b.count; });
-    var thirsty = null;
-    // If we have at least 15 total questions, surface the lowest if it's under ~20% share.
-    if (total >= 15 && cats[0].pct < 20 && cats[0].count < cats[2].count) {
-      thirsty = cats[0];
+    if (cats[0].pct < 20 && cats[0].count < cats[2].count) {
+      return '<div class="garden-nudge">🌱 Your <b>' + escapeHTML(cats[0].label) + '</b> plant needs watering — try one ' + escapeHTML(cats[0].label) + ' question next!</div>';
     }
-
-    var nudgeHTML = '';
-    if (thirsty) {
-      nudgeHTML = '<div class="playmix-nudge">🌵 Your <strong>' + escapeHTML(thirsty.label) + '</strong> jar is thirsty — try a quick round!</div>';
-    }
-
-    return '<div class="playmix">' +
-      '<div class="playmix-head">' +
-        '<div class="playmix-title">Your Play Mix · Last 7 Days</div>' +
-        '<div class="playmix-count">' + total + ' question' + (total === 1 ? '' : 's') + '</div>' +
-      '</div>' +
-      '<div class="playmix-bar">' +
-        (mathPct > 0 ? '<div class="playmix-seg math" style="flex: 0 0 ' + mathPct + '%;"></div>' : '') +
-        (langPct > 0 ? '<div class="playmix-seg language" style="flex: 0 0 ' + langPct + '%;"></div>' : '') +
-        (chalPct > 0 ? '<div class="playmix-seg challenges" style="flex: 0 0 ' + chalPct + '%;"></div>' : '') +
-      '</div>' +
-      '<div class="playmix-legend">' +
-        '<div class="playmix-legend-item"><span class="playmix-dot math"></span>Math <span class="playmix-legend-pct">' + mR + '%</span></div>' +
-        '<div class="playmix-legend-item"><span class="playmix-dot language"></span>' + escapeHTML(langLabel) + ' <span class="playmix-legend-pct">' + lR + '%</span></div>' +
-        '<div class="playmix-legend-item"><span class="playmix-dot challenges"></span>Challenges <span class="playmix-legend-pct">' + cR + '%</span></div>' +
-      '</div>' +
-      nudgeHTML +
-      '</div>';
+    return '';
   }
 
   // ---- RENDER ----
@@ -726,41 +900,55 @@
 
     // Language-specific games
     const acctLang = isGuest ? 'both' : (getAccountData().language || 'hebrew');
-    let langLabel, langTiles;
+    let langLabel, gardenLangLabel, langTiles;
     if (acctLang === 'both') {
       langLabel = 'Language';
-      langTiles = `<a class="${cls}" ${href('Hebrew.html')} ${oc}><span class="game-tile-icon">אב</span><div class="game-tile-info"><div class="game-tile-name">Hebrew Letters & Words</div><div class="game-tile-pts">2-5 pts</div></div></a>
-        <a class="${cls}" ${href('Spanish.html')} ${oc}><span class="game-tile-icon">🇪🇸</span><div class="game-tile-info"><div class="game-tile-name">Spanish Words & Phrases</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
+      gardenLangLabel = '2nd Language';
+      langTiles = `<a class="${cls}" ${href('Hebrew.html')} ${oc}><span class="game-tile-icon">אב</span><div class="game-tile-info"><div class="game-tile-name">Hebrew</div><div class="game-tile-pts">2-5 pts</div></div></a>
+        <a class="${cls}" ${href('Spanish.html')} ${oc}><span class="game-tile-icon">🇪🇸</span><div class="game-tile-info"><div class="game-tile-name">Spanish</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
     } else if (acctLang === 'spanish') {
       langLabel = 'Spanish';
+      gardenLangLabel = '2nd Language';
       langTiles = `<a class="${cls}" ${href('Spanish.html')} ${oc}><span class="game-tile-icon">🇪🇸</span><div class="game-tile-info"><div class="game-tile-name">Spanish Words & Phrases</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
     } else {
       langLabel = 'Hebrew';
+      gardenLangLabel = '2nd Language';
       langTiles = `<a class="${cls}" ${href('Hebrew.html')} ${oc}><span class="game-tile-icon">אב</span><div class="game-tile-info"><div class="game-tile-name">Hebrew Letters & Words</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
     }
-    // Play-mix bar (share of play over last 7 days, per player)
-    const playMixHTML = renderPlayMix(langLabel);
+
+    // Garden: pull per-category play mix over the last 7 days
+    let mix = { math: 0, language: 0, challenges: 0, total: 0 };
+    if (!isGuest && selectedPlayer && window.getPlayMix) {
+      mix = window.getPlayMix(currentAccountId, selectedPlayer, 7) || mix;
+    }
+    const total = mix.total || 0;
+
+    const mathTiles = `
+      <a class="${cls}" ${href('KidsMath.html')} ${oc}><span class="game-tile-icon" style="font-size:0.65em;letter-spacing:1px">_,_,?</span><div class="game-tile-info"><div class="game-tile-name">Rule of X</div><div class="game-tile-pts">1-3 pts</div></div></a>
+      <a class="${cls}" ${href('AddSub.html')} ${oc}><span class="game-tile-icon">➕</span><div class="game-tile-info"><div class="game-tile-name">Add & Subtract</div><div class="game-tile-pts">1-3 pts</div></div></a>
+      <a class="${cls}" ${href('MulFrac.html')} ${oc}><span class="game-tile-icon">✖️➗</span><div class="game-tile-info"><div class="game-tile-name">Multiply & Divide</div><div class="game-tile-pts">2-5 pts</div></div></a>
+      <a class="${cls}" ${href('MathStories.html')} ${oc}><span class="game-tile-icon">📖</span><div class="game-tile-info"><div class="game-tile-name">Math Stories</div><div class="game-tile-pts">2-5 pts</div></div></a>
+      <a class="${cls}" ${href('Geometry.html')} ${oc}><span class="game-tile-icon">📐</span><div class="game-tile-info"><div class="game-tile-name">Geometry</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
+    const challengeTiles = `
+      <a class="${cls}" ${href('Patterns.html')} ${oc}><span class="game-tile-icon">🧩</span><div class="game-tile-info"><div class="game-tile-name">Shape Patterns</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
+      <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
+      <a class="${cls} shrine-glow" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-30 pts</div></div></a>`;
+
+    const gardenSummary = renderGardenSummary(total);
+    const gardenNudge = (!isGuest && selectedPlayer) ? renderGardenNudge(mix, total, gardenLangLabel) : '';
+    const mathRow = catRow('math', '📊', 'Math', mix, total, mathTiles);
+    const langRow = catRow('language', '🔤', gardenLangLabel, mix, total, langTiles);
+    const chalRow = catRow('challenges', '🧠', 'Challenges', mix, total, challengeTiles);
 
     const gamesHTML = `
-      ${playMixHTML}
+      ${gardenSummary}
+      ${gardenNudge}
       <div class="games-heading">Choose a Game</div>
-      <div class="games-grid">
-        <div class="cat-label">📊 Math</div>
-        <a class="${cls}" ${href('KidsMath.html')} ${oc}><span class="game-tile-icon" style="font-size:0.65em;letter-spacing:1px">_,_,?</span><div class="game-tile-info"><div class="game-tile-name">Rule of X</div><div class="game-tile-pts">1-3 pts</div></div></a>
-        <a class="${cls}" ${href('AddSub.html')} ${oc}><span class="game-tile-icon">➕</span><div class="game-tile-info"><div class="game-tile-name">Add & Subtract</div><div class="game-tile-pts">1-3 pts</div></div></a>
-        <a class="${cls}" ${href('MulFrac.html')} ${oc}><span class="game-tile-icon">✖️➗</span><div class="game-tile-info"><div class="game-tile-name">Multiply & Divide</div><div class="game-tile-pts">2-5 pts</div></div></a>
-        <a class="${cls}" ${href('MathStories.html')} ${oc}><span class="game-tile-icon">📖</span><div class="game-tile-info"><div class="game-tile-name">Math Stories</div><div class="game-tile-pts">2-5 pts</div></div></a>
-        <a class="${cls}" ${href('Geometry.html')} ${oc}><span class="game-tile-icon">📐</span><div class="game-tile-info"><div class="game-tile-name">Geometry</div><div class="game-tile-pts">2-5 pts</div></div></a>
-        <div class="cat-label">🔤 ${langLabel}</div>
-        ${langTiles}
-        <div class="cat-label">🧠 Challenges</div>
-        <a class="${cls}" ${href('Patterns.html')} ${oc}><span class="game-tile-icon">🧩</span><div class="game-tile-info"><div class="game-tile-name">Shape Patterns</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
-        <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
-        <a class="${cls} shrine-glow" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-30 pts</div></div></a>
-
-<div class="exam-row">
-          <a class="exam-btn ${np ? 'needs-player' : ''}" ${np ? '' : 'href="Exam.html?player=' + encodeURIComponent(selectedPlayer) + '"'} ${oc}>⏱️ 5-Minute Exam — score 75%+ for bonus points!</a>
-        </div>
+      ${mathRow}
+      ${langRow}
+      ${chalRow}
+      <div class="exam-row">
+        <a class="exam-btn ${np ? 'needs-player' : ''}" ${np ? '' : 'href="Exam.html?player=' + encodeURIComponent(selectedPlayer) + '"'} ${oc}>⏱️ 5-Minute Exam — score 75%+ for bonus points!</a>
       </div>`;
 
     app.innerHTML = `
