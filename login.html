@@ -967,7 +967,7 @@ async function doSignup() {
     emailjs.send('service_oam7ctc', 'template_pxktrcf', {
       user_name: name,
       user_email: email,
-      to_email: 'adam.s@taboola.com',
+      to_email: 'singolda@gmail.com',
       signup_time: new Date().toLocaleString()
     }, 'wlauNCpdFNdFs-izM');
   } catch (e) {
@@ -1151,7 +1151,7 @@ function sendReport() {
     emailjs.send('service_oam7ctc', 'template_pxktrcf', {
       user_name: 'Bug Report',
       user_email: 'report@3jars.ai',
-      to_email: 'adam.s@taboola.com',
+      to_email: 'singolda@gmail.com',
       signup_time: new Date().toLocaleString() + '\n\n' + text
     }, 'wlauNCpdFNdFs-izM');
   } catch(e) { console.log('Report send failed:', e); }
@@ -1240,7 +1240,7 @@ async function finalizeSocialLogin(email, displayName, firebaseUser) {
       emailjs.send('service_oam7ctc', 'template_pxktrcf', {
         user_name: displayName,
         user_email: email,
-        to_email: 'adam.s@taboola.com',
+        to_email: 'singolda@gmail.com',
         signup_time: new Date().toLocaleString() + ' (via ' + newAcct.socialProvider + ')'
       }, 'wlauNCpdFNdFs-izM');
     } catch(e) {}
