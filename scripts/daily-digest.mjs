@@ -61,7 +61,11 @@ async function getLatestBlogArticle() {
   return { title, description, publishDate, url, filename: latest };
 }
 
-/** Fetch all account emails from Firebase Realtime Database */
+/** Fetch all account emails from Firebase Realtime Database.
+ *  Emails are stored at accounts/{sanitizedKey}/accountData/email. We intentionally
+ *  do NOT guess the address from the sanitized key — the sanitization (. → _) is
+ *  lossy and would silently email the wrong person if a local-part contains '_'.
+ *  Accounts without an explicit accountData.email are skipped and logged. */
 async function getAccountEmails() {
   const url = `${FIREBASE_DB_URL}/accounts.json?auth=${FIREBASE_DB_SECRET}`;
   const res = await fetch(url);
@@ -74,13 +78,22 @@ async function getAccountEmails() {
   if (!accounts) return [];
 
   const emails = [];
+  const skipped = [];
   for (const [key, value] of Object.entries(accounts)) {
-    const email = value?.email || key.replace(/_/g, '.');
-    if (email && email.includes('@') && !email.includes('guest')) {
-      emails.push({ email, name: value?.displayName || email.split('@')[0] });
+    if (!value || typeof value !== 'object') continue; // e.g. the "guest" placeholder
+    const data = value.accountData;
+    const email = data?.email;
+    if (!email || !email.includes('@')) {
+      skipped.push(key);
+      continue;
     }
+    const name = data?.displayName || email.split('@')[0];
+    emails.push({ email, name });
   }
 
+  if (skipped.length) {
+    console.log(`Skipped ${skipped.length} accounts with no accountData.email: ${skipped.join(', ')}`);
+  }
   return emails;
 }
 
@@ -164,6 +177,10 @@ async function sendEmail(to, toName, subject, htmlContent) {
     const text = await res.text();
     throw new Error(`SendGrid send failed: ${res.status} – ${text}`);
   }
+
+  // SendGrid returns the message id in the x-message-id header. Logging it
+  // lets us look up delivery status per-recipient in Activity Feed later.
+  return res.headers.get('x-message-id');
 }
 
 // ── Main ────────────────────────────────────────────────────────────
@@ -199,9 +216,9 @@ async function main() {
   for (const account of accounts) {
     try {
       const html = buildEmailHTML(article, account.name);
-      await sendEmail(account.email, account.name, subject, html);
+      const messageId = await sendEmail(account.email, account.name, subject, html);
       sent++;
-      console.log(`  ✓ Sent to ${account.email}`);
+      console.log(`  ✓ Sent to ${account.email} [msgId=${messageId || 'n/a'}]`);
       // Small delay to avoid rate limits
       await new Promise(r => setTimeout(r, 300));
     } catch (e) {
