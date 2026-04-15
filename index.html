@@ -66,6 +66,11 @@
     margin: 0 auto;
     padding: 30px 20px;
   }
+  /* Let the content use more of the screen on larger viewports so the
+     game tiles and category rows feel full-size instead of being
+     squeezed into the middle of a sea of white space. */
+  @media (min-width: 1024px) { .container { max-width: 920px; padding: 30px 28px; } }
+  @media (min-width: 1440px) { .container { max-width: 1120px; padding: 40px 36px; } }
 
   /* ---- HERO ---- */
   .hero { text-align: center; padding: 40px 0 30px; }
