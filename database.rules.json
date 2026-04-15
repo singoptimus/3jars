@@ -1,0 +1,27 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "accounts": {
+      "$account": {
+        ".read": true,
+
+        "accountData": {
+          ".write": true,
+          "passwordHash": {
+            ".validate": "!data.exists() || newData.val() === data.val()"
+          }
+        },
+
+        "scores": { ".write": true },
+        "jars":   { ".write": true },
+        "plays":  { ".write": true },
+        "stats":  { ".write": true },
+        "config": { ".write": true },
+
+        "$other": { ".write": false }
+      }
+    }
+  }
+}
