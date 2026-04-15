@@ -199,9 +199,18 @@ async function main() {
   console.log(`Latest article: "${article.title}" (${article.publishDate})`);
   console.log(`URL: ${article.url}`);
 
-  // 2. Get all account emails
-  const accounts = await getAccountEmails();
-  console.log(`Found ${accounts.length} accounts to email.`);
+  // 2. Get all account emails — OR, if TEST_RECIPIENT is set, send only to that
+  //    one address. This lets us run the workflow manually to probe a single
+  //    recipient (deliverability testing) without spamming the full user list.
+  let accounts;
+  if (process.env.TEST_RECIPIENT) {
+    const email = process.env.TEST_RECIPIENT.trim();
+    accounts = [{ email, name: email.split('@')[0] }];
+    console.log(`TEST_RECIPIENT override active — sending only to ${email}.`);
+  } else {
+    accounts = await getAccountEmails();
+    console.log(`Found ${accounts.length} accounts to email.`);
+  }
 
   if (accounts.length === 0) {
     console.log('No accounts found. Skipping digest.');
