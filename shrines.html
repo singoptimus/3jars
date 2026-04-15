@@ -333,6 +333,7 @@
       scores[player] = (Number(scores[player]) || 0) + amount;
       localStorage.setItem(scoresKey, JSON.stringify(scores));
       if (window.firebaseSaveScores) window.firebaseSaveScores(account, scores);
+      if (window.recordPlay) window.recordPlay(account, player, 'challenges');
     } catch(e) { console.warn('persist failed', e); }
 
     try {

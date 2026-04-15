@@ -158,6 +158,63 @@
   }
   .prompt-msg.active { color: #fbbf24; font-weight: 600; }
 
+  /* ---- PLAY MIX BAR ---- */
+  .playmix {
+    max-width: 580px; margin: 4px auto 0;
+    padding: 16px 20px 18px;
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 16px;
+  }
+  .playmix-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .playmix-title {
+    font-size: 0.72em; text-transform: uppercase; letter-spacing: 2px;
+    color: rgba(0,0,0,0.45); font-weight: 700;
+  }
+  .playmix-count { font-size: 0.72em; color: rgba(0,0,0,0.35); }
+  .playmix-bar {
+    display: flex; height: 12px; border-radius: 6px; overflow: hidden;
+    background: rgba(0,0,0,0.05);
+  }
+  .playmix-seg {
+    transition: flex-basis 0.6s ease, background 0.3s;
+    min-width: 0;
+  }
+  .playmix-seg.math { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+  .playmix-seg.language { background: linear-gradient(90deg, #f472b6, #ec4899); }
+  .playmix-seg.challenges { background: linear-gradient(90deg, #818cf8, #6366f1); }
+  .playmix-legend {
+    display: flex; justify-content: space-between; gap: 8px;
+    margin-top: 10px; font-size: 0.75em;
+  }
+  .playmix-legend-item {
+    display: flex; align-items: center; gap: 6px;
+    color: rgba(0,0,0,0.55);
+  }
+  .playmix-dot {
+    width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  }
+  .playmix-dot.math { background: #f59e0b; }
+  .playmix-dot.language { background: #ec4899; }
+  .playmix-dot.challenges { background: #6366f1; }
+  .playmix-legend-pct { color: #2d2d2d; font-weight: 700; }
+  .playmix-empty {
+    text-align: center; font-size: 0.82em; color: rgba(0,0,0,0.4);
+    padding: 4px 0 2px;
+  }
+  .playmix-nudge {
+    margin-top: 10px; padding: 8px 12px;
+    background: rgba(251,191,36,0.1);
+    border: 1px dashed rgba(251,191,36,0.35);
+    border-radius: 10px;
+    font-size: 0.78em; color: rgba(0,0,0,0.6);
+    text-align: center;
+  }
+  .playmix-nudge strong { color: #b45309; }
+
   /* ---- GAMES GRID ---- */
   .games-area { padding: 30px 0; }
   .games-heading {
@@ -520,6 +577,77 @@
     return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
   }
 
+  // ---- Play Mix ----
+  function escapeHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+  function renderPlayMix(langLabel) {
+    // Always return the panel so its presence is consistent.
+    if (isGuest || !selectedPlayer) {
+      return '<div class="playmix"><div class="playmix-head"><div class="playmix-title">Your Play Mix · Last 7 Days</div></div><div class="playmix-empty">' +
+        (isGuest ? 'Sign in to track how your play spreads across Math, Language, and Challenges.' : 'Pick a player above to see their play mix.') +
+        '</div></div>';
+    }
+    var mix = (window.getPlayMix ? window.getPlayMix(currentAccountId, selectedPlayer, 7) : { math: 0, language: 0, challenges: 0, total: 0 });
+    var total = mix.total || 0;
+
+    if (total === 0) {
+      return '<div class="playmix"><div class="playmix-head"><div class="playmix-title">Your Play Mix · Last 7 Days</div><div class="playmix-count">0 questions yet</div></div><div class="playmix-bar"><div class="playmix-seg" style="flex: 1 1 100%; background: rgba(0,0,0,0.06);"></div></div><div class="playmix-empty">No questions answered yet this week — pick a game below to get started!</div></div>';
+    }
+
+    var mathPct = (mix.math / total) * 100;
+    var langPct = (mix.language / total) * 100;
+    var chalPct = (mix.challenges / total) * 100;
+    var mR = Math.round(mathPct), lR = Math.round(langPct), cR = Math.round(chalPct);
+    // Fix rounding to always sum to 100 for display
+    var sum = mR + lR + cR;
+    if (sum !== 100) {
+      // nudge biggest bucket
+      var big = (mR >= lR && mR >= cR) ? 'm' : (lR >= cR ? 'l' : 'c');
+      var delta = 100 - sum;
+      if (big === 'm') mR += delta; else if (big === 'l') lR += delta; else cR += delta;
+    }
+
+    // Thirsty nudge: any NON-zero total category with < 20% share is "thirsty".
+    // If more than one, pick the smallest. If any category is 0 while others are not, treat that as thirstiest.
+    var cats = [
+      { id: 'math', label: 'Math', pct: mathPct, count: mix.math },
+      { id: 'language', label: langLabel, pct: langPct, count: mix.language },
+      { id: 'challenges', label: 'Challenges', pct: chalPct, count: mix.challenges }
+    ];
+    cats.sort(function(a, b) { return a.count - b.count; });
+    var thirsty = null;
+    // If we have at least 15 total questions, surface the lowest if it's under ~20% share.
+    if (total >= 15 && cats[0].pct < 20 && cats[0].count < cats[2].count) {
+      thirsty = cats[0];
+    }
+
+    var nudgeHTML = '';
+    if (thirsty) {
+      nudgeHTML = '<div class="playmix-nudge">🌵 Your <strong>' + escapeHTML(thirsty.label) + '</strong> jar is thirsty — try a quick round!</div>';
+    }
+
+    return '<div class="playmix">' +
+      '<div class="playmix-head">' +
+        '<div class="playmix-title">Your Play Mix · Last 7 Days</div>' +
+        '<div class="playmix-count">' + total + ' question' + (total === 1 ? '' : 's') + '</div>' +
+      '</div>' +
+      '<div class="playmix-bar">' +
+        (mathPct > 0 ? '<div class="playmix-seg math" style="flex: 0 0 ' + mathPct + '%;"></div>' : '') +
+        (langPct > 0 ? '<div class="playmix-seg language" style="flex: 0 0 ' + langPct + '%;"></div>' : '') +
+        (chalPct > 0 ? '<div class="playmix-seg challenges" style="flex: 0 0 ' + chalPct + '%;"></div>' : '') +
+      '</div>' +
+      '<div class="playmix-legend">' +
+        '<div class="playmix-legend-item"><span class="playmix-dot math"></span>Math <span class="playmix-legend-pct">' + mR + '%</span></div>' +
+        '<div class="playmix-legend-item"><span class="playmix-dot language"></span>' + escapeHTML(langLabel) + ' <span class="playmix-legend-pct">' + lR + '%</span></div>' +
+        '<div class="playmix-legend-item"><span class="playmix-dot challenges"></span>Challenges <span class="playmix-legend-pct">' + cR + '%</span></div>' +
+      '</div>' +
+      nudgeHTML +
+      '</div>';
+  }
+
   // ---- RENDER ----
   function render() {
     const scores = getScores();
@@ -610,7 +738,11 @@
       langLabel = 'Hebrew';
       langTiles = `<a class="${cls}" ${href('Hebrew.html')} ${oc}><span class="game-tile-icon">אב</span><div class="game-tile-info"><div class="game-tile-name">Hebrew Letters & Words</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
     }
+    // Play-mix bar (share of play over last 7 days, per player)
+    const playMixHTML = renderPlayMix(langLabel);
+
     const gamesHTML = `
+      ${playMixHTML}
       <div class="games-heading">Choose a Game</div>
       <div class="games-grid">
         <div class="cat-label">📊 Math</div>
@@ -621,12 +753,11 @@
         <a class="${cls}" ${href('Geometry.html')} ${oc}><span class="game-tile-icon">📐</span><div class="game-tile-info"><div class="game-tile-name">Geometry</div><div class="game-tile-pts">2-5 pts</div></div></a>
         <div class="cat-label">🔤 ${langLabel}</div>
         ${langTiles}
-        <div class="cat-label">🧠 Puzzles & IQ</div>
+        <div class="cat-label">🧠 Challenges</div>
         <a class="${cls}" ${href('Patterns.html')} ${oc}><span class="game-tile-icon">🧩</span><div class="game-tile-info"><div class="game-tile-name">Shape Patterns</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
         <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
-        <div class="cat-label">🗡️ Adventure</div>
         <a class="${cls} shrine-glow" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-30 pts</div></div></a>
-        
+
 <div class="exam-row">
           <a class="exam-btn ${np ? 'needs-player' : ''}" ${np ? '' : 'href="Exam.html?player=' + encodeURIComponent(selectedPlayer) + '"'} ${oc}>⏱️ 5-Minute Exam — score 75%+ for bonus points!</a>
         </div>
@@ -870,6 +1001,14 @@
     firebaseSyncJars(currentAccountId, getJars(), function(merged) {
       localStorage.setItem('km_' + currentAccountId + '_jars', JSON.stringify(merged));
       console.log('[3Jars] Jars synced from Firebase:', merged);
+      render();
+    });
+  }
+
+  // Sync plays from Firebase (share-of-play counts)
+  if (!isGuest && typeof window.firebaseSyncPlays === 'function') {
+    window.firebaseSyncPlays(currentAccountId, function(merged) {
+      console.log('[3Jars] Plays synced from Firebase:', merged);
       render();
     });
   }

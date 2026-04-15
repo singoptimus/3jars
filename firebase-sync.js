@@ -263,7 +263,7 @@
     return out;
   };
 
-  // Merge remote + local plays (pick max per category per day â counts only grow).
+  // Merge remote + local plays (pick max per category per day — counts only grow).
   function mergePlays(local, remote) {
     var out = {};
     var players = {};
@@ -289,7 +289,7 @@
       }
       pruneOldDays(out[p], 14);
     }
-    // Any remote players not already local â include them too under the sanitized key
+    // Any remote players not already local — include them too under the sanitized key
     for (var sp in (remote || {})) {
       var found = false;
       for (var p2 in (local || {})) {

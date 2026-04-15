@@ -321,6 +321,7 @@ function addPoints(pts) {
   const scores = getScores();
   scores[currentPlayer] = (scores[currentPlayer] || 0) + pts;
   saveScores(scores);
+  if (window.recordPlay) window.recordPlay(accountId, currentPlayer, 'challenges');
 }
 function getTotalPoints() {
   if (!currentPlayer) return 0;
