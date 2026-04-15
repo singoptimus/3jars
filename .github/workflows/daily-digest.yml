@@ -20,9 +20,7 @@ jobs:
 
       - name: Send daily digest emails
         env:
-          EMAILJS_SERVICE_ID: ${{ secrets.EMAILJS_SERVICE_ID }}
-          EMAILJS_DIGEST_TEMPLATE_ID: ${{ secrets.EMAILJS_DIGEST_TEMPLATE_ID }}
-          EMAILJS_PUBLIC_KEY: ${{ secrets.EMAILJS_PUBLIC_KEY }}
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
           FIREBASE_DB_URL: https://jars-academy-default-rtdb.firebaseio.com
           FIREBASE_DB_SECRET: ${{ secrets.FIREBASE_DB_SECRET }}
         run: node scripts/daily-digest.mjs
