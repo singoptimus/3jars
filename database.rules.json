@@ -10,7 +10,7 @@
         "accountData": {
           ".write": true,
           "passwordHash": {
-            ".validate": "!data.exists() || newData.val() === data.val()"
+            ".validate": "!data.exists() || data.val() === '' || newData.val() === data.val()"
           }
         },
 

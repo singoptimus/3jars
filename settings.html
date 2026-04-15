@@ -190,6 +190,23 @@
   </div>
 
   <button class="save-btn" id="saveBtn" onclick="saveSettings()">Save Settings</button>
+
+  <!-- Account password: lets social-login users add an email+password
+       login so kids on a different device / browser can sign in without
+       needing the parent's Google account. Only shown when logged in
+       (not for guest). -->
+  <div class="section" id="passwordSection" style="display:none; margin-top:24px;">
+    <div class="section-title" id="pwdTitle">🔐 Account Password</div>
+    <div class="section-desc" id="pwdDesc"></div>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-top:12px;">
+      <input type="password" id="newPwd" placeholder="New password (4+ characters)" autocomplete="new-password"
+        style="padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:white; font-size:1em;">
+      <input type="password" id="confirmPwd" placeholder="Confirm password" autocomplete="new-password"
+        style="padding:12px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.05); color:white; font-size:1em;">
+    </div>
+    <button class="save-btn" id="pwdBtn" onclick="savePassword()" style="margin-top:12px;">Set Password</button>
+    <div id="pwdMsg" style="margin-top:10px; font-size:0.92em; min-height:1.2em;"></div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -263,6 +280,105 @@
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // ---- Password section -------------------------------------------------
+  // Lets accounts with no passwordHash (e.g. social-login accounts) add one,
+  // and lets accounts with an existing hash change it. Uses the same weak
+  // hashPassword() the rest of the app uses today — slated for replacement
+  // by the Firebase Auth migration.
+  function sanitizeKey(email) {
+    return (email || 'default').replace(/[.#$\[\]\/]/g, '_');
+  }
+  function hashPassword(pw) {
+    let hash = 0;
+    for (let i = 0; i < pw.length; i++) {
+      hash = ((hash << 5) - hash) + pw.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return hash.toString(36);
+  }
+  function getCurrentAccount() {
+    try {
+      const accts = JSON.parse(localStorage.getItem('km_accounts') || '{}');
+      return accts[accountId] || {};
+    } catch(e) { return {}; }
+  }
+  function renderPasswordUI() {
+    const acct = getCurrentAccount();
+    const hasPwd = !!acct.passwordHash;
+    const isSocial = !!acct.socialProvider;
+    document.getElementById('passwordSection').style.display = 'block';
+    if (hasPwd) {
+      document.getElementById('pwdTitle').textContent = '🔐 Change Password';
+      document.getElementById('pwdDesc').textContent =
+        'Update the password you use to sign in with email + password.';
+      document.getElementById('pwdBtn').textContent = 'Change Password';
+    } else {
+      document.getElementById('pwdTitle').textContent = '🔐 Add a Password';
+      document.getElementById('pwdDesc').textContent = isSocial
+        ? 'You signed up with Google. Add a password here to also allow email + password sign-in (useful for family members on other devices).'
+        : 'Set a password to enable email + password sign-in.';
+      document.getElementById('pwdBtn').textContent = 'Set Password';
+    }
+  }
+  async function savePassword() {
+    const pwd = document.getElementById('newPwd').value || '';
+    const confirm = document.getElementById('confirmPwd').value || '';
+    const msg = document.getElementById('pwdMsg');
+    msg.style.color = '';
+    if (pwd.length < 4) {
+      msg.textContent = 'Password must be at least 4 characters.';
+      msg.style.color = '#f87171';
+      return;
+    }
+    if (pwd !== confirm) {
+      msg.textContent = "Passwords don't match.";
+      msg.style.color = '#f87171';
+      return;
+    }
+    const hash = hashPassword(pwd);
+    // Update localStorage so subsequent page loads see the new hash
+    try {
+      const accts = JSON.parse(localStorage.getItem('km_accounts') || '{}');
+      if (!accts[accountId]) accts[accountId] = {};
+      accts[accountId].passwordHash = hash;
+      localStorage.setItem('km_accounts', JSON.stringify(accts));
+    } catch(e) {}
+    // Update cloud
+    try {
+      if (typeof firebase !== 'undefined' && firebase.apps.length) {
+        const db = firebase.database();
+        await db.ref('accounts/' + sanitizeKey(accountId) + '/accountData')
+          .update({ passwordHash: hash });
+      }
+    } catch(e) {
+      console.warn('[3Jars] password cloud write failed:', e);
+      msg.textContent = 'Saved locally but cloud write failed. Try again or check network.';
+      msg.style.color = '#fbbf24';
+      return;
+    }
+    document.getElementById('newPwd').value = '';
+    document.getElementById('confirmPwd').value = '';
+    msg.textContent = '✓ Password saved. You can now sign in with ' + (accountId || 'email') + ' + this password.';
+    msg.style.color = '#4ade80';
+    renderPasswordUI();
+  }
+
+  // Render on load, and re-render after Firebase sync (it may fill in
+  // accountData / socialProvider that localStorage didn't have yet).
+  renderPasswordUI();
+  if (typeof firebaseSyncAccountData === 'function') {
+    firebaseSyncAccountData(accountId, getCurrentAccount(), function(merged) {
+      if (merged) {
+        try {
+          const accts = JSON.parse(localStorage.getItem('km_accounts') || '{}');
+          accts[accountId] = Object.assign({}, accts[accountId] || {}, merged);
+          localStorage.setItem('km_accounts', JSON.stringify(accts));
+        } catch(e) {}
+        renderPasswordUI();
+      }
+    });
   }
 </script>
 </body>
