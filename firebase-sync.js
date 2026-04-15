@@ -177,6 +177,157 @@
     });
   };
 
+  // ---- Plays sync (share-of-play tracking) ----
+  // Tracks how many questions a player has answered in each category per day.
+  // Schema:
+  //   Firebase: accounts/{key}/plays/{playerKey}/{YYYY-MM-DD}/{category} = count
+  //   localStorage: km_{accountId}_plays = { [playerName]: { [YYYY-MM-DD]: {math,language,challenges} } }
+  // Categories: 'math' | 'language' | 'challenges'
+  function todayKey() {
+    var d = new Date();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  function pruneOldDays(playerBucket, keepDays) {
+    if (!playerBucket || typeof playerBucket !== 'object') return playerBucket;
+    var cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - (keepDays || 14));
+    var cutoffKey = cutoff.getFullYear() + '-' +
+      String(cutoff.getMonth() + 1).padStart(2, '0') + '-' +
+      String(cutoff.getDate()).padStart(2, '0');
+    for (var day in playerBucket) {
+      if (day < cutoffKey) delete playerBucket[day];
+    }
+    return playerBucket;
+  }
+
+  function loadLocalPlays(accountId) {
+    try {
+      var raw = localStorage.getItem('km_' + accountId + '_plays');
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e) {}
+    return {};
+  }
+  function saveLocalPlays(accountId, data) {
+    try { localStorage.setItem('km_' + accountId + '_plays', JSON.stringify(data)); } catch (e) {}
+  }
+
+  // Record one question answered by playerName in category.
+  // category: 'math' | 'language' | 'challenges'
+  window.recordPlay = function(accountId, playerName, category) {
+    if (!accountId || !playerName || !category) return;
+    var cat = String(category).toLowerCase();
+    if (cat !== 'math' && cat !== 'language' && cat !== 'challenges') return;
+    var day = todayKey();
+
+    // Local update
+    var data = loadLocalPlays(accountId);
+    if (!data[playerName]) data[playerName] = {};
+    if (!data[playerName][day]) data[playerName][day] = { math: 0, language: 0, challenges: 0 };
+    data[playerName][day][cat] = (data[playerName][day][cat] || 0) + 1;
+    pruneOldDays(data[playerName], 14);
+    saveLocalPlays(accountId, data);
+
+    // Firebase increment
+    whenReady(function() {
+      var path = 'accounts/' + sanitizeKey(accountId) +
+                 '/plays/' + sanitizeKey(playerName) +
+                 '/' + day + '/' + cat;
+      db.ref(path).transaction(function(v) { return (Number(v) || 0) + 1; })
+        .catch(function(e) { console.warn('[3Jars] recordPlay firebase error', e); });
+    });
+  };
+
+  // Sum categories over the last N days for a player.
+  // Returns {math, language, challenges, total}.
+  window.getPlayMix = function(accountId, playerName, days) {
+    var out = { math: 0, language: 0, challenges: 0, total: 0 };
+    if (!accountId || !playerName) return out;
+    var data = loadLocalPlays(accountId);
+    var bucket = data[playerName] || {};
+    var cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - ((days || 7) - 1));
+    var cutoffKey = cutoff.getFullYear() + '-' +
+      String(cutoff.getMonth() + 1).padStart(2, '0') + '-' +
+      String(cutoff.getDate()).padStart(2, '0');
+    for (var d in bucket) {
+      if (d < cutoffKey) continue;
+      var b = bucket[d] || {};
+      out.math += Number(b.math) || 0;
+      out.language += Number(b.language) || 0;
+      out.challenges += Number(b.challenges) || 0;
+    }
+    out.total = out.math + out.language + out.challenges;
+    return out;
+  };
+
+  // Merge remote + local plays (pick max per category per day â counts only grow).
+  function mergePlays(local, remote) {
+    var out = {};
+    var players = {};
+    for (var p in (local || {})) players[p] = true;
+    // remote is keyed by sanitized player; we merge into original playerName keys that already exist locally.
+    // If a remote key doesn't match any local name, we still keep it under the sanitized key.
+    for (var p in (local || {})) {
+      out[p] = {};
+      var lb = local[p] || {};
+      var sanitized = sanitizeKey(p);
+      var rb = (remote && remote[sanitized]) || {};
+      var days = {};
+      for (var d in lb) days[d] = true;
+      for (var d in rb) days[d] = true;
+      for (var d in days) {
+        var ld = lb[d] || {};
+        var rd = rb[d] || {};
+        out[p][d] = {
+          math: Math.max(Number(ld.math) || 0, Number(rd.math) || 0),
+          language: Math.max(Number(ld.language) || 0, Number(rd.language) || 0),
+          challenges: Math.max(Number(ld.challenges) || 0, Number(rd.challenges) || 0)
+        };
+      }
+      pruneOldDays(out[p], 14);
+    }
+    // Any remote players not already local â include them too under the sanitized key
+    for (var sp in (remote || {})) {
+      var found = false;
+      for (var p2 in (local || {})) {
+        if (sanitizeKey(p2) === sp) { found = true; break; }
+      }
+      if (!found) {
+        out[sp] = {};
+        for (var d2 in remote[sp]) {
+          var rd2 = remote[sp][d2] || {};
+          out[sp][d2] = {
+            math: Number(rd2.math) || 0,
+            language: Number(rd2.language) || 0,
+            challenges: Number(rd2.challenges) || 0
+          };
+        }
+        pruneOldDays(out[sp], 14);
+      }
+    }
+    return out;
+  }
+
+  window.firebaseSyncPlays = function(accountId, callback) {
+    if (!accountId) { if (callback) callback(loadLocalPlays(accountId)); return; }
+    whenReady(function() {
+      var path = 'accounts/' + sanitizeKey(accountId) + '/plays';
+      db.ref(path).once('value').then(function(snap) {
+        var remote = snap.val() || {};
+        var local = loadLocalPlays(accountId);
+        var merged = mergePlays(local, remote);
+        saveLocalPlays(accountId, merged);
+        if (callback) callback(merged);
+      }).catch(function(e) {
+        console.warn('[3Jars] firebaseSyncPlays failed:', e);
+        if (callback) callback(loadLocalPlays(accountId));
+      });
+    });
+  };
+
   // Heal corrupted localStorage score entries on load
   function healLocalScores() {
     try {
