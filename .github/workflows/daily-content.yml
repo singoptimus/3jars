@@ -1,0 +1,60 @@
+name: Daily Content & Digest
+
+on:
+  schedule:
+    # 04:00 UTC = 07:00 Israel, 00:00 ET
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      skip_generate:
+        description: 'Skip article generation (only send digest with existing latest article)'
+        required: false
+        default: 'false'
+      test_recipient:
+        description: 'Send digest only to this email (leave blank for all accounts)'
+        required: false
+        default: ''
+
+jobs:
+  generate-article:
+    if: ${{ github.event.inputs.skip_generate != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate today's blog article
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: node scripts/generate-article.mjs
+
+  send-digest:
+    needs: generate-article
+    if: ${{ always() && (needs.generate-article.result == 'success' || needs.generate-article.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # Re-checkout to pick up the article committed by the generate step.
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Send daily digest emails
+        env:
+          SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+          FIREBASE_DB_URL: https://jars-academy-default-rtdb.firebaseio.com
+          FIREBASE_DB_SECRET: ${{ secrets.FIREBASE_DB_SECRET }}
+          TEST_RECIPIENT: ${{ inputs.test_recipient }}
+        run: node scripts/daily-digest.mjs
