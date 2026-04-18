@@ -160,6 +160,80 @@
   }
   .trust-strip span { display: flex; align-items: center; gap: 4px; }
 
+  /* === HERO EXPANDABLE SIGN-IN === */
+  .hero-card { position: relative; transition: padding 0.25s ease; }
+  .hero-back-link {
+    position: absolute; top: 16px; left: 16px;
+    font-size: 0.85em; color: rgba(0,0,0,0.4); text-decoration: none;
+    padding: 6px 12px; border-radius: 16px; cursor: pointer;
+    display: none; transition: all 0.2s;
+  }
+  .hero-back-link:hover { background: rgba(0,0,0,0.05); color: #111; }
+  .hero-card.expanded .hero-back-link { display: inline-block; }
+  .hero-card.expanded .hero-actions,
+  .hero-card.expanded .trust-strip { display: none; }
+  .hero-card.expanded h1 { font-size: 1.8em; margin-bottom: 8px; }
+  .hero-card.expanded .hero-tagline { font-size: 0.92em; margin-bottom: 20px; max-width: 420px; margin-left: auto; margin-right: auto; }
+  .hero-card.expanded { padding-top: 40px; padding-bottom: 36px; }
+  .hero-signin { display: none; max-width: 380px; margin: 0 auto; text-align: left; }
+  .hero-card.expanded .hero-signin { display: block; }
+  .hero-signin .social-buttons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+  .hero-signin .social-btn {
+    width: 100%; padding: 12px 16px; background: white;
+    border: 1px solid rgba(0,0,0,0.15); border-radius: 12px;
+    font-size: 0.95em; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 12px;
+    color: #111; transition: all 0.2s;
+  }
+  .hero-signin .social-btn:hover { border-color: rgba(0,0,0,0.4); background: rgba(0,0,0,0.02); }
+  .hero-signin .social-divider {
+    text-align: center; margin: 16px 0; color: rgba(0,0,0,0.3); font-size: 0.85em;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .hero-signin .social-divider::before, .hero-signin .social-divider::after {
+    content: ''; flex: 1; height: 1px; background: rgba(0,0,0,0.1);
+  }
+  .hero-signin .form-group { margin-bottom: 14px; }
+  .hero-signin .form-label {
+    display: block; font-size: 0.75em; text-transform: uppercase; letter-spacing: 1px;
+    color: rgba(0,0,0,0.5); margin-bottom: 6px; font-weight: 600;
+  }
+  .hero-signin .form-input {
+    width: 100%; padding: 12px 14px; border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 10px; font-size: 0.95em; background: #fafafa;
+    outline: none; transition: all 0.2s;
+  }
+  .hero-signin .form-input:focus { border-color: #fbbf24; background: white; }
+  .hero-signin .submit-btn {
+    width: 100%; padding: 14px 20px; background: #fbbf24; color: #111;
+    border: none; border-radius: 32px; font-size: 1em; font-weight: 700;
+    cursor: pointer; transition: all 0.2s; margin-top: 8px;
+  }
+  .hero-signin .submit-btn:hover { background: #f59e0b; }
+  .hero-signin .submit-btn.is-signup { background: #10b981; color: white; }
+  .hero-signin .submit-btn.is-signup:hover { background: #059669; }
+  .hero-signin .status-hint {
+    margin-top: 12px; text-align: center; font-size: 0.82em;
+    color: rgba(0,0,0,0.45); min-height: 18px;
+  }
+  .hero-signin .status-hint.is-signup { color: #059669; font-weight: 600; }
+  .hero-signin .status-hint.is-login { color: #0369a1; font-weight: 600; }
+  .hero-signin .forgot-link {
+    display: block; text-align: center; margin-top: 12px;
+    font-size: 0.82em; color: rgba(0,0,0,0.4); text-decoration: none;
+  }
+  .hero-signin .forgot-link:hover { color: #f59e0b; }
+  .hero-signin .error-msg { margin-top: 8px; text-align: center; font-size: 0.82em; color: #ef4444; }
+  .hero-quick { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .hero-quick:empty { display: none; }
+  .hero-quick-chip {
+    background: #FFF8F0; border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 20px; padding: 6px 14px; font-size: 0.85em; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+    transition: all 0.2s;
+  }
+  .hero-quick-chip:hover { border-color: #fbbf24; background: #fff; }
+
   /* === LOGIN CARD === */
   .login-container {
     background: white;
@@ -479,13 +553,16 @@
 <!-- ========== CONTENT (overlaps video) ========== -->
 <div class="content">
 
-  <!-- Hero CTA Card -->
-  <div class="hero-card">
+  <!-- Hero CTA Card (expands in place when user clicks Sign In) -->
+  <div class="hero-card" id="heroCard">
+    <a class="hero-back-link" href="#" onclick="collapseHeroSignIn(); return false;">← Back</a>
     <h1>Every Game Fills a <span>Jar</span>.</h1>
-    <p>Kids practice Math, Languages, and Puzzles — then earn real rewards split across Family, Investing, and Giving.</p>
+    <p class="hero-tagline">Kids practice Math, Languages, and Puzzles — then earn real rewards split across Family, Investing, and Giving.</p>
+
+    <!-- Default (collapsed) content -->
     <div class="hero-actions">
       <button class="btn btn-gold" onclick="guestPlay()">▶ Start Playing Free</button>
-      <button class="btn btn-outline" onclick="showLoginCard('login')">Sign In</button>
+      <button class="btn btn-outline" onclick="expandHeroSignIn()">Sign In</button>
     </div>
     <div class="trust-strip">
       <span>✅ Free</span>
@@ -493,9 +570,44 @@
       <span>📚 Real Skills</span>
       <span>🎯 Goal-Based Rewards</span>
     </div>
+
+    <!-- Expanded content (only shown when .expanded is added to .hero-card) -->
+    <div class="hero-signin">
+      <div class="hero-quick" id="heroQuick"></div>
+      <div class="social-buttons">
+        <button class="social-btn google-btn" onclick="socialLogin('google')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <button class="social-btn facebook-btn" onclick="socialLogin('facebook')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>
+          Continue with Facebook
+        </button>
+        <button class="social-btn twitter-btn" onclick="socialLogin('twitter')">
+          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#000"/></svg>
+          Continue with X
+        </button>
+      </div>
+      <div class="social-divider">or</div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" id="email" type="email" placeholder="you@email.com" autocomplete="email"
+          oninput="handleHeroEmailChange(this.value)"
+          onkeydown="if(event.key==='Enter'){document.getElementById('password').focus();}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input class="form-input" id="password" type="password" placeholder="Enter your password" autocomplete="current-password"
+          onkeydown="if(event.key==='Enter'){doLogin();}">
+      </div>
+      <button class="submit-btn" id="heroSubmit" onclick="doLogin()">Continue</button>
+      <div class="status-hint" id="heroHint">We'll figure out if you need to log in or sign up.</div>
+      <div class="error-msg" id="msg"></div>
+      <a class="forgot-link" href="#" onclick="showLoginCard('forgot'); return false;">Forgot your password?</a>
+    </div>
   </div>
 
-  <!-- Sign In Card (hidden by default, shown when the Sign In button is clicked) -->
+  <!-- Forgot-password / reset card (only shown when forgot link is clicked) -->
   <div class="login-container" id="app"></div>
 
   <!-- 3 Jars Section -->
@@ -617,7 +729,20 @@ const isPaidTraffic = urlParams.has('utm_source') || urlParams.has('utm_campaign
 let mode = 'guest';
 
 // Show login card when hero buttons are clicked
+function backFromForgot() {
+  // Close the forgot-password card and return the user to the expanded hero sign-in
+  const app = document.getElementById('app');
+  if (app) app.innerHTML = '';
+  mode = 'login';
+  expandHeroSignIn();
+}
+
 function showLoginCard(m) {
+  // Forgot mode uses the card below; all other actions stay in the hero.
+  if (m === 'forgot') {
+    const hero = document.getElementById('heroCard');
+    if (hero) hero.classList.remove('expanded');
+  }
   mode = m;
   render();
   // Scroll to the login card
@@ -632,114 +757,45 @@ function switchMode(m) {
 }
 
 function render() {
-  const accounts = getAccounts();
-  const accountKeys = Object.keys(accounts);
+  // Quick-login chips are rendered separately inside the hero sign-in
+  // (see renderHeroQuickLogin). No preamble needed here anymore.
 
-  const quickLogin = accountKeys.length > 0 ? `
-    <div class="accounts-list">
-      <div class="accounts-title">Quick Login</div>
-      ${accountKeys.map(key => {
-        const acct = accounts[key];
-        const playerCount = acct.players ? acct.players.length : 0;
-        const displayEmail = acct.email || key;
-        const displayName = acct.displayName || key;
-        const initial = displayName[0].toUpperCase();
-        return `
-          <button class="account-btn" onclick="quickLogin('${key.replace(/'/g, "\\'")}')">
-            <div class="acct-icon">${initial}</div>
-            <div>
-              <div class="acct-name">${displayName}</div>
-              <div class="acct-email">${displayEmail}</div>
-              <div class="acct-players">${playerCount} player${playerCount !== 1 ? 's' : ''}</div>
-            </div>
-          </button>
-        `;
-      }).join('')}
-    </div>
-  ` : '';
+  // Only the forgot-password / reset flow renders into the #app container now.
+  // Sign-in lives in the hero card. When the user isn't in forgot mode, the
+  // container stays empty.
+  if (mode !== 'forgot') { app.innerHTML = ''; return; }
 
   app.innerHTML = `
-    <div class="tabs">
-      <button class="tab guest-tab ${mode === 'guest' ? 'active' : ''}" onclick="switchMode('guest')">🎮 Just Play</button>
-        <button class="tab ${mode === 'login' ? 'active' : ''}" onclick="switchMode('login')">Sign In</button>
+    <h2 style="font-size: 1.3em; margin-bottom: 6px;">Reset your password</h2>
+    <p style="color: rgba(0,0,0,0.5); font-size: 0.9em; margin-bottom: 20px;">Enter your email and we'll send you a reset code.</p>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" id="resetEmail" type="email" placeholder="Enter your account email" autocomplete="email"
+        onkeydown="if(event.key==='Enter'){sendResetCode();}">
     </div>
-
-    ${mode === 'guest' ? `
-      <div class="guest-panel">
-        <div class="guest-panel-icon">🎮</div>
-        <div class="guest-panel-title">Try the games instantly</div>
-        <div class="guest-panel-desc">No account needed. Jump straight into Math, Language, and Puzzle games to see what 3Jars is all about.</div>
-        <button class="guest-panel-btn" onclick="guestPlay()">Start Playing →</button>
-        <div class="guest-panel-note">Create an account later to earn points & unlock rewards</div>
-      </div>
-    ` : mode === 'login' ? `
-      <div class="social-buttons">
-        <button class="social-btn google-btn" onclick="socialLogin('google')">
-          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-          Continue with Google
-        </button>
-        <button class="social-btn facebook-btn" onclick="socialLogin('facebook')">
-          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2"/></svg>
-          Continue with Facebook
-        </button>
-        <button class="social-btn twitter-btn" onclick="socialLogin('twitter')">
-          <svg width="20" height="20" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" fill="#000"/></svg>
-          Continue with X
-        </button>
-
-      </div>
-      <div class="social-divider">or</div>
+    <button class="submit-btn" onclick="sendResetCode()" id="sendCodeBtn">Send Reset Code</button>
+    <div class="error-msg" id="msg"></div>
+    <div id="resetCodeSection" style="display:none; margin-top: 16px;">
       <div class="form-group">
-        <label class="form-label">Email</label>
-        <input class="form-input" id="email" type="email" placeholder="Enter your email" autocomplete="email"
-          onkeydown="if(event.key==='Enter'){document.getElementById('password').focus();}">
+        <label class="form-label">Reset Code</label>
+        <input class="form-input" id="resetCode" type="text" placeholder="Enter the 6-digit code from your email" maxlength="6"
+          onkeydown="if(event.key==='Enter'){document.getElementById('resetNewPassword').focus();}">
       </div>
       <div class="form-group">
-        <label class="form-label">Password</label>
-        <input class="form-input" id="password" type="password" placeholder="Enter your password" autocomplete="current-password"
-          onkeydown="if(event.key==='Enter'){doLogin();}">
+        <label class="form-label">New Password</label>
+        <input class="form-input" id="resetNewPassword" type="password" placeholder="At least 4 characters" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter'){document.getElementById('resetConfirmPassword').focus();}">
       </div>
-      <button class="submit-btn" onclick="doLogin()">Continue</button>
-      <div class="error-msg" id="msg"></div>
-      <div style="margin-top: 8px; text-align: center; font-size: 0.82em; color: rgba(0,0,0,0.4);">
-        New here? Just enter your email &mdash; we'll create your account.
-      </div>
-      <div style="margin-top: 8px; text-align: center;">
-        <a href="#" onclick="switchMode('forgot'); return false;" style="color: rgba(0,0,0,0.4); font-size: 0.85em; text-decoration: none; transition: color 0.2s;"
-          onmouseover="this.style.color='#f59e0b'" onmouseout="this.style.color='rgba(0,0,0,0.4)'">Forgot your password?</a>
-      </div>
-
-      ${quickLogin}
-    ` : mode === 'forgot' ? `
       <div class="form-group">
-        <label class="form-label">Email</label>
-        <input class="form-input" id="resetEmail" type="email" placeholder="Enter your account email" autocomplete="email"
-          onkeydown="if(event.key==='Enter'){sendResetCode();}">
+        <label class="form-label">Confirm New Password</label>
+        <input class="form-input" id="resetConfirmPassword" type="password" placeholder="Type it again" autocomplete="new-password"
+          onkeydown="if(event.key==='Enter'){doResetPassword();}">
       </div>
-      <button class="submit-btn" onclick="sendResetCode()" id="sendCodeBtn">Send Reset Code</button>
-      <div class="error-msg" id="msg"></div>
-      <div id="resetCodeSection" style="display:none; margin-top: 16px;">
-        <div class="form-group">
-          <label class="form-label">Reset Code</label>
-          <input class="form-input" id="resetCode" type="text" placeholder="Enter the 6-digit code from your email" maxlength="6"
-            onkeydown="if(event.key==='Enter'){document.getElementById('resetNewPassword').focus();}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">New Password</label>
-          <input class="form-input" id="resetNewPassword" type="password" placeholder="At least 4 characters" autocomplete="new-password"
-            onkeydown="if(event.key==='Enter'){document.getElementById('resetConfirmPassword').focus();}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Confirm New Password</label>
-          <input class="form-input" id="resetConfirmPassword" type="password" placeholder="Type it again" autocomplete="new-password"
-            onkeydown="if(event.key==='Enter'){doResetPassword();}">
-        </div>
-        <button class="submit-btn" onclick="doResetPassword()">Reset Password</button>
-      </div>
-      <div style="margin-top: 12px; text-align: center;">
-        <a href="#" onclick="switchMode('login'); return false;" style="color: rgba(0,0,0,0.4); font-size: 0.85em; text-decoration: none;">← Back to Login</a>
-      </div>
-    ` : ''}
+      <button class="submit-btn" onclick="doResetPassword()">Reset Password</button>
+    </div>
+    <div style="margin-top: 12px; text-align: center;">
+      <a href="#" onclick="backFromForgot(); return false;" style="color: rgba(0,0,0,0.4); font-size: 0.85em; text-decoration: none;">← Back to Sign In</a>
+    </div>
   `;
 
   // Auto-focus first input
@@ -781,6 +837,127 @@ function firebaseSaveCredentials(email, accountObj) {
     const key = sanitizeKey(email);
     db.ref('accounts/' + key + '/accountData').update(accountObj).catch(function(e) {});
   } catch(e) {}
+}
+
+// ---- Hero sign-in expand/collapse + smart email lookup ----
+
+function expandHeroSignIn() {
+  const hero = document.getElementById('heroCard');
+  if (!hero) return;
+  hero.classList.add('expanded');
+  renderHeroQuickLogin();
+  setTimeout(() => {
+    const emailInput = document.getElementById('email');
+    if (emailInput) emailInput.focus();
+  }, 150);
+}
+
+function collapseHeroSignIn() {
+  const hero = document.getElementById('heroCard');
+  if (!hero) return;
+  hero.classList.remove('expanded');
+  // Clear state
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const submit = document.getElementById('heroSubmit');
+  const hint = document.getElementById('heroHint');
+  const msg = document.getElementById('msg');
+  if (emailInput) emailInput.value = '';
+  if (passwordInput) passwordInput.value = '';
+  if (submit) { submit.textContent = 'Continue'; submit.classList.remove('is-signup'); }
+  if (hint) { hint.textContent = "We'll figure out if you need to log in or sign up."; hint.classList.remove('is-signup', 'is-login'); }
+  if (msg) msg.textContent = '';
+}
+
+// Show a row of chips for any accounts already saved on this device — one click prefills email
+function renderHeroQuickLogin() {
+  const container = document.getElementById('heroQuick');
+  if (!container) return;
+  const accounts = getAccounts();
+  const keys = Object.keys(accounts).filter(k => accounts[k] && (accounts[k].email || k.includes('@') || k.includes('_')));
+  if (keys.length === 0) { container.innerHTML = ''; return; }
+  container.innerHTML = keys.slice(0, 3).map(k => {
+    const acct = accounts[k];
+    const name = (acct && acct.displayName) ? acct.displayName : k;
+    const email = (acct && acct.email) ? acct.email : k;
+    const initial = (name[0] || '?').toUpperCase();
+    const safeEmail = email.replace(/'/g, "\\'");
+    return `<button class="hero-quick-chip" onclick="prefillHeroEmail('${safeEmail}')"><span>${initial}</span>${name}</button>`;
+  }).join('');
+}
+
+function prefillHeroEmail(email) {
+  const input = document.getElementById('email');
+  if (!input) return;
+  input.value = email;
+  handleHeroEmailChange(email);
+  const pw = document.getElementById('password');
+  if (pw) pw.focus();
+}
+
+let heroLookupTimer = null;
+let heroLookupCache = {};   // email -> 'exists' | 'missing'
+
+async function handleHeroEmailChange(rawEmail) {
+  clearTimeout(heroLookupTimer);
+  const submit = document.getElementById('heroSubmit');
+  const hint = document.getElementById('heroHint');
+  const msg = document.getElementById('msg');
+  if (msg) msg.textContent = '';
+
+  const email = normalizeEmail(rawEmail || '');
+  if (!email || !isValidEmail(email)) {
+    if (submit) { submit.textContent = 'Continue'; submit.classList.remove('is-signup'); }
+    if (hint) { hint.textContent = "We'll figure out if you need to log in or sign up."; hint.classList.remove('is-signup', 'is-login'); }
+    return;
+  }
+
+  // Local fast path: account already cached on this device
+  const localAccounts = getAccounts();
+  if (localAccounts[email]) {
+    setHeroSubmitState('login', submit, hint);
+    return;
+  }
+  if (heroLookupCache[email]) {
+    setHeroSubmitState(heroLookupCache[email] === 'exists' ? 'login' : 'signup', submit, hint);
+    return;
+  }
+
+  // Debounce remote lookup 400ms
+  heroLookupTimer = setTimeout(async () => {
+    try {
+      const remote = await firebaseLookupAccount(email);
+      const exists = !!(remote && (remote.passwordHash || remote.socialProvider));
+      heroLookupCache[email] = exists ? 'exists' : 'missing';
+      setHeroSubmitState(exists ? 'login' : 'signup', submit, hint);
+    } catch (e) {
+      // If lookup fails, default to neutral
+      if (submit) { submit.textContent = 'Continue'; submit.classList.remove('is-signup'); }
+      if (hint) { hint.textContent = "We'll figure out if you need to log in or sign up."; hint.classList.remove('is-signup', 'is-login'); }
+    }
+  }, 400);
+}
+
+function setHeroSubmitState(state, submit, hint) {
+  if (!submit || !hint) return;
+  if (state === 'login') {
+    submit.textContent = 'Log In';
+    submit.classList.remove('is-signup');
+    hint.textContent = 'Welcome back!';
+    hint.classList.add('is-login');
+    hint.classList.remove('is-signup');
+  } else if (state === 'signup') {
+    submit.textContent = 'Create Account';
+    submit.classList.add('is-signup');
+    hint.textContent = "New here — we'll create your account.";
+    hint.classList.add('is-signup');
+    hint.classList.remove('is-login');
+  } else {
+    submit.textContent = 'Continue';
+    submit.classList.remove('is-signup');
+    hint.textContent = "We'll figure out if you need to log in or sign up.";
+    hint.classList.remove('is-signup', 'is-login');
+  }
 }
 
 async function doLogin() {
@@ -1227,12 +1404,17 @@ if (currentAccount) {
 } else {
   seedDefaults();
   migrateAccounts();
-  // Don't auto-render the login card — it shows when user clicks Sign In
-  // But if there are existing accounts, show the login card by default for returning users
+  // Returning users (have accounts saved on this device) land straight in the
+  // expanded sign-in view inside the hero — the quick-login chips offer a
+  // one-click way to refill a past email. New visitors see the default hero
+  // with the "Start Playing Free" / "Sign In" buttons.
   const accounts = getAccounts();
   if (Object.keys(accounts).length > 0) {
-    mode = 'login';
-    render();
+    expandHeroSignIn();
+    // Prefill the most recent account's email so returning users just type
+    // their password and hit Continue.
+    const lastUsed = localStorage.getItem('km_currentAccount_backup') || Object.keys(accounts)[0];
+    if (lastUsed) prefillHeroEmail(lastUsed);
   }
 }
 </script>
