@@ -1016,6 +1016,9 @@ async function doLogin() {
     saveAccounts(accounts);
     firebaseSaveCredentials(email, newAcct);
 
+    // Log signup event for the admin dashboard
+    try { trackEvent('signup', { email: email, displayName: displayName, provider: 'email' }); } catch (e) {}
+
     // Fire EmailJS signup notification so Adam knows a new user signed up
     try {
       emailjs.send('service_oam7ctc', 'template_pxktrcf', {
@@ -1044,6 +1047,9 @@ async function doLogin() {
     showMsg('Wrong password. Try again!', true);
     return;
   }
+
+  // Successful login → log it for the admin dashboard
+  try { trackEvent('login', { email: email, provider: 'email' }); } catch (e) {}
 
   sessionStorage.setItem('km_currentAccount', email);
   localStorage.setItem('km_currentAccount_backup', email);
@@ -1238,7 +1244,46 @@ function seedDefaults() {
 // ---- Guest Play ----
 function guestPlay() {
   sessionStorage.setItem('km_guest', 'true');
+
+  // Fire-and-forget: log the guest-play event + ping Adam via EmailJS.
+  // Any failure here is silent — we never block the redirect to the games.
+  try { trackEvent('guest', { userAgent: navigator.userAgent, referrer: document.referrer || '' }); } catch (e) {}
+  try {
+    if (typeof emailjs !== 'undefined') {
+      emailjs.send('service_oam7ctc', 'template_pxktrcf', {
+        user_name: 'Guest player',
+        user_email: '(not provided — guest mode)',
+        to_email: 'singolda@gmail.com',
+        signup_time: new Date().toLocaleString() + ' (guest play; UA: ' + (navigator.userAgent || '').slice(0, 120) + ')'
+      }, 'wlauNCpdFNdFs-izM');
+    }
+  } catch (e) { console.log('Guest-play notification failed:', e); }
+
   window.location.href = 'index.html';
+}
+
+// ---- Analytics event logger ----
+// Writes lightweight event rows to Firebase (events/{kind}s/{auto-id}) and bumps
+// a root-level counter in stats/. Used for the admin dashboard. Non-blocking.
+// Waits for firebase-sync.js to finish loading the SDK before writing so that
+// a click that happens before Firebase is ready (e.g. a fast Guest Play tap on
+// first page load) still gets recorded.
+function trackEvent(kind, extra) {
+  var row = Object.assign({ at: Date.now(), atIso: new Date().toISOString() }, extra || {});
+  var doWrite = function() {
+    try {
+      if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) return;
+      var db = firebase.database();
+      db.ref('events/' + kind + 's').push(row).catch(function() {});
+      db.ref('stats/' + kind + 's_total').transaction(function(v) { return (Number(v) || 0) + 1; }).catch(function() {});
+    } catch (e) { /* silent */ }
+  };
+  if (window.firebaseReadyPromise) {
+    window.firebaseReadyPromise.then(doWrite).catch(function() {});
+  } else {
+    // Fallback: retry once after a short delay
+    setTimeout(doWrite, 1200);
+  }
 }
 
 // ---- Report Issues Modal ----
@@ -1334,6 +1379,7 @@ async function finalizeSocialLogin(email, displayName, firebaseUser) {
     accounts[email] = acct;
     saveAccounts(accounts);
     firebaseSaveCredentials(email, acct);
+    try { trackEvent('login', { email: email, provider: acct.socialProvider }); } catch (e) {}
     sessionStorage.setItem('km_currentAccount', email);
     localStorage.setItem('km_currentAccount_backup', email);
     window.location.href = 'index.html';
@@ -1352,6 +1398,7 @@ async function finalizeSocialLogin(email, displayName, firebaseUser) {
     accounts[email] = newAcct;
     saveAccounts(accounts);
     firebaseSaveCredentials(email, newAcct);
+    try { trackEvent('signup', { email: email, displayName: displayName, provider: newAcct.socialProvider }); } catch (e) {}
     // Send signup notification
     try {
       emailjs.send('service_oam7ctc', 'template_pxktrcf', {

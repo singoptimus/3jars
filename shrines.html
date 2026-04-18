@@ -133,8 +133,18 @@
 
 <script>
 (function(){
-  var account = localStorage.getItem('km_current_account') || 'guest';
-  var player = localStorage.getItem('kidsmath_current_player') || 'Player';
+  // Match the rest of the site: sessionStorage for the current account (with a
+  // localStorage backup in case the tab was reopened), and player from the
+  // ?player= URL param set by index.html when the user picks a kid to play as.
+  // Previous code read 'km_current_account' + 'kidsmath_current_player' which
+  // nothing on the site sets — result: points went to a phantom 'guest' key
+  // and never appeared on the player's real score.
+  if (!sessionStorage.getItem('km_currentAccount')) {
+    var _backup = localStorage.getItem('km_currentAccount_backup');
+    if (_backup) sessionStorage.setItem('km_currentAccount', _backup);
+  }
+  var account = sessionStorage.getItem('km_currentAccount') || 'guest';
+  var player = new URLSearchParams(window.location.search).get('player') || '';
   document.getElementById('player-label').textContent = 'ð ' + player;
 
   var TILE = 40;
@@ -327,6 +337,11 @@
   function awardPoints(amount) {
     pts += amount;
     document.getElementById('pts').textContent = pts;
+
+    // If no player was selected (e.g. someone hit the URL directly), skip
+    // persistence — matches AddSub.html's behavior and avoids writing an
+    // empty-string key into the scores object.
+    if (!player) return;
 
     try {
       var scores = JSON.parse(localStorage.getItem(scoresKey) || '{}');

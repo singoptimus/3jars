@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<!--
+  Admin-only dashboard for 3jars.ai. Access-gated to singolda@gmail.com only
+  (client-side check; Firebase rules allow anyone to read events/stats/accounts
+  but the dashboard UI will refuse to render for other accounts).
+
+  Data sources (all read from Firebase Realtime Database):
+    - accounts/            — every user account (name, email, provider, createdAt)
+    - events/guests/       — one row per guest-play click
+    - events/signups/      — one row per new signup (email/social)
+    - events/logins/       — one row per successful login
+    - stats/*_total        — running counters incremented atomically
+
+  Security note: an attacker who knows the Firebase URL can read these nodes
+  directly (that's the tradeoff for a no-backend setup). Don't put anything
+  sensitive here. If that becomes a real concern, gate behind Firebase Auth
+  proper + rules that check auth.token.email.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin &mdash; 3 Jars Academy</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; min-height: 100vh; background: #0f172a; color: #e2e8f0; line-height: 1.5; }
+  .nav { background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto; }
+  .nav-logo { font-size: 1.3em; font-weight: 900; background: linear-gradient(135deg, #fbbf24, #f472b6, #818cf8, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+  .nav a { color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9em; }
+  .nav a:hover { color: #fbbf24; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 1.8em; font-weight: 900; margin-bottom: 4px; }
+  .subhead { color: rgba(255,255,255,0.5); font-size: 0.95em; margin-bottom: 32px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .card { background: #1e293b; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 20px 22px; }
+  .card-label { font-size: 0.75em; text-transform: uppercase; letter-spacing: 1.5px; color: rgba(255,255,255,0.5); margin-bottom: 8px; font-weight: 600; }
+  .card-value { font-size: 2.2em; font-weight: 800; color: #fbbf24; line-height: 1.1; }
+  .card-sub { font-size: 0.8em; color: rgba(255,255,255,0.4); margin-top: 6px; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 32px; }
+  @media (max-width: 760px) { .row { grid-template-columns: 1fr; } }
+
+  .panel { background: #1e293b; border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 24px; }
+  .panel h2 { font-size: 1.1em; font-weight: 700; margin-bottom: 16px; color: #f1f5f9; }
+
+  .bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 0.9em; }
+  .bar-row .bar-label { width: 100px; color: rgba(255,255,255,0.7); }
+  .bar-row .bar-track { flex: 1; background: rgba(255,255,255,0.06); height: 20px; border-radius: 4px; overflow: hidden; }
+  .bar-row .bar-fill { height: 100%; background: linear-gradient(90deg, #fbbf24, #f472b6); transition: width 0.4s; }
+  .bar-row .bar-count { width: 36px; text-align: right; font-weight: 700; color: #f1f5f9; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+  th { text-align: left; font-weight: 600; color: rgba(255,255,255,0.5); padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 1px; font-size: 0.72em; }
+  td { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .ts { color: rgba(255,255,255,0.45); font-size: 0.85em; white-space: nowrap; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px; font-size: 0.74em; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-google { background: rgba(66,133,244,0.2); color: #60a5fa; }
+  .badge-facebook { background: rgba(24,119,242,0.2); color: #60a5fa; }
+  .badge-twitter, .badge-x { background: rgba(255,255,255,0.08); color: #cbd5e1; }
+  .badge-email { background: rgba(251,191,36,0.18); color: #fbbf24; }
+  .badge-social { background: rgba(168,85,247,0.2); color: #c084fc; }
+
+  .empty { color: rgba(255,255,255,0.4); font-style: italic; font-size: 0.9em; padding: 20px 0; text-align: center; }
+
+  .refresh-btn { background: rgba(251,191,36,0.15); color: #fbbf24; border: 1px solid rgba(251,191,36,0.3); padding: 6px 14px; border-radius: 16px; font-size: 0.82em; cursor: pointer; font-weight: 600; }
+  .refresh-btn:hover { background: rgba(251,191,36,0.25); }
+
+  .gate, .loader { max-width: 440px; margin: 80px auto; padding: 32px; background: #1e293b; border-radius: 14px; text-align: center; border: 1px solid rgba(255,255,255,0.06); }
+  .gate h2 { font-size: 1.4em; margin-bottom: 10px; color: #f1f5f9; }
+  .gate p { color: rgba(255,255,255,0.6); margin-bottom: 20px; }
+  .gate a { color: #fbbf24; text-decoration: underline; }
+  .loader h2 { color: rgba(255,255,255,0.5); font-size: 1em; font-weight: 500; }
+
+  .provider-split { display: flex; gap: 14px; margin-top: 8px; flex-wrap: wrap; }
+  .provider-split span { display: flex; align-items: center; gap: 6px; font-size: 0.82em; color: rgba(255,255,255,0.6); }
+  .provider-split strong { color: #f1f5f9; font-weight: 700; }
+</style>
+</head>
+<body>
+  <div class="nav">
+    <a class="nav-logo" href="index.html">3 Jars &middot; Admin</a>
+    <div>
+      <a href="index.html">Site</a>
+      &nbsp;&middot;&nbsp;
+      <a href="blog/">Blog</a>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <div id="gate" class="gate" style="display:none;">
+      <h2>Admin access only</h2>
+      <p>This page is restricted. Sign in as <strong>singolda@gmail.com</strong> to view it.</p>
+      <p><a href="login.html">Sign in &rarr;</a></p>
+    </div>
+
+    <div id="loader" class="loader" style="display:none;">
+      <h2>Loading admin data&hellip;</h2>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 6px;">
+        <h1>Dashboard</h1>
+        <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+      </div>
+      <div class="subhead" id="subhead">Loading live data from Firebase&hellip;</div>
+
+      <!-- Top counters -->
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">Accounts</div>
+          <div class="card-value" id="countAccounts">&mdash;</div>
+          <div class="card-sub" id="accountsSub"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Guest plays</div>
+          <div class="card-value" id="countGuests">&mdash;</div>
+          <div class="card-sub" id="guestsSub"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Signups</div>
+          <div class="card-value" id="countSignups">&mdash;</div>
+          <div class="card-sub" id="signupsSub"></div>
+        </div>
+        <div class="card">
+          <div class="card-label">Logins (all-time)</div>
+          <div class="card-value" id="countLogins">&mdash;</div>
+          <div class="card-sub" id="loginsSub"></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="panel">
+          <h2>Signups by provider</h2>
+          <div id="providerBars"></div>
+          <div class="provider-split" id="providerNumbers"></div>
+        </div>
+        <div class="panel">
+          <h2>Last 14 days</h2>
+          <div id="dailyBars"></div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:20px;">
+        <h2>Recent signups</h2>
+        <table>
+          <thead>
+            <tr><th>When</th><th>Name</th><th>Email</th><th>Provider</th></tr>
+          </thead>
+          <tbody id="signupsTable"></tbody>
+        </table>
+      </div>
+
+      <div class="panel" style="margin-bottom:20px;">
+        <h2>Recent guest plays</h2>
+        <table>
+          <thead>
+            <tr><th>When</th><th>Browser</th><th>Referrer</th></tr>
+          </thead>
+          <tbody id="guestsTable"></tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h2>All accounts</h2>
+        <table>
+          <thead>
+            <tr><th>Created</th><th>Name</th><th>Email</th><th>Method</th><th>Players</th></tr>
+          </thead>
+          <tbody id="accountsTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+<!-- Firebase (same version as the rest of the site) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+// ── Firebase init (same config pattern as firebase-sync.js) ─────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyCm8kUoUg-rSeZoHPgzH1GFIia83DfxtZs",
+  authDomain: "jars-academy.firebaseapp.com",
+  projectId: "jars-academy",
+  storageBucket: "jars-academy.firebasestorage.app",
+  messagingSenderId: "829512604965",
+  appId: "1:829512604965:web:130bffdfafa3fa8668cecc",
+  databaseURL: "https://jars-academy-default-rtdb.firebaseio.com"
+};
+try { firebase.initializeApp(firebaseConfig); } catch (e) { /* already initialized */ }
+const db = firebase.database();
+
+// ── Access gate ─────────────────────────────────────────────────────────────
+// Admin access requires the current browser session to be signed in as
+// singolda@gmail.com (stored in sessionStorage by login.html's doLogin). This
+// is a UX gate, not a security boundary — anyone who knows the Firebase URL
+// can read these same nodes directly. Keep sensitive data out of events/.
+const ADMIN_EMAIL = 'singolda@gmail.com';
+
+function currentAccount() {
+  return sessionStorage.getItem('km_currentAccount')
+    || localStorage.getItem('km_currentAccount_backup')
+    || '';
+}
+
+function gate() {
+  const me = (currentAccount() || '').toLowerCase();
+  if (me === ADMIN_EMAIL) return true;
+  document.getElementById('gate').style.display = 'block';
+  return false;
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function fmtDate(ms) {
+  if (!ms) return '&mdash;';
+  const d = new Date(ms);
+  const today = new Date();
+  const diffDays = Math.floor((today - d) / 86400000);
+  if (diffDays === 0) return 'Today ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (diffDays === 1) return 'Yesterday ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  if (diffDays < 7) return diffDays + 'd ago';
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: d.getFullYear() === today.getFullYear() ? undefined : 'numeric' });
+}
+
+function providerBadge(p) {
+  if (!p) return '<span class="badge badge-email">email</span>';
+  const norm = String(p).toLowerCase();
+  if (norm.indexOf('google') >= 0) return '<span class="badge badge-google">Google</span>';
+  if (norm.indexOf('facebook') >= 0) return '<span class="badge badge-facebook">Facebook</span>';
+  if (norm.indexOf('twitter') >= 0 || norm === 'x' || norm.indexOf('x.com') >= 0) return '<span class="badge badge-twitter">X</span>';
+  if (norm === 'email') return '<span class="badge badge-email">Email</span>';
+  return '<span class="badge badge-social">' + p + '</span>';
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function shortBrowser(ua) {
+  if (!ua) return '&mdash;';
+  if (/iPhone|iPad|iPod/.test(ua)) return 'iOS Safari';
+  if (/Android/.test(ua) && /Chrome/.test(ua)) return 'Android Chrome';
+  if (/Edg\//.test(ua)) return 'Edge';
+  if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) return 'Chrome';
+  if (/Firefox\//.test(ua)) return 'Firefox';
+  if (/Safari\//.test(ua)) return 'Safari';
+  return ua.slice(0, 40);
+}
+
+function toArr(snap) {
+  const v = snap && snap.val() ? snap.val() : {};
+  return Object.keys(v).map(k => Object.assign({ _key: k }, v[k]));
+}
+
+// ── Load everything ─────────────────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('dashboard').style.display = 'none';
+
+  const [accountsSnap, signupsSnap, guestsSnap, loginsSnap, statsSnap] = await Promise.all([
+    db.ref('accounts').once('value').catch(() => null),
+    db.ref('events/signups').once('value').catch(() => null),
+    db.ref('events/guests').once('value').catch(() => null),
+    db.ref('events/logins').once('value').catch(() => null),
+    db.ref('stats').once('value').catch(() => null),
+  ]);
+
+  const accounts = accountsSnap ? (accountsSnap.val() || {}) : {};
+  const accountList = Object.keys(accounts).map(k => {
+    const a = accounts[k] && accounts[k].accountData ? accounts[k].accountData : {};
+    return { key: k, ...a };
+  }).filter(a => a.email);
+  const signups = signupsSnap ? toArr(signupsSnap) : [];
+  const guests  = guestsSnap  ? toArr(guestsSnap)  : [];
+  const logins  = loginsSnap  ? toArr(loginsSnap)  : [];
+  const stats   = statsSnap   ? (statsSnap.val() || {}) : {};
+
+  // Top counters
+  document.getElementById('countAccounts').textContent = accountList.length;
+  document.getElementById('countGuests').textContent   = (stats.guests_total || stats.guest_plays_total || guests.length || 0);
+  document.getElementById('countSignups').textContent  = (stats.signups_total || signups.length || 0);
+  document.getElementById('countLogins').textContent   = (stats.logins_total || logins.length || 0);
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const yesterday = today.getTime() - 86400000;
+  const accountsToday = accountList.filter(a => a.createdAt >= today.getTime()).length;
+  const guestsToday = guests.filter(g => g.at >= today.getTime()).length;
+  const signupsToday = signups.filter(s => s.at >= today.getTime()).length;
+  const loginsToday = logins.filter(l => l.at >= today.getTime()).length;
+  document.getElementById('accountsSub').textContent = accountsToday ? (accountsToday + ' new today') : '';
+  document.getElementById('guestsSub').textContent   = guestsToday ? (guestsToday + ' today') : '';
+  document.getElementById('signupsSub').textContent  = signupsToday ? (signupsToday + ' today') : '';
+  document.getElementById('loginsSub').textContent   = loginsToday ? (loginsToday + ' today') : '';
+
+  // Signups by provider
+  const byProvider = {};
+  signups.forEach(s => { const p = (s.provider || 'email'); byProvider[p] = (byProvider[p] || 0) + 1; });
+  accountList.forEach(a => { if (!signups.find(s => s.email === a.email)) { const p = (a.socialProvider || 'email'); byProvider[p] = (byProvider[p] || 0) + 1; } });
+  const providerTotal = Object.values(byProvider).reduce((s, n) => s + n, 0) || 1;
+  const providerBarsEl = document.getElementById('providerBars');
+  const providerNumbersEl = document.getElementById('providerNumbers');
+  providerBarsEl.innerHTML = Object.keys(byProvider).sort((a,b) => byProvider[b] - byProvider[a]).map(p => {
+    const count = byProvider[p];
+    const pct = Math.round(count / providerTotal * 100);
+    return '<div class="bar-row"><div class="bar-label">' + escapeHtml(p) + '</div><div class="bar-track"><div class="bar-fill" style="width:' + pct + '%"></div></div><div class="bar-count">' + count + '</div></div>';
+  }).join('') || '<div class="empty">No signups yet.</div>';
+  providerNumbersEl.innerHTML = Object.keys(byProvider).map(p => '<span>' + providerBadge(p) + ' <strong>' + byProvider[p] + '</strong></span>').join('');
+
+  // Last 14 days
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const start = today.getTime() - i * 86400000;
+    const end = start + 86400000;
+    const label = new Date(start).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    const s = signups.filter(x => x.at >= start && x.at < end).length;
+    const g = guests.filter(x => x.at >= start && x.at < end).length;
+    days.push({ label, s, g });
+  }
+  const peak = Math.max(1, ...days.map(d => Math.max(d.s, d.g)));
+  document.getElementById('dailyBars').innerHTML = days.map(d => {
+    const sw = Math.round(d.s / peak * 100);
+    const gw = Math.round(d.g / peak * 100);
+    return '<div class="bar-row"><div class="bar-label">' + d.label + '</div><div class="bar-track"><div class="bar-fill" style="width:' + Math.max(sw, gw) + '%; opacity:0.9;" title="' + d.s + ' signups, ' + d.g + ' guests"></div></div><div class="bar-count">' + d.s + '/' + d.g + '</div></div>';
+  }).join('') + '<div style="font-size:0.75em; color:rgba(255,255,255,0.4); margin-top:8px;">Counts shown as signups / guest plays per day.</div>';
+
+  // Recent signups (last 20)
+  const recentSignups = signups.sort((a,b) => b.at - a.at).slice(0, 20);
+  document.getElementById('signupsTable').innerHTML = recentSignups.length ? recentSignups.map(s => (
+    '<tr><td class="ts">' + fmtDate(s.at) + '</td>'
+    + '<td>' + escapeHtml(s.displayName || '&mdash;') + '</td>'
+    + '<td>' + escapeHtml(s.email || '&mdash;') + '</td>'
+    + '<td>' + providerBadge(s.provider) + '</td></tr>'
+  )).join('') : '<tr><td colspan="4" class="empty">No signups tracked yet. The first real-user signup will show here.</td></tr>';
+
+  // Recent guest plays (last 50)
+  const recentGuests = guests.sort((a,b) => b.at - a.at).slice(0, 50);
+  document.getElementById('guestsTable').innerHTML = recentGuests.length ? recentGuests.map(g => (
+    '<tr><td class="ts">' + fmtDate(g.at) + '</td>'
+    + '<td>' + escapeHtml(shortBrowser(g.userAgent)) + '</td>'
+    + '<td>' + escapeHtml(g.referrer || 'direct') + '</td></tr>'
+  )).join('') : '<tr><td colspan="3" class="empty">No guest plays tracked yet.</td></tr>';
+
+  // All accounts, newest first
+  const sortedAccounts = accountList.slice().sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+  document.getElementById('accountsTable').innerHTML = sortedAccounts.length ? sortedAccounts.map(a => (
+    '<tr><td class="ts">' + fmtDate(a.createdAt) + '</td>'
+    + '<td>' + escapeHtml(a.displayName || '&mdash;') + '</td>'
+    + '<td>' + escapeHtml(a.email || '&mdash;') + '</td>'
+    + '<td>' + providerBadge(a.socialProvider || (a.passwordHash ? 'email' : '')) + '</td>'
+    + '<td>' + ((a.players && a.players.length) || 0) + '</td></tr>'
+  )).join('') : '<tr><td colspan="5" class="empty">No accounts yet.</td></tr>';
+
+  document.getElementById('subhead').textContent = 'Live from Firebase &middot; ' + new Date().toLocaleString();
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────────
+if (gate()) {
+  loadAll().catch(err => {
+    document.getElementById('loader').innerHTML = '<h2>Error loading data</h2><p style="font-size:0.85em;">' + escapeHtml(err.message || String(err)) + '</p>';
+    document.getElementById('loader').style.display = 'block';
+  });
+}
+</script>
+</body>
+</html>

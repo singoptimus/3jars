@@ -4,6 +4,7 @@
     ".write": false,
 
     "accounts": {
+      ".read": true,
       "$account": {
         ".read": true,
 
@@ -22,6 +23,20 @@
 
         "$other": { ".write": false }
       }
+    },
+
+    "events": {
+      ".read": true,
+      "guests":  { "$id": { ".write": true, ".validate": "!data.exists()" } },
+      "signups": { "$id": { ".write": true, ".validate": "!data.exists()" } },
+      "logins":  { "$id": { ".write": true, ".validate": "!data.exists()" } }
+    },
+
+    "stats": {
+      ".read": true,
+      "guest_plays_total": { ".write": true },
+      "signups_total":     { ".write": true },
+      "logins_total":      { ".write": true }
     }
   }
 }
