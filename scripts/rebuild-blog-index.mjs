@@ -1,4 +1,99 @@
-<!DOCTYPE html>
+/**
+ * Rebuild blog/index.html — regenerates the post list + page shell from the
+ * articles that actually live in blog/. Run this after publishing a new
+ * article (the daily publisher calls it) or any time you want the blog
+ * landing page to match the files on disk.
+ *
+ * Metadata is extracted from each article HTML:
+ *   <title>                → card title
+ *   <meta name="description"> → excerpt
+ *   <span class="post-tag">Category</span> → tag chip
+ *   <div class="meta">April 17, 2026 · 5 min read</div> → meta line
+ *
+ * Filename format is YYYY-MM-DD-slug.html — the date drives sort order.
+ * No environment variables needed.
+ */
+
+import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
+const BLOG_DIR = join(process.cwd(), 'blog');
+const INDEX_FILE = join(BLOG_DIR, 'index.html');
+
+// Category → CSS class name. Anything not listed here falls back to the
+// default yellow .post-tag styling.
+const TAG_CLASS = {
+  parenting: 'tag-parenting',
+  research:  'tag-research',
+  guide:     'tag-guide',
+  tips:      'tag-tips',
+  math:      'tag-math',
+  money:     'tag-money',
+  mindset:   'tag-mindset',
+};
+
+function extract(html, re, fallback = '') {
+  const m = html.match(re);
+  return m ? m[1].trim() : fallback;
+}
+
+function estimateReadTime(html) {
+  // Strip tags, count words, assume 230 wpm.
+  const text = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+                   .replace(/<style[\s\S]*?<\/style>/gi, '')
+                   .replace(/<[^>]+>/g, ' ');
+  const words = text.split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 230));
+}
+
+function formatDate(ymd) {
+  // ymd: "2026-04-17" → "April 17, 2026"
+  const [y, m, d] = ymd.split('-').map(Number);
+  const months = ['January','February','March','April','May','June',
+                  'July','August','September','October','November','December'];
+  return `${months[m - 1]} ${d}, ${y}`;
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+}
+
+async function readPost(filename) {
+  const html = await readFile(join(BLOG_DIR, filename), 'utf-8');
+  const date = filename.slice(0, 10); // YYYY-MM-DD
+  const title = extract(html, /<title>([^<]+)<\/title>/i, filename);
+  const description = extract(html, /<meta\s+name="description"\s+content="([^"]+)"/i);
+  const category = extract(html, /<span\s+class="post-tag"[^>]*>([^<]+)<\/span>/i, '');
+
+  // Try to parse read time from an existing .meta line, otherwise estimate.
+  const metaLine = extract(html, /<div\s+class="meta"[^>]*>([^<]+)<\/div>/i);
+  let readMinutes = null;
+  const readMatch = metaLine.match(/(\d+)\s*min\s*read/i);
+  if (readMatch) readMinutes = parseInt(readMatch[1], 10);
+  if (!readMinutes) readMinutes = estimateReadTime(html);
+
+  return { filename, date, title, description, category, readMinutes };
+}
+
+function renderCard(post) {
+  const slug = (post.category || '').toLowerCase();
+  const tagClass = TAG_CLASS[slug] || '';
+  const tagClassAttr = tagClass ? ` ${tagClass}` : '';
+  const category = post.category || 'Post';
+  return `      <a class="post-card" href="${post.filename}">
+        <span class="post-tag${tagClassAttr}">${escapeHtml(category)}</span>
+        <div class="post-title">${escapeHtml(post.title)}</div>
+        <div class="post-excerpt">${escapeHtml(post.description)}</div>
+        <div class="post-meta">${formatDate(post.date)} &middot; ${post.readMinutes} min read</div>
+      </a>`;
+}
+
+function renderIndex(posts) {
+  const cards = posts.map(renderCard).join('\n\n');
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -142,47 +237,7 @@
     </div>
     <div class="post-list" id="posts">
 
-      <a class="post-card" href="2026-04-18-multiplication-before-memorization.html">
-        <span class="post-tag tag-math">Math</span>
-        <div class="post-title">Multiplication Before Memorization: Why Understanding Beats Flashcards</div>
-        <div class="post-excerpt">Memorizing times tables without understanding leads to fragile math skills. Here is a better sequence.</div>
-        <div class="post-meta">April 18, 2026 &middot; 4 min read</div>
-      </a>
-
-      <a class="post-card" href="2026-04-17-why-word-problems-feel-impossible.html">
-        <span class="post-tag tag-math">Math</span>
-        <div class="post-title">Why Word Problems Feel Impossible (And How to Fix It)</div>
-        <div class="post-excerpt">Word problems are the number-one math complaint from kids. The issue is usually reading, not arithmetic.</div>
-        <div class="post-meta">April 17, 2026 &middot; 5 min read</div>
-      </a>
-
-      <a class="post-card" href="2026-04-16-teaching-fractions-with-pizza.html">
-        <span class="post-tag tag-math">Math</span>
-        <div class="post-title">Teaching Fractions with Pizza Night</div>
-        <div class="post-excerpt">How a Friday pizza can teach more about fractions than a week of worksheets.</div>
-        <div class="post-meta">April 16, 2026 &middot; 4 min read</div>
-      </a>
-
-      <a class="post-card" href="2026-04-15-when-math-anxiety-shows-up-at-age-7.html">
-        <span class="post-tag tag-parenting">Parenting</span>
-        <div class="post-title">When Math Anxiety Shows Up at Age 7: What Parents Can Do Tonight</div>
-        <div class="post-excerpt">Math anxiety often appears around age 7 — long before kids have a reason to dislike math. Here's what the research says and three practical shifts parents can make at the kitchen table tonight.</div>
-        <div class="post-meta">April 15, 2026 &middot; 5 min read</div>
-      </a>
-
-      <a class="post-card" href="2026-04-14-why-math-games-beat-worksheets.html">
-        <span class="post-tag tag-research">Research</span>
-        <div class="post-title">Why Math Games Beat Worksheets: The Science Behind Learning Through Play</div>
-        <div class="post-excerpt">Research shows kids who learn math through games retain 40% more than those using worksheets. Here's what the science says — and practical ways to use game-based math learning at home.</div>
-        <div class="post-meta">April 14, 2026 &middot; 5 min read</div>
-      </a>
-
-      <a class="post-card" href="2026-04-14-what-is-3-jars-academy.html">
-        <span class="post-tag tag-guide">Guide</span>
-        <div class="post-title">What Is 3 Jars Academy? Teaching Kids Math, Money, and Generosity</div>
-        <div class="post-excerpt">3 Jars Academy is a free platform where kids earn real rewards by solving math problems, learning languages, and solving puzzles. Every question fills three jars: Experience, Investing, and Giving Back.</div>
-        <div class="post-meta">April 14, 2026 &middot; 4 min read</div>
-      </a>
+${cards}
 
     </div>
     <div class="footer">
@@ -192,3 +247,33 @@
   </div>
 </body>
 </html>
+`;
+}
+
+export async function rebuildIndex() {
+  const all = await readdir(BLOG_DIR);
+  const articleFiles = all
+    .filter(f => /^\d{4}-\d{2}-\d{2}-.+\.html$/.test(f))
+    .sort()
+    .reverse(); // newest first
+
+  const posts = [];
+  for (const f of articleFiles) {
+    try { posts.push(await readPost(f)); }
+    catch (e) { console.warn(`[rebuild-blog-index] Skipped ${f}: ${e.message}`); }
+  }
+
+  const html = renderIndex(posts);
+  await writeFile(INDEX_FILE, html, 'utf-8');
+  console.log(`[rebuild-blog-index] Wrote ${posts.length} posts to blog/index.html`);
+  return posts.length;
+}
+
+// Run directly if invoked as a script.
+const invokedDirectly = import.meta.url === `file://${process.argv[1]}`;
+if (invokedDirectly) {
+  rebuildIndex().catch(e => {
+    console.error('Fatal:', e);
+    process.exit(1);
+  });
+}
