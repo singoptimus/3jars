@@ -1263,27 +1263,38 @@ function guestPlay() {
 }
 
 // ---- Analytics event logger ----
-// Writes lightweight event rows to Firebase (events/{kind}s/{auto-id}) and bumps
-// a root-level counter in stats/. Used for the admin dashboard. Non-blocking.
-// Waits for firebase-sync.js to finish loading the SDK before writing so that
-// a click that happens before Firebase is ready (e.g. a fast Guest Play tap on
-// first page load) still gets recorded.
+// Writes a lightweight event row to Firebase Realtime Database via the REST
+// API with fetch({keepalive:true}) so the write survives the page navigation
+// that usually follows a trigger (e.g. guestPlay redirects to index.html a
+// few milliseconds after calling this). Using the Firebase SDK's push() would
+// let the browser cancel the in-flight request on nav.
+//
+// We also best-effort bump the stats/{kind}s_total counter via the SDK when
+// it's ready — that one isn't critical because the dashboard can fall back
+// to counting rows in events/{kind}s if the counter is off.
 function trackEvent(kind, extra) {
   var row = Object.assign({ at: Date.now(), atIso: new Date().toISOString() }, extra || {});
-  var doWrite = function() {
-    try {
-      if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) return;
-      var db = firebase.database();
-      db.ref('events/' + kind + 's').push(row).catch(function() {});
-      db.ref('stats/' + kind + 's_total').transaction(function(v) { return (Number(v) || 0) + 1; }).catch(function() {});
-    } catch (e) { /* silent */ }
-  };
-  if (window.firebaseReadyPromise) {
-    window.firebaseReadyPromise.then(doWrite).catch(function() {});
-  } else {
-    // Fallback: retry once after a short delay
-    setTimeout(doWrite, 1200);
-  }
+  try {
+    fetch('https://jars-academy-default-rtdb.firebaseio.com/events/' + kind + 's.json', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(row),
+      keepalive: true
+    }).catch(function() {});
+  } catch (e) { /* silent */ }
+
+  // Best-effort counter bump (may race with navigation; that's OK)
+  try {
+    if (window.firebaseReadyPromise) {
+      window.firebaseReadyPromise.then(function() {
+        try {
+          if (typeof firebase === 'undefined' || !firebase.apps || !firebase.apps.length) return;
+          firebase.database().ref('stats/' + kind + 's_total')
+            .transaction(function(v) { return (Number(v) || 0) + 1; }).catch(function() {});
+        } catch (e) { /* silent */ }
+      }).catch(function() {});
+    }
+  } catch (e) { /* silent */ }
 }
 
 // ---- Report Issues Modal ----

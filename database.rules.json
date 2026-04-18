@@ -27,9 +27,9 @@
 
     "events": {
       ".read": true,
-      "guests":  { "$id": { ".write": true, ".validate": "!data.exists()" } },
-      "signups": { "$id": { ".write": true, ".validate": "!data.exists()" } },
-      "logins":  { "$id": { ".write": true, ".validate": "!data.exists()" } }
+      "guests":  { ".indexOn": ["at"], "$id": { ".write": true, ".validate": "!data.exists()" } },
+      "signups": { ".indexOn": ["at"], "$id": { ".write": true, ".validate": "!data.exists()" } },
+      "logins":  { ".indexOn": ["at"], "$id": { ".write": true, ".validate": "!data.exists()" } }
     },
 
     "stats": {
