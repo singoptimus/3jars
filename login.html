@@ -1249,15 +1249,23 @@ function guestPlay() {
   // Any failure here is silent — we never block the redirect to the games.
   try { trackEvent('guest', { userAgent: navigator.userAgent, referrer: document.referrer || '' }); } catch (e) {}
   try {
-    if (typeof emailjs !== 'undefined') {
-      emailjs.send('service_oam7ctc', 'template_pxktrcf', {
-        user_name: 'Guest player',
-        user_email: '(not provided — guest mode)',
-        to_email: 'singolda@gmail.com',
-        signup_time: new Date().toLocaleString() + ' (guest play; UA: ' + (navigator.userAgent || '').slice(0, 120) + ')'
-      }, 'wlauNCpdFNdFs-izM');
-    }
-  } catch (e) { console.log('Guest-play notification failed:', e); }
+     fetch('https://api.emailjs.com/api/v1.0/email/send', {
+       method: 'POST',
+       headers: { 'Content-Type': 'application/json' },
+       body: JSON.stringify({
+         service_id: 'service_oam7ctc',
+         template_id: 'template_pxktrcf',
+         user_id: 'wlauNCpdFNdFs-izM',
+         template_params: {
+           user_name: 'Guest player',
+           user_email: '(not provided — guest mode)',
+           to_email: 'singolda@gmail.com',
+           signup_time: new Date().toLocaleString() + ' (guest play; UA: ' + (navigator.userAgent || '').slice(0, 120) + ')'
+         }
+       }),
+       keepalive: true
+     }).catch(function() {});
+   } catch (e) { /* silent */ }
 
   window.location.href = 'index.html';
 }
