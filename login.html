@@ -367,6 +367,9 @@
   .blog-card-title { font-size: 0.95em; font-weight: 700; margin-bottom: 6px; }
   .blog-card-desc { font-size: 0.8em; color: rgba(0,0,0,0.45); line-height: 1.5; }
   .blog-card-link { font-size: 0.8em; color: #f59e0b; font-weight: 600; margin-top: 10px; display: block; }
+  .blog-heading-link:hover .blog-heading-arrow { transform: translateX(4px); display: inline-block; transition: transform 0.2s; }
+  .blog-heading-arrow { display: inline-block; transition: transform 0.2s; margin-left: 6px; }
+  .view-all-articles:hover { background: rgba(245,158,11,0.08); border-color: #f59e0b; }
 
   /* === BOTTOM CTA === */
   .bottom-cta {
@@ -543,7 +546,9 @@
   <!-- Blog Section -->
   <div class="section">
     <div class="section-label">From the Blog</div>
-    <h2 class="section-title" style="font-size: 1.4em;">Parent Tips & Articles</h2>
+    <a href="blog/" class="blog-heading-link" style="text-decoration:none;color:inherit;display:inline-block;">
+      <h2 class="section-title" style="font-size: 1.4em;">Parent Tips & Articles <span class="blog-heading-arrow" style="color:#f59e0b;font-weight:700;">→</span></h2>
+    </a>
     <div style="height: 16px;"></div>
     <div class="blog-row">
       <a class="blog-card" href="blog/2026-04-14-what-is-3-jars-academy.html">
@@ -556,6 +561,9 @@
         <p class="blog-card-desc">Research shows gamified practice builds stronger retention than traditional drills.</p>
         <span class="blog-card-link">Read →</span>
       </a>
+    </div>
+    <div style="text-align:center;margin-top:20px;">
+      <a href="blog/" class="view-all-articles" style="display:inline-block;font-size:0.9em;font-weight:600;color:#f59e0b;text-decoration:none;padding:10px 20px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);transition:all 0.2s;">View all articles &rarr;</a>
     </div>
   </div>
 
