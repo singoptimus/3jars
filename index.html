@@ -978,7 +978,7 @@
       <div class="footer">
         Made with love<br>
         <button class="reset-btn" onclick="resetScores()">Reset Scores</button><br>
-        <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>
+        <button class="report-btn" onclick="openReportModal()">🐛 Report an Issue</button>${!isGuest && ((getAccountData() || {}).email) === 'singolda@gmail.com' ? '<br><a href="admin.html" style="color:#fbbf24;">Dashboard</a>' : ''} 
       </div>`;
   }
 
