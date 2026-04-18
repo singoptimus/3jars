@@ -14,6 +14,7 @@
 import { readdir, readFile, writeFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
 import { execSync } from 'node:child_process';
+import { rebuildIndex } from './rebuild-blog-index.mjs';
 
 const BLOG_DIR = join(process.cwd(), 'blog');
 const QUEUE_DIR = join(BLOG_DIR, 'queue');
@@ -73,11 +74,18 @@ async function main() {
   console.log(`Written: blog/${destFilename}`);
   console.log(`Removed: blog/queue/${nextFile}`);
 
-  // 5. Commit + push.
+  // 5. Regenerate blog/index.html so the landing page lists the new article.
+  try {
+    await rebuildIndex();
+  } catch (e) {
+    console.error('Index rebuild failed (not fatal — continuing):', e.message);
+  }
+
+  // 6. Commit + push.
   try {
     execSync('git config user.name "3 Jars Bot"', { stdio: 'inherit' });
     execSync('git config user.email "noreply@3jars.ai"', { stdio: 'inherit' });
-    execSync(`git add "blog/${destFilename}" "blog/queue/${nextFile}"`, { stdio: 'inherit' });
+    execSync(`git add "blog/${destFilename}" "blog/queue/${nextFile}" "blog/index.html"`, { stdio: 'inherit' });
 
     // Extract title for commit message.
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
