@@ -372,20 +372,25 @@
     return out;
   }
 
+  // Write to accountData/players + accountData/displayName specifically.
+  // The Firebase rules allow writes to accountData but validate passwordHash —
+  // a full .set() would fail, so we write sub-paths individually via .update().
   window.firebaseSaveAccountData = function(accountId, data) {
     if (!accountId || !data) return;
-    var path = "accounts/" + sanitizeKey(accountId) + "/profile";
+    var base = "accounts/" + sanitizeKey(accountId) + "/accountData";
     firebaseReadyPromise.then(function() {
       if (!db) return;
-      var localProfile = {
-        players: data.players || [],
-        displayName: data.displayName || '',
-        email: data.email || accountId
-      };
-      db.ref(path).once("value").then(function(snap) {
+      db.ref(base).once("value").then(function(snap) {
         var remote = snap.val() || {};
-        var merged = mergeProfile(localProfile, remote);
-        db.ref(path).set(merged).catch(function(e) { console.warn("[firebase-sync] account save error", e); });
+        var merged = mergeProfile(data, remote);
+        // Write only the fields we care about (NEVER passwordHash)
+        var updates = {
+          players: merged.players || [],
+          displayName: merged.displayName || ''
+        };
+        db.ref(base).update(updates).catch(function(e) {
+          console.warn("[firebase-sync] account save error", e);
+        });
       }).catch(function(e) {
         console.warn("[firebase-sync] account save read error", e);
       });
@@ -394,13 +399,17 @@
 
   window.firebaseSyncAccountData = function(accountId, localData, callback) {
     if (!accountId) { if (callback) callback(null); return; }
-    var path = "accounts/" + sanitizeKey(accountId) + "/profile";
+    var base = "accounts/" + sanitizeKey(accountId) + "/accountData";
     firebaseReadyPromise.then(function() {
       if (!db) { if (callback) callback(null); return; }
-      db.ref(path).once("value").then(function(snap) {
+      db.ref(base).once("value").then(function(snap) {
         var remote = snap.val() || {};
         var merged = mergeProfile(localData || {}, remote);
-        db.ref(path).set(merged);
+        // Push merged back so the cloud has the union
+        db.ref(base).update({
+          players: merged.players || [],
+          displayName: merged.displayName || ''
+        });
         if (callback) callback(merged);
       }).catch(function(e) {
         console.warn("[firebase-sync] account sync error", e);
