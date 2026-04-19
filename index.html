@@ -589,6 +589,58 @@
     .celebration-card, .celeb10k-card { padding: 28px 20px; margin: 20px; }
   }
 </style>
+
+<!-- Facebook Pixel + analytics bridge -->
+<script>
+  // Paste your 15-digit Facebook Pixel ID below and Pixel tracking activates.
+  // No ID = no Pixel loads (no errors, no empty requests).
+  window.FB_PIXEL_ID = "";
+  if (window.FB_PIXEL_ID) {
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version="2.0";n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,"script","https://connect.facebook.net/en_US/fbevents.js");
+    fbq("init", window.FB_PIXEL_ID);
+    fbq("track", "PageView");
+  }
+  // Unified conversion-tracking bridge — fires to Pixel + dataLayer + Firebase.
+  // Add more sinks here (GA4, PostHog, etc.) without touching the callers.
+  window.trackConvEvent = function(name, params) {
+    params = params || {};
+    try { if (typeof fbq === "function") fbq("track", name, params); } catch(e) {}
+    try { (window.dataLayer = window.dataLayer || []).push(Object.assign({ event: name }, params)); } catch(e) {}
+    try {
+      fetch("https://jars-academy-default-rtdb.firebaseio.com/events/conversions.json", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: name, params: params, at: Date.now(), atIso: new Date().toISOString(), url: location.href, referrer: document.referrer || "" }),
+        keepalive: true
+      }).catch(function(){});
+    } catch(e) {}
+  };
+  // Engagement signals — Facebook ranks ads better when the LP has real engagement.
+  setTimeout(function(){ try { window.trackConvEvent("ViewContent", { content_name: "engaged_10s" }); } catch(e){} }, 10000);
+  (function(){
+    var scrolled = false;
+    window.addEventListener("scroll", function(){
+      if (scrolled) return;
+      var pct = window.scrollY / Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      if (pct > 0.5) { scrolled = true; try { window.trackConvEvent("ViewContent", { content_name: "scrolled_50pct" }); } catch(e){} }
+    }, { passive: true });
+  })();
+</script>
+
+<!-- Structured data for SEO + Facebook rich previews -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "3 Jars",
+  "url": "https://3jars.ai/",
+  "description": "Turn screen time into life skills. Kids solve challenges and earn rewards across three jars: Family experiences, Investing, and Giving.",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "audience": { "@type": "Audience", "suggestedMinAge": 5, "suggestedMaxAge": 12 },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
 </head>
 <body>
 
