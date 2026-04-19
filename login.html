@@ -554,11 +554,6 @@
     content: ''; flex: 1; height: 1px; background: rgba(0,0,0,0.1);
   }
 .hero-age { font-size: 0.82em; opacity: 0.65; margin-top: 8px; font-weight: 500; }
-.testimonial-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px; max-width: 980px; margin-left: auto; margin-right: auto; }
-@media (max-width: 720px) { .testimonial-row { grid-template-columns: 1fr; } }
-.testimonial-card { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0,0,0,0.06); border-radius: 16px; padding: 22px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 12px; }
-.testimonial-quote { font-size: 1.08em; line-height: 1.45; color: #2a2a3c; margin: 0; font-weight: 500; }
-.testimonial-author { font-size: 0.85em; opacity: 0.7; margin: 0; }
 .faq { max-width: 720px; margin: 24px auto 0; display: flex; flex-direction: column; gap: 10px; text-align: left; }
 .faq details { background: rgba(255,255,255,0.6); border: 1px solid rgba(0,0,0,0.06); border-radius: 12px; padding: 14px 18px; cursor: pointer; }
 .faq details[open] { background: rgba(255,255,255,0.9); }
@@ -581,6 +576,54 @@
   .hiw-arrow { transform: rotate(90deg); }
   .hiw-step { width: 100%; max-width: 320px; }
 }
+/* Screenshots section */
+.screenshots-stack { display: flex; justify-content: center; align-items: center; min-height: 460px; max-width: 1200px; margin: 32px auto 0; position: relative; padding: 20px 0; }
+.mini-phone { width: 230px; flex: 0 0 auto; background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.12); border: 3px solid; overflow: hidden; position: relative; transition: transform 0.3s ease, z-index 0s; }
+.mini-phone:hover { z-index: 10 !important; transform: scale(1.05) rotate(0deg) !important; }
+.screenshots-stack .mini-phone:nth-child(1) { transform: rotate(-5deg) translateX(40px); z-index: 1; }
+.screenshots-stack .mini-phone:nth-child(2) { transform: rotate(2deg) translateY(-20px); z-index: 2; margin-left: -50px; }
+.screenshots-stack .mini-phone:nth-child(3) { transform: rotate(-3deg) translateY(20px); z-index: 3; margin-left: -50px; }
+.screenshots-stack .mini-phone:nth-child(4) { transform: rotate(4deg) translateX(-40px); z-index: 2; margin-left: -50px; }
+@media (max-width: 760px) {
+  .screenshots-stack { flex-direction: column; min-height: auto; gap: 18px; padding: 10px 0; }
+  .screenshots-stack .mini-phone { width: 88vw; max-width: 320px; margin-left: 0 !important; transform: none !important; }
+}
+.mini-math { border-color: #16a34a; }
+.mini-spanish { border-color: #ea580c; }
+.mini-patterns { border-color: #0d9488; }
+.mini-rule { border-color: #9333ea; }
+.mp-body { padding: 18px 14px; background: white; display: flex; flex-direction: column; min-height: 310px; }
+.mp-pill { align-self: center; padding: 6px 12px; border-radius: 999px; font-size: 0.72em; font-weight: 600; margin-bottom: 10px; }
+.mp-pill-math { background: #dcfce7; color: #14532d; }
+.mp-pill-spanish { background: #fed7aa; color: #9a3412; }
+.mp-pill-patterns { background: #ccfbf1; color: #134e4a; }
+.mp-pill-rule { background: #ede9fe; color: #4c1d95; }
+.mp-title { font-size: 1em; font-weight: 800; text-align: center; margin-bottom: 12px; color: #1f1b2e; }
+.mp-main { flex: 1; border-radius: 10px; padding: 14px 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+.mp-main-math { background: #f0fdf4; }
+.mp-main-spanish { background: #fff4e6; }
+.mp-main-patterns { background: #f0fdfa; }
+.mp-main-rule { background: #faf5ff; }
+.mp-emoji { font-size: 1.8em; line-height: 1; }
+.mp-story { font-size: 0.76em; color: #14532d; line-height: 1.35; }
+.mp-question { font-size: 0.82em; font-weight: 700; color: #14532d; margin-top: 2px; }
+.mp-input { border: 2px solid #f97316; border-radius: 8px; background: #fff7e6; padding: 6px 24px; font-weight: 800; color: rgba(0,0,0,0.35); margin-top: 4px; font-size: 0.9em; }
+.mp-rr { font-size: 2.4em; font-weight: 900; color: #b91c1c; line-height: 1; }
+.mp-hint { font-size: 0.72em; opacity: 0.75; color: #1f1b2e; }
+.mp-answers { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; width: 100%; }
+.mp-answer { padding: 6px; border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; font-size: 0.68em; font-weight: 600; background: white; color: #1f1b2e; }
+.mp-answer-correct { border-color: #16a34a; background: #dcfce7; }
+.mp-pat-row { display: flex; align-items: center; gap: 4px; justify-content: center; }
+.mp-tile { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; background: #ecfdf5; border-radius: 5px; font-size: 0.9em; color: #2563eb; }
+.mp-tile-q { background: #fff7e6; border: 2px dashed #f97316; color: #f97316; font-weight: 800; }
+.mp-arr { font-size: 0.7em; opacity: 0.5; }
+.mp-pat-label { font-size: 0.72em; font-weight: 700; color: #134e4a; margin-top: 4px; }
+.mp-pat-answers { display: flex; gap: 4px; }
+.mp-ans { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; background: white; border: 1px solid rgba(0,0,0,0.08); border-radius: 5px; font-size: 0.85em; color: #2563eb; }
+.mp-ans-correct { color: #0d9488; border-color: #0d9488; }
+.mp-seq { display: flex; gap: 3px; justify-content: center; flex-wrap: wrap; }
+.mp-num { min-width: 30px; padding: 5px 3px; background: #ede9fe; border-radius: 6px; font-size: 0.78em; font-weight: 700; color: #4c1d95; }
+.mp-num-empty { background: #fff7e6; border: 2px solid #f97316; color: #f97316; }
 </style>
 
 <!-- Facebook Pixel + analytics bridge -->
@@ -769,22 +812,62 @@
     </div>
   </div>
 
-  <!-- Why Parents Love 3 Jars Section -->
+  <!-- See it in action (game screenshots) -->
   <div class="section">
-    <div class="section-label">Why Parents Love 3 Jars</div>
-    <h2 class="section-title">Screen time that earns its place.</h2>
-    <div class="testimonial-row">
-      <div class="testimonial-card">
-        <p class="testimonial-quote">&ldquo;Less screen time guilt. More learning.&rdquo;</p>
-        <p class="testimonial-author">Sarah M. · mom of 2 · Austin, TX</p>
+    <div class="section-label">Inside the game</div>
+    <h2 class="section-title">See it in action.</h2>
+    <p class="section-desc">Math, language, logic, and number sense — all in one app.</p>
+    <div class="screenshots-stack">
+      <div class="mini-phone mini-math">
+        <div class="mp-body">
+          <div class="mp-pill mp-pill-math">Guest Player · 0 pts</div>
+          <div class="mp-title">Math Stories</div>
+          <div class="mp-main mp-main-math">
+            <div class="mp-emoji">🐶</div>
+            <div class="mp-story">Ethan saw 10 dogs at the park. Dora saw 9 cats.</div>
+            <div class="mp-question">How many animals total?</div>
+            <div class="mp-input">?</div>
+          </div>
+        </div>
       </div>
-      <div class="testimonial-card">
-        <p class="testimonial-quote">&ldquo;My kid is now asking about stocks.&rdquo;</p>
-        <p class="testimonial-author">David L. · dad of 3 · San Diego, CA</p>
+      <div class="mini-phone mini-spanish">
+        <div class="mp-body">
+          <div class="mp-pill mp-pill-spanish">Guest Player · 0 pts</div>
+          <div class="mp-title">🎉 Spanish</div>
+          <div class="mp-main mp-main-spanish">
+            <div class="mp-rr">rr</div>
+            <div class="mp-hint">What is the pronunciation?</div>
+            <div class="mp-answers">
+              <div class="mp-answer">stressed "u"</div>
+              <div class="mp-answer">hard "g"</div>
+              <div class="mp-answer mp-answer-correct">rolled "r"</div>
+              <div class="mp-answer">"ch" cheese</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="testimonial-card">
-        <p class="testimonial-quote">&ldquo;They&rsquo;re learning to give, not just earn.&rdquo;</p>
-        <p class="testimonial-author">Priya R. · mom of 1 · Boston, MA</p>
+      <div class="mini-phone mini-patterns">
+        <div class="mp-body">
+          <div class="mp-pill mp-pill-patterns">Guest Player · 0 pts</div>
+          <div class="mp-title">🧩 Shape Patterns</div>
+          <div class="mp-main mp-main-patterns">
+            <div class="mp-pat-row"><span class="mp-tile">■</span><span class="mp-arr">→</span><span class="mp-tile">▲</span><span class="mp-arr">→</span><span class="mp-tile">●</span></div>
+            <div class="mp-pat-row"><span class="mp-tile">●</span><span class="mp-arr">→</span><span class="mp-tile mp-tile-q">?</span></div>
+            <div class="mp-pat-label">Pick the missing shape:</div>
+            <div class="mp-pat-answers"><span class="mp-ans">□</span><span class="mp-ans">◆</span><span class="mp-ans mp-ans-correct">◆</span><span class="mp-ans">■</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="mini-phone mini-rule">
+        <div class="mp-body">
+          <div class="mp-pill mp-pill-rule">Guest Player · 0 pts</div>
+          <div class="mp-title">Rule of 4</div>
+          <div class="mp-main mp-main-rule">
+            <div class="mp-seq"><span class="mp-num mp-num-empty">|</span><span class="mp-num">16</span><span class="mp-num mp-num-empty"></span><span class="mp-num">24</span><span class="mp-num">28</span><span class="mp-num">32</span></div>
+            <div class="mp-seq"><span class="mp-num">36</span><span class="mp-num">40</span></div>
+            <div class="mp-hint">Fill in the missing numbers!</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
