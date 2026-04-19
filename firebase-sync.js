@@ -328,6 +328,87 @@
     });
   };
 
+  // ---- Account data sync (player roster, displayName) ----
+  // Stores the player list at accounts/{key}/profile so it follows the user
+  // across devices. Without this, the player roster lives only in localStorage
+  // on whichever device created it — so migrated players never appear on a
+  // different browser/phone/desktop.
+
+  function asArray(x) {
+    if (Array.isArray(x)) return x;
+    if (x && typeof x === 'object') {
+      return Object.keys(x).map(function(k) { return x[k]; }).filter(Boolean);
+    }
+    return [];
+  }
+
+  function mergePlayers(a, b) {
+    var aArr = asArray(a);
+    var bArr = asArray(b);
+    var byName = {};
+    aArr.forEach(function(p) { if (p && p.name) byName[p.name] = { name: p.name, emoji: p.emoji || '', color: p.color || '' }; });
+    bArr.forEach(function(p) {
+      if (!p || !p.name) return;
+      if (!byName[p.name]) {
+        byName[p.name] = { name: p.name, emoji: p.emoji || '', color: p.color || '' };
+      } else {
+        byName[p.name] = {
+          name: p.name,
+          emoji: byName[p.name].emoji || p.emoji || '',
+          color: byName[p.name].color || p.color || ''
+        };
+      }
+    });
+    return Object.keys(byName).map(function(n) { return byName[n]; });
+  }
+
+  function mergeProfile(local, remote) {
+    var out = {};
+    var lp = (local && local.players) || [];
+    var rp = (remote && remote.players) || [];
+    out.players = mergePlayers(lp, rp);
+    out.displayName = (local && local.displayName) || (remote && remote.displayName) || '';
+    out.email = (local && local.email) || (remote && remote.email) || '';
+    return out;
+  }
+
+  window.firebaseSaveAccountData = function(accountId, data) {
+    if (!accountId || !data) return;
+    var path = "accounts/" + sanitizeKey(accountId) + "/profile";
+    firebaseReadyPromise.then(function() {
+      if (!db) return;
+      var localProfile = {
+        players: data.players || [],
+        displayName: data.displayName || '',
+        email: data.email || accountId
+      };
+      db.ref(path).once("value").then(function(snap) {
+        var remote = snap.val() || {};
+        var merged = mergeProfile(localProfile, remote);
+        db.ref(path).set(merged).catch(function(e) { console.warn("[firebase-sync] account save error", e); });
+      }).catch(function(e) {
+        console.warn("[firebase-sync] account save read error", e);
+      });
+    });
+  };
+
+  window.firebaseSyncAccountData = function(accountId, localData, callback) {
+    if (!accountId) { if (callback) callback(null); return; }
+    var path = "accounts/" + sanitizeKey(accountId) + "/profile";
+    firebaseReadyPromise.then(function() {
+      if (!db) { if (callback) callback(null); return; }
+      db.ref(path).once("value").then(function(snap) {
+        var remote = snap.val() || {};
+        var merged = mergeProfile(localData || {}, remote);
+        db.ref(path).set(merged);
+        if (callback) callback(merged);
+      }).catch(function(e) {
+        console.warn("[firebase-sync] account sync error", e);
+        if (callback) callback(null);
+      });
+    });
+  };
+
   // Heal corrupted localStorage score entries on load
   function healLocalScores() {
     try {
