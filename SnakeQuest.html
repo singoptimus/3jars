@@ -21,28 +21,56 @@
   .topbar {
     width: 100%; max-width: 720px;
     display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 8px; font-size: 0.9em;
+    margin-bottom: 6px; font-size: 0.9em;
   }
   .topbar a { color: #cfe1ff; text-decoration: none; }
   h1 {
-    font-size: 1.6em; text-align: center; margin: 2px 0;
+    font-size: 1.4em; text-align: center; margin: 2px 0;
     background: linear-gradient(90deg, #ffd86b 0%, #ffb84d 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-  .sub { text-align: center; color: #d6e4ff; font-size: 0.88em; margin-bottom: 8px; }
-  .hud {
-    display: flex; gap: 12px; margin-bottom: 6px; font-size: 0.9em; flex-wrap: wrap; justify-content: center;
-  }
-  .hud-chip {
-    background: rgba(255,255,255,0.08); padding: 5px 12px; border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.15);
-  }
-  .hud-chip b { color: #ffd86b; }
   .biome-label {
-    font-size: 0.82em; color: #cfe1ff; margin-bottom: 4px;
+    font-size: 0.78em; color: #cfe1ff;
     letter-spacing: 2px; text-transform: uppercase;
   }
+
+  /* Race bars */
+  .race-bars {
+    width: 100%; max-width: 720px;
+    display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;
+  }
+  .race-row { display: flex; align-items: center; gap: 8px; font-size: 0.88em; }
+  .race-name { width: 58px; font-weight: 700; }
+  .race-name.you { color: #34d399; }
+  .race-name.goblin { color: #f87171; }
+  .race-track {
+    flex: 1; height: 14px; background: rgba(255,255,255,0.08);
+    border-radius: 8px; overflow: hidden; border: 1px solid rgba(255,255,255,0.15);
+    position: relative;
+  }
+  .race-fill {
+    height: 100%; transition: width 0.4s ease-out;
+    position: relative;
+  }
+  .race-fill.you { background: linear-gradient(90deg, #10b981, #34d399); }
+  .race-fill.goblin { background: linear-gradient(90deg, #dc2626, #f87171); }
+  .race-score { width: 56px; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .race-target { text-align: center; font-size: 0.75em; color: #cfe1ff; opacity: 0.7; margin-top: -2px; }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+    margin-bottom: 8px; font-size: 0.78em; color: #cfe1ff;
+  }
+  .legend-item {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.06); padding: 4px 10px;
+    border-radius: 8px; border: 1px solid rgba(255,255,255,0.12);
+  }
+  .legend-item .li-ico { font-size: 1.1em; }
+  .legend-item .li-pts { color: #ffd86b; font-weight: 700; }
+
   canvas {
     background: #0a1730; border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.5);
@@ -76,26 +104,16 @@
     background-clip: text;
   }
   .panel .shrine-icon {
-    font-size: 2.2em; text-align: center; margin-bottom: 4px;
+    font-size: 2.4em; text-align: center; margin-bottom: 4px;
   }
   .panel .shrine-tag {
-    text-align: center; font-size: 0.78em; color: #ffd86b;
+    text-align: center; font-size: 0.8em; color: #ffd86b;
     letter-spacing: 2px; margin-bottom: 14px;
   }
   .question-text {
     font-size: 1.2em; text-align: center; margin: 14px 0 18px;
     color: #f6faff; line-height: 1.4;
   }
-  .answer-row {
-    display: flex; gap: 10px; margin-bottom: 12px; align-items: center; justify-content: center;
-  }
-  .answer-input {
-    flex: 1; max-width: 180px; padding: 12px 14px; font-size: 1.2em;
-    border-radius: 10px; border: 2px solid rgba(255,216,107,0.4);
-    background: rgba(15,31,61,0.7); color: #f6faff; text-align: center;
-    outline: none;
-  }
-  .answer-input:focus { border-color: #ffd86b; }
   .options-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
   }
@@ -110,14 +128,8 @@
   .opt-btn:active { transform: scale(0.97); }
   .opt-btn.correct { background: linear-gradient(135deg, #10b981, #059669); }
   .opt-btn.wrong { background: linear-gradient(135deg, #dc2626, #991b1b); opacity: 0.7; }
-  .submit-btn {
-    width: 100%; padding: 12px; font-size: 1.05em; border: none; border-radius: 10px;
-    background: linear-gradient(135deg, #ffd86b, #ffb84d); color: #3b2500;
-    cursor: pointer; font-weight: 700;
-  }
-  .submit-btn:active { transform: scale(0.98); }
   .feedback {
-    text-align: center; margin-top: 10px; font-size: 1em; min-height: 22px;
+    text-align: center; margin-top: 6px; font-size: 1em; min-height: 22px;
   }
   .feedback.correct { color: #34d399; font-weight: 700; }
   .feedback.wrong { color: #f87171; font-weight: 700; }
@@ -129,12 +141,12 @@
     height: 100%; background: linear-gradient(90deg, #ffd86b, #f87171);
     width: 100%; transition: width 0.1s linear;
   }
-  .start-panel .cta {
-    display: block; width: 100%; padding: 14px; font-size: 1.15em; font-weight: 700;
+  .start-panel .cta, .gameover-panel .cta {
+    display: block; width: 100%; padding: 14px; font-size: 1.1em; font-weight: 700;
     background: linear-gradient(135deg, #ffd86b, #ffb84d); color: #3b2500;
     border: none; border-radius: 12px; cursor: pointer; margin-top: 14px;
   }
-  .start-panel .hint {
+  .start-panel .hint, .gameover-panel .hint {
     font-size: 0.9em; color: #cfe1ff; line-height: 1.5; margin-top: 8px;
   }
   .start-panel ul {
@@ -148,8 +160,8 @@
   .gameover-stat b { color: #ffd86b; }
   .toast {
     position: fixed; top: 18%; left: 50%; transform: translate(-50%, -50%) scale(0.7);
-    background: rgba(15,31,61,0.95); color: #ffd86b; font-size: 1.2em; font-weight: 700;
-    padding: 14px 26px; border-radius: 14px; border: 2px solid #ffd86b;
+    background: rgba(15,31,61,0.95); color: #ffd86b; font-size: 1.15em; font-weight: 700;
+    padding: 12px 22px; border-radius: 14px; border: 2px solid #ffd86b;
     opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 50;
     text-align: center; max-width: 80%;
   }
@@ -179,12 +191,26 @@
   </div>
 
   <h1>🐍 Snake Quest</h1>
-  <div class="sub">Slither the world. Touch shrines to grow. Outrun the goblin.</div>
 
-  <div class="hud">
-    <div class="hud-chip">Length: <b id="lengthEl">4</b></div>
-    <div class="hud-chip">Shrines: <b id="shrineCountEl">0</b></div>
-    <div class="hud-chip">Points: <b id="pointsEl">0</b></div>
+  <div class="race-bars">
+    <div class="race-row">
+      <span class="race-name you">🐍 You</span>
+      <div class="race-track"><div class="race-fill you" id="playerFill" style="width:0%"></div></div>
+      <span class="race-score"><b id="playerScore">0</b> / 100</span>
+    </div>
+    <div class="race-row">
+      <span class="race-name goblin">👺 Goblin</span>
+      <div class="race-track"><div class="race-fill goblin" id="goblinFill" style="width:0%"></div></div>
+      <span class="race-score"><b id="goblinScore">0</b> / 100</span>
+    </div>
+    <div class="race-target">First to 100 points wins the run</div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="li-ico">🏛</span> Standard <span class="li-pts">10</span></span>
+    <span class="legend-item"><span class="li-ico">⚡</span> Flash <span class="li-pts">15</span></span>
+    <span class="legend-item"><span class="li-ico">⚔</span> Combo <span class="li-pts">25</span></span>
+    <span class="legend-item"><span class="li-ico">👑</span> Boss <span class="li-pts">40</span></span>
   </div>
 
   <canvas id="game" width="720" height="720"></canvas>
@@ -196,22 +222,23 @@
   </div>
 
   <div class="help">
-    Arrow keys or swipe to steer. Touch a shrine to face a question — correct answers grow your snake. Step on a portal (🌀) to jump between biomes. Avoid the red goblin.
+    Steer with arrows / swipe. Reach a shrine first to earn its points. The 👺 goblin races you — if he reaches a shrine first, he steals the points. Touch the goblin to stun him for a few seconds. Step on 🌀 to jump biomes. Don't crash into yourself!
   </div>
 
   <!-- Start screen -->
   <div class="overlay" id="startOverlay">
     <div class="panel start-panel">
       <div class="shrine-icon">🐍</div>
-      <div class="shrine-tag">Snake Quest</div>
-      <h2>Explore a world of shrines</h2>
-      <p class="hint">A snake.io-style math adventure. Every shrine asks a question — right answers make you grow.</p>
+      <div class="shrine-tag">Snake Quest — Race the Goblin</div>
+      <h2>First to 100 points wins</h2>
+      <p class="hint">You and a goblin race across the land. Every shrine is worth points. Reach it first and solve its question to claim it.</p>
       <ul>
-        <li>Arrow keys / swipe / on-screen d-pad to steer</li>
-        <li>Shrines (🏛 ⛰ 🌿 ⚔) = math questions</li>
-        <li>Portals (🌀) send you to the next biome</li>
-        <li>Avoid the goblin 👺 — he locks shrines and bites</li>
-        <li>Don't crash into yourself!</li>
+        <li>🏛 Standard shrines — 10 pts, one question</li>
+        <li>⚡ Flash shrines — 15 pts, 8-second timer</li>
+        <li>⚔ Combo shrines — 25 pts, 3-question chain</li>
+        <li>👑 Boss shrines — 40 pts, 5-question gauntlet</li>
+        <li>👺 Goblin takes points just by touching a shrine — beat him there!</li>
+        <li>Bump into the goblin to stun him for 3 seconds</li>
       </ul>
       <button class="cta" onclick="startGame()">Enter the world</button>
     </div>
@@ -231,17 +258,19 @@
 
   <!-- Game over -->
   <div class="overlay hidden" id="gameOverOverlay">
-    <div class="panel">
-      <div class="shrine-icon">🏁</div>
-      <div class="shrine-tag">Run Complete</div>
+    <div class="panel gameover-panel">
+      <div class="shrine-icon" id="gameOverIcon">🏁</div>
+      <div class="shrine-tag" id="gameOverTag">Run Complete</div>
       <h2 id="gameOverTitle">You made it!</h2>
+      <p class="hint" id="gameOverHint"></p>
       <div style="margin-top:14px">
-        <div class="gameover-stat"><span>Final length</span><b id="finalLength">0</b></div>
+        <div class="gameover-stat"><span>Your score</span><b id="finalPlayer">0</b></div>
+        <div class="gameover-stat"><span>Goblin score</span><b id="finalGoblin">0</b></div>
         <div class="gameover-stat"><span>Shrines cleared</span><b id="finalShrines">0</b></div>
-        <div class="gameover-stat"><span>Points earned</span><b id="finalPoints">0</b></div>
+        <div class="gameover-stat"><span>Final length</span><b id="finalLength">0</b></div>
       </div>
-      <button class="cta" style="margin-top:14px" onclick="restartGame()">Play again</button>
-      <a href="index.html" style="display:block;text-align:center;margin-top:10px;color:#cfe1ff;text-decoration:none;font-size:0.9em;">← Back to Home</a>
+      <button class="cta" onclick="restartGame()">Play again</button>
+      <a href="index.html" id="gameOverHome" style="display:block;text-align:center;margin-top:10px;color:#cfe1ff;text-decoration:none;font-size:0.9em;">← Back to Home</a>
     </div>
   </div>
 
@@ -254,17 +283,20 @@ const currentPlayer = urlParams.get('player') || '';
 const accountId = sessionStorage.getItem('km_currentAccount') || 'guest';
 if (currentPlayer) {
   document.getElementById('homeLink').href = 'index.html?player=' + encodeURIComponent(currentPlayer);
+  document.getElementById('gameOverHome').href = 'index.html?player=' + encodeURIComponent(currentPlayer);
 }
 
 /* ---------- Config ---------- */
-const TILE = 30;              // px per tile
-const GRID = 24;              // 24x24 grid
-const STEP_MS = 140;          // snake step interval (ms)
-const GOBLIN_STEP_MS = 200;   // goblin is slower
-const SHRINE_COOLDOWN_MS = 18000;
-const QUESTION_TIME_MS = 20000;
+const TILE = 30;
+const GRID = 24;
+const SHRINE_SIZE = 2;        // 2x2 tiles
+const STEP_MS = 220;          // snake step interval — slower for readability
+const GOBLIN_STEP_MS = 320;   // goblin a bit slower than snake
+const GOBLIN_STUN_MS = 3000;
+const QUESTION_TIME_MS = 22000;
+const TARGET_SCORE = 100;
 
-/* ---------- Biomes ---------- */
+/* ---------- Biomes (shrine coords anchor the top-left of each 2x2 shrine) ---------- */
 const BIOMES = {
   forest: {
     key: 'forest',
@@ -272,14 +304,14 @@ const BIOMES = {
     bg: '#0f2e1e',
     accent: '#2f6b3a',
     deco: '🌿',
-    portal: { x: 22, y: 12, to: 'mountain' },
+    portal: { x: 22, y: 11, to: 'mountain' },
     shrines: [
-      { id: 'f1', x: 5,  y: 5,  kind: 'standard' },
-      { id: 'f2', x: 18, y: 4,  kind: 'flash'    },
-      { id: 'f3', x: 9,  y: 18, kind: 'standard' },
-      { id: 'f4', x: 20, y: 20, kind: 'boss'     }
+      { id: 'f1', x: 3,  y: 3,  kind: 'standard' },
+      { id: 'f2', x: 18, y: 3,  kind: 'flash'    },
+      { id: 'f3', x: 3,  y: 18, kind: 'combo'    },
+      { id: 'f4', x: 18, y: 18, kind: 'boss'     }
     ],
-    goblinStart: { x: 12, y: 12 }
+    goblinStart: { x: 11, y: 11 }
   },
   mountain: {
     key: 'mountain',
@@ -287,22 +319,22 @@ const BIOMES = {
     bg: '#1a2538',
     accent: '#4b6a90',
     deco: '⛰',
-    portal: { x: 1, y: 12, to: 'forest' },
+    portal: { x: 0, y: 11, to: 'forest' },
     shrines: [
-      { id: 'm1', x: 6,  y: 6,  kind: 'standard' },
-      { id: 'm2', x: 17, y: 7,  kind: 'flash'    },
-      { id: 'm3', x: 12, y: 16, kind: 'combo'    },
-      { id: 'm4', x: 20, y: 20, kind: 'boss'     }
+      { id: 'm1', x: 4,  y: 4,  kind: 'standard' },
+      { id: 'm2', x: 17, y: 4,  kind: 'flash'    },
+      { id: 'm3', x: 10, y: 15, kind: 'combo'    },
+      { id: 'm4', x: 17, y: 18, kind: 'boss'     }
     ],
-    goblinStart: { x: 14, y: 10 }
+    goblinStart: { x: 13, y: 9 }
   }
 };
 
 const SHRINE_STYLES = {
-  standard: { icon: '🏛', color: '#ffd86b', label: 'Standard Shrine',  baseGrowth: 2 },
-  flash:    { icon: '⚡', color: '#60a5fa', label: 'Flash Shrine',     baseGrowth: 2, timed: 8000 },
-  combo:    { icon: '⚔', color: '#a78bfa', label: 'Combo Shrine',      baseGrowth: 1, chain: 3 },
-  boss:     { icon: '👑', color: '#f97316', label: 'Boss Shrine',      baseGrowth: 4, chain: 5 }
+  standard: { icon: '🏛', color: '#ffd86b', label: 'Standard Shrine', points: 10,  chain: 1 },
+  flash:    { icon: '⚡', color: '#60a5fa', label: 'Flash Shrine',    points: 15,  chain: 1, timed: 8000 },
+  combo:    { icon: '⚔', color: '#a78bfa', label: 'Combo Shrine',    points: 25,  chain: 3 },
+  boss:     { icon: '👑', color: '#f97316', label: 'Boss Shrine',    points: 40,  chain: 5 }
 };
 
 /* ---------- Question bank (mixed, interleaved) ---------- */
@@ -311,32 +343,31 @@ function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 function genAddition() {
   const a = randInt(12, 89), b = randInt(11, 59);
-  return { text: `${a} + ${b} = ?`, answer: a + b, type: 'number' };
+  return { text: `${a} + ${b} = ?`, answer: a + b };
 }
 function genSubtraction() {
   const a = randInt(30, 120), b = randInt(5, a - 1);
-  return { text: `${a} − ${b} = ?`, answer: a - b, type: 'number' };
+  return { text: `${a} − ${b} = ?`, answer: a - b };
 }
 function genMultiplication() {
   const a = randInt(3, 12), b = randInt(3, 12);
-  return { text: `${a} × ${b} = ?`, answer: a * b, type: 'number' };
+  return { text: `${a} × ${b} = ?`, answer: a * b };
 }
 function genDivision() {
   const b = randInt(2, 9), ans = randInt(2, 9);
-  return { text: `${b * ans} ÷ ${b} = ?`, answer: ans, type: 'number' };
+  return { text: `${b * ans} ÷ ${b} = ?`, answer: ans };
 }
 function genFraction() {
   const pairs = [
-    ['1/2', '2/4', '2'], ['1/3', '2/6', '2'], ['3/4', '6/8', '2'],
-    ['2/3', '4/6', '2'], ['1/4', '2/8', '2']
+    ['1/2', '2', 4], ['1/3', '2', 6], ['3/4', '6', 8],
+    ['2/3', '4', 6], ['1/4', '2', 8]
   ];
   const p = pick(pairs);
-  return { text: `${p[0]} = ${p[1].split('/')[0]}/? (fill the denominator)`, answer: Number(p[1].split('/')[1]), type: 'number' };
+  return { text: `${p[0]} = ${p[1]}/? (what goes in the ?)`, answer: p[2] };
 }
 function genSequence() {
   const start = randInt(2, 9), step = randInt(2, 6);
-  const seq = [start, start + step, start + 2*step, '?'];
-  return { text: `Next in the sequence: ${seq[0]}, ${seq[1]}, ${seq[2]}, ?`, answer: start + 3*step, type: 'number' };
+  return { text: `Next in the sequence: ${start}, ${start+step}, ${start+2*step}, ?`, answer: start + 3*step };
 }
 function genShape() {
   const opts = [
@@ -349,30 +380,27 @@ function genShape() {
     { q: 'Degrees in a full circle?', a: 360 }
   ];
   const c = pick(opts);
-  return { text: c.q, answer: c.a, type: 'number' };
+  return { text: c.q, answer: c.a };
 }
 function genWord() {
   const names = ['Noa', 'Maya', 'Liam', 'Eitan', 'Mia', 'Amir'];
   const name = pick(names);
   const start = randInt(20, 60), lose = randInt(5, 15), gain = randInt(6, 20);
   return { text: `${name} has ${start} marbles. ${name} loses ${lose}, then finds ${gain}. How many now?`,
-           answer: start - lose + gain, type: 'number' };
+           answer: start - lose + gain };
 }
 function genPattern() {
-  // Even/odd detection
   const n = randInt(10, 200);
-  return { text: `Is ${n} even or odd? (type 0 for even, 1 for odd)`, answer: n % 2, type: 'number' };
+  return { text: `Is ${n} even or odd? (type 0 for even, 1 for odd)`, answer: n % 2 };
 }
 
 const generators = [genAddition, genSubtraction, genMultiplication, genDivision,
                     genFraction, genSequence, genShape, genWord, genPattern];
 function generateQuestion(difficulty) {
-  // difficulty: 0..2 — higher = more likely to pull harder categories
   const pool = difficulty >= 1
     ? generators
     : generators.filter(g => g !== genFraction && g !== genSequence);
   const q = pick(pool)();
-  // Build multiple choice for friendly UX
   const distractors = new Set();
   while (distractors.size < 3) {
     const delta = randInt(-9, 9);
@@ -412,26 +440,34 @@ function newRun() {
     nextDir: { x: 1, y: 0 },
     growQueue: 0,
     length: 4,
+    playerScore: 0,
+    goblinScore: 0,
     shrinesCleared: 0,
-    points: 0,
     alive: true,
-    shrineStates: {},   // id -> { cleared, cooldownUntil, locked }
-    goblin: { ...BIOMES.forest.goblinStart, biome: 'forest' },
-    activeShrine: null
+    shrineStates: {},
+    goblin: { ...BIOMES.forest.goblinStart, biome: 'forest', stunUntil: 0 },
+    activeShrine: null,
+    finished: false
   };
-  // Seed shrine states
   for (const bKey in BIOMES) {
     for (const s of BIOMES[bKey].shrines) {
-      state.shrineStates[s.id] = { cleared: false, cooldownUntil: 0, locked: false };
+      state.shrineStates[s.id] = { claimedBy: null, cooldownUntil: 0 };
     }
   }
   updateHUD();
 }
 
+/* ---------- Helpers ---------- */
+function isInside2x2(px, py, sx, sy) {
+  return px >= sx && px < sx + SHRINE_SIZE && py >= sy && py < sy + SHRINE_SIZE;
+}
+function activeShrinesInBiome(biomeKey) {
+  return BIOMES[biomeKey].shrines.filter(s => !state.shrineStates[s.id].claimedBy);
+}
+
 /* ---------- Rendering ---------- */
 function draw() {
   const biome = BIOMES[state.biome];
-  // Background
   ctx.fillStyle = biome.bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -452,14 +488,13 @@ function draw() {
   ctx.lineWidth = 4;
   ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 4);
 
-  // Decorations sprinkle (pseudo-random based on biome)
-  ctx.globalAlpha = 0.4;
+  // Decorations sprinkle
+  ctx.globalAlpha = 0.35;
   ctx.font = `${TILE - 8}px sans-serif`;
   const decoSeed = biome.key === 'forest' ? 97 : 131;
-  for (let i = 0; i < 24; i++) {
+  for (let i = 0; i < 22; i++) {
     const x = ((i * decoSeed) % GRID);
     const y = ((i * decoSeed * 3) % GRID);
-    // Avoid overdraw in center lanes — cheap check
     ctx.fillText(biome.deco, x * TILE + 3, y * TILE + TILE - 6);
   }
   ctx.globalAlpha = 1;
@@ -472,7 +507,7 @@ function draw() {
     drawShrine(s);
   }
 
-  // Goblin (only in current biome)
+  // Goblin
   if (state.goblin.biome === state.biome) {
     drawGoblin(state.goblin);
   }
@@ -484,7 +519,6 @@ function draw() {
 function drawPortal(p) {
   const cx = p.x * TILE + TILE / 2;
   const cy = p.y * TILE + TILE / 2;
-  // Swirl effect
   const t = Date.now() / 400;
   for (let r = TILE * 0.45; r > 4; r -= 4) {
     ctx.strokeStyle = `hsla(${(r * 6 + t * 40) % 360}, 80%, 65%, 0.55)`;
@@ -502,60 +536,83 @@ function drawPortal(p) {
 function drawShrine(s) {
   const style = SHRINE_STYLES[s.kind];
   const st = state.shrineStates[s.id];
-  const cx = s.x * TILE + TILE / 2;
-  const cy = s.y * TILE + TILE / 2;
-
-  // Cooldown or locked → muted
+  const size = SHRINE_SIZE * TILE;
+  const x0 = s.x * TILE;
+  const y0 = s.y * TILE;
+  const cx = x0 + size / 2;
+  const cy = y0 + size / 2;
   const now = Date.now();
   const onCooldown = st.cooldownUntil > now;
-  const locked = st.locked;
 
   ctx.save();
-  if (st.cleared) {
-    ctx.globalAlpha = 0.35;
-  } else if (onCooldown) {
-    ctx.globalAlpha = 0.4;
-  }
 
-  // Glow pulse
-  if (!st.cleared && !onCooldown && !locked) {
+  if (st.claimedBy === 'player') {
+    // Muted green — player already got it
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = '#10b981';
+    ctx.fillRect(x0 + 4, y0 + 4, size - 8, size - 8);
+    ctx.globalAlpha = 1;
+    ctx.font = `${size * 0.45}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('✓', cx, cy + 1);
+  } else if (st.claimedBy === 'goblin') {
+    // Muted red — goblin got it
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = '#7f1d1d';
+    ctx.fillRect(x0 + 4, y0 + 4, size - 8, size - 8);
+    ctx.globalAlpha = 1;
+    ctx.font = `${size * 0.45}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('👺', cx, cy + 1);
+  } else {
+    // Active
+    if (onCooldown) ctx.globalAlpha = 0.45;
     const pulse = (Math.sin(now / 400) + 1) / 2;
     ctx.shadowColor = style.color;
-    ctx.shadowBlur = 10 + pulse * 12;
-  }
+    ctx.shadowBlur = 14 + pulse * 12;
 
-  // Base plate
-  ctx.fillStyle = style.color;
-  ctx.fillRect(s.x * TILE + 3, s.y * TILE + 3, TILE - 6, TILE - 6);
+    // Base tile
+    ctx.fillStyle = style.color;
+    ctx.fillRect(x0 + 4, y0 + 4, size - 8, size - 8);
+    ctx.shadowBlur = 0;
 
-  ctx.shadowBlur = 0;
+    // Inner panel
+    ctx.fillStyle = 'rgba(10,23,48,0.25)';
+    ctx.fillRect(x0 + 10, y0 + 10, size - 20, size - 20);
 
-  // Icon
-  ctx.font = `${TILE - 8}px sans-serif`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillStyle = '#1a1a1a';
-  ctx.fillText(style.icon, cx, cy + 1);
+    // Icon (big)
+    ctx.font = `${size * 0.55}px sans-serif`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillText(style.icon, cx, cy - 6);
 
-  // Lock indicator
-  if (locked && !st.cleared) {
-    ctx.fillStyle = 'rgba(0,0,0,0.6)';
-    ctx.fillRect(s.x * TILE + 3, s.y * TILE + 3, TILE - 6, TILE - 6);
-    ctx.fillStyle = '#f87171';
-    ctx.fillText('🔒', cx, cy + 1);
+    // Points label
+    ctx.font = `bold ${size * 0.18}px system-ui, sans-serif`;
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillText(`+${style.points}`, cx, cy + size * 0.32);
   }
   ctx.restore();
-
   ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
 }
 
 function drawGoblin(g) {
   const cx = g.x * TILE + TILE / 2;
   const cy = g.y * TILE + TILE / 2;
-  ctx.fillStyle = '#7f1d1d';
-  ctx.fillRect(g.x * TILE + 4, g.y * TILE + 4, TILE - 8, TILE - 8);
-  ctx.font = `${TILE - 8}px sans-serif`;
+  const stunned = Date.now() < g.stunUntil;
+  ctx.save();
+  if (stunned) {
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = '#4b5563';
+  } else {
+    ctx.fillStyle = '#7f1d1d';
+  }
+  ctx.fillRect(g.x * TILE + 3, g.y * TILE + 3, TILE - 6, TILE - 6);
+  ctx.font = `${TILE - 6}px sans-serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('👺', cx, cy + 1);
+  ctx.fillText(stunned ? '💤' : '👺', cx, cy + 1);
+  ctx.restore();
   ctx.textAlign = 'start'; ctx.textBaseline = 'alphabetic';
 }
 
@@ -564,7 +621,6 @@ function drawSnake() {
     const seg = state.snake[i];
     const isHead = i === 0;
     const t = i / Math.max(1, state.snake.length);
-    // Gradient tail
     const r = Math.round(60 + (1 - t) * 40);
     const g = Math.round(200 - t * 60);
     const b = Math.round(120 - t * 60);
@@ -572,7 +628,6 @@ function drawSnake() {
     const pad = isHead ? 2 : 4;
     ctx.fillRect(seg.x * TILE + pad, seg.y * TILE + pad, TILE - pad * 2, TILE - pad * 2);
     if (isHead) {
-      // Eyes
       ctx.fillStyle = '#0a1730';
       const ex = seg.x * TILE + TILE / 2;
       const ey = seg.y * TILE + TILE / 2;
@@ -588,17 +643,19 @@ function drawSnake() {
 
 /* ---------- HUD ---------- */
 function updateHUD() {
-  document.getElementById('lengthEl').textContent = state.length;
-  document.getElementById('shrineCountEl').textContent = state.shrinesCleared;
-  document.getElementById('pointsEl').textContent = state.points;
   document.getElementById('biomeLabel').textContent = BIOMES[state.biome].name;
+  const pFill = Math.min(100, (state.playerScore / TARGET_SCORE) * 100);
+  const gFill = Math.min(100, (state.goblinScore / TARGET_SCORE) * 100);
+  document.getElementById('playerFill').style.width = pFill + '%';
+  document.getElementById('goblinFill').style.width = gFill + '%';
+  document.getElementById('playerScore').textContent = state.playerScore;
+  document.getElementById('goblinScore').textContent = state.goblinScore;
 }
 
 /* ---------- Simulation ---------- */
 function step() {
-  if (!state.alive || currentQuestion) return;
+  if (!state.alive || state.finished || currentQuestion) return;
 
-  // Apply nextDir (disallow 180° reversal)
   if (!(state.nextDir.x === -state.dir.x && state.nextDir.y === -state.dir.y)) {
     state.dir = state.nextDir;
   }
@@ -606,34 +663,28 @@ function step() {
   const head = state.snake[0];
   const newHead = { x: head.x + state.dir.x, y: head.y + state.dir.y };
 
-  // Wall collision → wrap
+  // Wrap
   if (newHead.x < 0) newHead.x = GRID - 1;
   if (newHead.x >= GRID) newHead.x = 0;
   if (newHead.y < 0) newHead.y = GRID - 1;
   if (newHead.y >= GRID) newHead.y = 0;
 
-  // Self collision (ignore last tail since it will move)
+  // Self
   for (let i = 0; i < state.snake.length - 1; i++) {
     if (state.snake[i].x === newHead.x && state.snake[i].y === newHead.y) {
-      return gameOver('You bit yourself!');
+      return gameOver('self');
     }
   }
 
-  // Goblin collision
+  // Snake -> goblin (stun)
   if (state.goblin.biome === state.biome &&
-      state.goblin.x === newHead.x && state.goblin.y === newHead.y) {
-    if (state.length <= 4) {
-      return gameOver('The goblin got you!');
-    }
-    // Shrink instead of die
-    const bite = Math.min(2, state.length - 2);
-    for (let i = 0; i < bite; i++) state.snake.pop();
-    state.length -= bite;
-    toast(`👺 The goblin bit you! −${bite} length`);
-    updateHUD();
+      state.goblin.x === newHead.x && state.goblin.y === newHead.y &&
+      Date.now() > state.goblin.stunUntil) {
+    state.goblin.stunUntil = Date.now() + GOBLIN_STUN_MS;
+    toast('💤 Goblin stunned!');
   }
 
-  // Move snake
+  // Move
   state.snake.unshift(newHead);
   if (state.growQueue > 0) {
     state.growQueue -= 1;
@@ -645,35 +696,29 @@ function step() {
   // Portal
   const portal = BIOMES[state.biome].portal;
   if (newHead.x === portal.x && newHead.y === portal.y) {
-    // Jump to other biome — preserve relative position roughly
     state.biome = portal.to;
-    // Put snake at that biome's portal exit (opposite side)
     const newPortal = BIOMES[portal.to].portal;
-    state.snake = [{ x: newPortal.x - state.dir.x, y: newPortal.y - state.dir.y }];
+    // Place snake one tile inside from the new portal
+    const startX = newPortal.x === 0 ? 1 : GRID - 2;
+    state.snake = [{ x: startX, y: newPortal.y }];
     for (let i = 1; i < state.length; i++) {
       state.snake.push({
         x: state.snake[0].x - state.dir.x * i,
-        y: state.snake[0].y - state.dir.y * i
+        y: state.snake[0].y
       });
     }
-    // Move goblin to this biome's goblin start
     const gob = BIOMES[state.biome].goblinStart;
-    state.goblin = { x: gob.x, y: gob.y, biome: state.biome };
+    state.goblin = { x: gob.x, y: gob.y, biome: state.biome, stunUntil: 0 };
     toast(`🌀 ${BIOMES[state.biome].name}`);
     updateHUD();
   }
 
-  // Shrine collision
+  // Shrine collision (2x2)
   for (const s of BIOMES[state.biome].shrines) {
-    if (newHead.x === s.x && newHead.y === s.y) {
-      const st = state.shrineStates[s.id];
-      const now = Date.now();
-      if (st.cleared) continue;
-      if (st.cooldownUntil > now) continue;
-      if (st.locked) {
-        toast('🔒 Shrine locked — scare the goblin away!');
-        continue;
-      }
+    const st = state.shrineStates[s.id];
+    if (st.claimedBy) continue;
+    if (st.cooldownUntil > Date.now()) continue;
+    if (isInside2x2(newHead.x, newHead.y, s.x, s.y)) {
       openShrine(s);
       return;
     }
@@ -683,39 +728,37 @@ function step() {
 }
 
 function goblinStep() {
-  if (!state.alive || currentQuestion) return;
+  if (!state.alive || state.finished || currentQuestion) return;
   if (state.goblin.biome !== state.biome) {
-    // Random chance to hop biomes
     if (Math.random() < 0.08) {
-      state.goblin.biome = state.biome;
-      state.goblin = { ...BIOMES[state.biome].goblinStart, biome: state.biome };
+      const gob = BIOMES[state.biome].goblinStart;
+      state.goblin = { x: gob.x, y: gob.y, biome: state.biome, stunUntil: 0 };
     }
     return;
   }
+  if (Date.now() < state.goblin.stunUntil) return;
 
-  // AI: find the nearest uncleared, unlocked shrine in this biome
+  // Find nearest active shrine (2x2 center)
   const biome = BIOMES[state.biome];
   let target = null, bestD = Infinity;
   for (const s of biome.shrines) {
-    const st = state.shrineStates[s.id];
-    if (st.cleared || st.locked) continue;
-    const d = Math.abs(s.x - state.goblin.x) + Math.abs(s.y - state.goblin.y);
+    if (state.shrineStates[s.id].claimedBy) continue;
+    const tcx = s.x + 0.5, tcy = s.y + 0.5; // approximate center
+    const d = Math.abs(tcx - state.goblin.x) + Math.abs(tcy - state.goblin.y);
     if (d < bestD) { bestD = d; target = s; }
   }
   if (!target) return;
 
-  // Step one tile toward target (biased toward larger axis; random tiebreak)
-  const dx = target.x - state.goblin.x;
-  const dy = target.y - state.goblin.y;
+  const dx = (target.x + 0.5) - state.goblin.x;
+  const dy = (target.y + 0.5) - state.goblin.y;
   let moves = [];
   if (Math.abs(dx) >= Math.abs(dy)) {
-    if (dx !== 0) moves.push({ x: Math.sign(dx), y: 0 });
-    if (dy !== 0) moves.push({ x: 0, y: Math.sign(dy) });
+    if (Math.abs(dx) >= 0.5) moves.push({ x: Math.sign(dx), y: 0 });
+    if (Math.abs(dy) >= 0.5) moves.push({ x: 0, y: Math.sign(dy) });
   } else {
-    if (dy !== 0) moves.push({ x: 0, y: Math.sign(dy) });
-    if (dx !== 0) moves.push({ x: Math.sign(dx), y: 0 });
+    if (Math.abs(dy) >= 0.5) moves.push({ x: 0, y: Math.sign(dy) });
+    if (Math.abs(dx) >= 0.5) moves.push({ x: Math.sign(dx), y: 0 });
   }
-  // Avoid stepping on snake (other than head for drama)
   for (const m of moves) {
     const nx = state.goblin.x + m.x;
     const ny = state.goblin.y + m.y;
@@ -723,21 +766,20 @@ function goblinStep() {
     for (let i = 1; i < state.snake.length; i++) {
       if (state.snake[i].x === nx && state.snake[i].y === ny) { onSnake = true; break; }
     }
-    if (!onSnake) {
-      state.goblin.x = nx; state.goblin.y = ny;
-      break;
-    }
+    if (!onSnake) { state.goblin.x = nx; state.goblin.y = ny; break; }
   }
 
-  // Reached shrine? Lock it for 10s
+  // Goblin claims shrine by entering its 2x2 footprint
   for (const s of biome.shrines) {
-    if (s.x === state.goblin.x && s.y === state.goblin.y) {
-      const st = state.shrineStates[s.id];
-      if (!st.cleared && !st.locked) {
-        st.locked = true;
-        setTimeout(() => { st.locked = false; draw(); }, 10000);
-        toast('👺 Goblin locked a shrine!');
-      }
+    const st = state.shrineStates[s.id];
+    if (st.claimedBy) continue;
+    if (isInside2x2(state.goblin.x, state.goblin.y, s.x, s.y)) {
+      st.claimedBy = 'goblin';
+      state.goblinScore += SHRINE_STYLES[s.kind].points;
+      toast(`👺 Goblin grabbed ${SHRINE_STYLES[s.kind].label}! +${SHRINE_STYLES[s.kind].points}`);
+      updateHUD();
+      checkWin();
+      break;
     }
   }
 
@@ -749,11 +791,11 @@ function openShrine(shrine) {
   state.activeShrine = shrine;
   const style = SHRINE_STYLES[shrine.kind];
   questionChain = 0;
-  questionChainTarget = (shrine.kind === 'combo' || shrine.kind === 'boss') ? style.chain : 1;
+  questionChainTarget = style.chain;
 
   document.getElementById('shrineIcon').textContent = style.icon;
   document.getElementById('shrineTagLabel').textContent = style.label +
-    (questionChainTarget > 1 ? ` — ${questionChainTarget} questions` : '');
+    (questionChainTarget > 1 ? ` — ${questionChainTarget} questions for +${style.points}` : ` — +${style.points} points`);
 
   showQuestion(shrine);
   document.getElementById('questionOverlay').classList.remove('hidden');
@@ -779,7 +821,6 @@ function showQuestion(shrine) {
   }
   area.appendChild(grid);
 
-  // Timer
   const isFlash = shrine.kind === 'flash';
   questionDurationMs = isFlash ? (SHRINE_STYLES.flash.timed || 8000) : QUESTION_TIME_MS;
   questionStartedAt = Date.now();
@@ -789,7 +830,7 @@ function showQuestion(shrine) {
     updateTimerBar();
     if (Date.now() - questionStartedAt >= questionDurationMs) {
       clearInterval(questionTimerHandle);
-      handleWrong(/*timedOut=*/true);
+      handleWrong(true);
     }
   }, 80);
 }
@@ -803,14 +844,12 @@ function submitAnswer(choice, btn) {
   if (!currentQuestion) return;
   const correct = Number(choice) === Number(currentQuestion.answer);
   clearInterval(questionTimerHandle);
-  // Freeze all option buttons
   document.querySelectorAll('.opt-btn').forEach(b => b.disabled = true);
   if (correct) {
     btn.classList.add('correct');
     handleCorrect();
   } else {
     btn.classList.add('wrong');
-    // Highlight the real answer
     document.querySelectorAll('.opt-btn').forEach(b => {
       if (Number(b.textContent) === Number(currentQuestion.answer)) b.classList.add('correct');
     });
@@ -822,8 +861,6 @@ function handleCorrect() {
   questionChain++;
   const shrine = state.activeShrine;
   const style = SHRINE_STYLES[shrine.kind];
-  const elapsed = Date.now() - questionStartedAt;
-  const speedBonus = shrine.kind === 'flash' && elapsed < 4000 ? 1 : 0;
 
   const fb = document.getElementById('feedback');
   fb.className = 'feedback correct';
@@ -832,32 +869,26 @@ function handleCorrect() {
     : '✓ Correct!';
 
   if (questionChain < questionChainTarget) {
-    // Next question in chain
     setTimeout(() => {
       if (state.activeShrine) showQuestion(state.activeShrine);
-    }, 700);
+    }, 650);
     return;
   }
 
-  // Full shrine cleared
-  const growth = style.baseGrowth + speedBonus +
-    (shrine.kind === 'combo' ? 2 : 0) +
-    (shrine.kind === 'boss' ? 4 : 0);
-  state.growQueue += growth;
-  state.shrineStates[shrine.id].cleared = true;
+  // Shrine fully claimed by player
+  state.shrineStates[shrine.id].claimedBy = 'player';
   state.shrinesCleared += 1;
-  state.points += growth * 5 + (shrine.kind === 'boss' ? 20 : shrine.kind === 'combo' ? 10 : 5);
-  recordPlayIfPossible(growth);
+  state.playerScore += style.points;
+  // Small growth as a reward visual
+  state.growQueue += (shrine.kind === 'boss' ? 4 : shrine.kind === 'combo' ? 2 : 1);
+  recordPlayIfPossible();
   updateHUD();
 
   setTimeout(() => {
     closeQuestion();
-    toast(`${style.icon} +${growth} length`);
-    // Boss shrine clear → check biome completion
-    if (shrine.kind === 'boss') {
-      toast(`👑 Boss shrine cleared! Biome mastered.`);
-    }
-  }, 900);
+    toast(`${style.icon} +${style.points} points!`);
+    checkWin();
+  }, 800);
 }
 
 function handleWrong(timedOut) {
@@ -866,8 +897,7 @@ function handleWrong(timedOut) {
   const fb = document.getElementById('feedback');
   fb.className = 'feedback wrong';
   fb.textContent = timedOut ? '⏱ Out of time!' : '✗ Not quite.';
-  // Put shrine on cooldown
-  state.shrineStates[shrine.id].cooldownUntil = Date.now() + SHRINE_COOLDOWN_MS;
+  state.shrineStates[shrine.id].cooldownUntil = Date.now() + 12000;
   setTimeout(() => { closeQuestion(); }, 1200);
 }
 
@@ -876,20 +906,37 @@ function closeQuestion() {
   state.activeShrine = null;
   if (questionTimerHandle) clearInterval(questionTimerHandle);
   document.getElementById('questionOverlay').classList.add('hidden');
-  // Nudge snake one tile off the shrine so it doesn't re-trigger instantly
+  // Nudge one tile forward so the snake doesn't immediately re-enter the shrine
   const head = state.snake[0];
-  const stepOff = { x: head.x + state.dir.x, y: head.y + state.dir.y };
-  if (stepOff.x >= 0 && stepOff.x < GRID && stepOff.y >= 0 && stepOff.y < GRID) {
-    state.snake[0] = stepOff;
+  const next = { x: head.x + state.dir.x, y: head.y + state.dir.y };
+  if (next.x >= 0 && next.x < GRID && next.y >= 0 && next.y < GRID) {
+    state.snake[0] = next;
   }
   draw();
 }
 
+/* ---------- Win / lose ---------- */
+function checkWin() {
+  if (state.finished) return;
+  if (state.playerScore >= TARGET_SCORE) {
+    return gameOver('win');
+  }
+  if (state.goblinScore >= TARGET_SCORE) {
+    return gameOver('lose');
+  }
+  // Run out of shrines? (both biomes exhausted)
+  const anyLeft = Object.keys(BIOMES).some(k => activeShrinesInBiome(k).length > 0);
+  if (!anyLeft) {
+    if (state.playerScore > state.goblinScore) return gameOver('win');
+    if (state.goblinScore > state.playerScore) return gameOver('lose');
+    return gameOver('tie');
+  }
+}
+
 /* ---------- Integrations ---------- */
-function recordPlayIfPossible(growth) {
+function recordPlayIfPossible() {
   try {
     if (window.recordPlay && currentPlayer) {
-      // Tag as "challenges" so it lands in the right garden bucket
       window.recordPlay(accountId, currentPlayer, 'challenges');
     }
   } catch (e) {}
@@ -919,7 +966,6 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
-// On-screen dpad
 document.getElementById('dpad').addEventListener('click', (e) => {
   const b = e.target.closest('button[data-dir]');
   if (!b || !state) return;
@@ -930,7 +976,6 @@ document.getElementById('dpad').addEventListener('click', (e) => {
   if (d === 'right') state.nextDir = { x:  1, y: 0 };
 });
 
-// Swipe
 let touchStart = null;
 canvas.addEventListener('touchstart', (e) => {
   const t = e.touches[0];
@@ -960,11 +1005,10 @@ function startGame() {
   if (goblinTimer) clearInterval(goblinTimer);
   stepTimer = setInterval(step, STEP_MS);
   goblinTimer = setInterval(goblinStep, GOBLIN_STEP_MS);
-  // Animation for portal swirl and shrine pulses
   requestAnimationFrame(animLoop);
 }
 function animLoop() {
-  if (!state || !state.alive) return;
+  if (!state || !state.alive || state.finished) return;
   if (!currentQuestion) draw();
   requestAnimationFrame(animLoop);
 }
@@ -973,13 +1017,34 @@ function restartGame() {
   startGame();
 }
 function gameOver(reason) {
-  state.alive = false;
+  if (state.finished) return;
+  state.finished = true;
+  if (reason === 'self') state.alive = false;
   if (stepTimer) clearInterval(stepTimer);
   if (goblinTimer) clearInterval(goblinTimer);
-  document.getElementById('gameOverTitle').textContent = reason;
-  document.getElementById('finalLength').textContent = state.length;
+
+  let icon, tag, title, hint;
+  if (reason === 'win') {
+    icon = '🏆'; tag = 'Victory'; title = 'You won the race!';
+    hint = 'You beat the goblin to 100 points. Nicely done.';
+  } else if (reason === 'lose') {
+    icon = '👺'; tag = 'Goblin Wins'; title = 'The goblin beat you there.';
+    hint = 'He reached 100 first. Try again — go for the big shrines early.';
+  } else if (reason === 'tie') {
+    icon = '⚖️'; tag = 'Dead Heat'; title = 'A tie!';
+    hint = 'All shrines claimed and scores even. Rematch?';
+  } else {
+    icon = '💥'; tag = 'Game Over'; title = 'You crashed into yourself.';
+    hint = 'Watch the tail — it gets tricky once you grow.';
+  }
+  document.getElementById('gameOverIcon').textContent = icon;
+  document.getElementById('gameOverTag').textContent = tag;
+  document.getElementById('gameOverTitle').textContent = title;
+  document.getElementById('gameOverHint').textContent = hint;
+  document.getElementById('finalPlayer').textContent = state.playerScore;
+  document.getElementById('finalGoblin').textContent = state.goblinScore;
   document.getElementById('finalShrines').textContent = state.shrinesCleared;
-  document.getElementById('finalPoints').textContent = state.points;
+  document.getElementById('finalLength').textContent = state.length;
   document.getElementById('gameOverOverlay').classList.remove('hidden');
 }
 
