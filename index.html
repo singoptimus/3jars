@@ -260,6 +260,17 @@
   .cat-row[data-cat="challenges"]::before {
     background: linear-gradient(120deg, rgba(129, 140, 248, 0.12), transparent 45%);
   }
+  .cat-row[data-cat="games"]::before {
+    background: linear-gradient(120deg, rgba(16, 185, 129, 0.14), transparent 45%);
+  }
+  /* Lite variant — no garden plant, single column */
+  .cat-row.cat-row-lite {
+    grid-template-columns: 1fr;
+    padding: 12px 18px;
+    margin-top: -4px;
+  }
+  .cat-row.cat-row-lite .cat-plant { display: none; }
+  .cat-row.cat-row-lite .cat-count { display: none; }
   .cat-row:hover {
     box-shadow: 0 2px 4px rgba(17,24,39,0.05), 0 14px 40px -16px rgba(124, 58, 237, 0.18);
   }
@@ -292,6 +303,7 @@
   .cat-row[data-cat="math"] .cat-icon { background: #fde68a; }
   .cat-row[data-cat="language"] .cat-icon { background: #fce7f3; }
   .cat-row[data-cat="challenges"] .cat-icon { background: #e0e7ff; }
+  .cat-row[data-cat="games"] .cat-icon { background: #d1fae5; }
   .cat-name {
     font-size: 1em; font-weight: 700; color: #1f1b2e;
     letter-spacing: -0.015em; text-transform: none;
@@ -999,9 +1011,10 @@
       <a class="${cls}" ${href('MulFrac.html')} ${oc}><span class="game-tile-icon">✖️➗</span><div class="game-tile-info"><div class="game-tile-name">Multiply & Divide</div><div class="game-tile-pts">2-5 pts</div></div></a>
       <a class="${cls}" ${href('MathStories.html')} ${oc}><span class="game-tile-icon">📖</span><div class="game-tile-info"><div class="game-tile-name">Math Stories</div><div class="game-tile-pts">2-5 pts</div></div></a>
       <a class="${cls}" ${href('Geometry.html')} ${oc}><span class="game-tile-icon">📐</span><div class="game-tile-info"><div class="game-tile-name">Geometry</div><div class="game-tile-pts">2-5 pts</div></div></a>`;
-    const challengeTiles = `
+    const iqTiles = `
       <a class="${cls}" ${href('Patterns.html')} ${oc}><span class="game-tile-icon">🧩</span><div class="game-tile-info"><div class="game-tile-name">Shape Patterns</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
-      <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
+      <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>`;
+    const gameTiles = `
       <a class="${cls} shrine-glow" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-30 pts</div></div></a>
       <a class="${cls} shrine-glow" ${href('SnakeQuest.html')} ${oc}><span class="game-tile-icon">🐍</span><div class="game-tile-info"><div class="game-tile-name">Snake Quest</div><div class="game-tile-pts hot">🔥 5-25 pts</div></div></a>`;
 
@@ -1009,7 +1022,16 @@
     const gardenNudge = (!isGuest && selectedPlayer) ? renderGardenNudge(mix, total, gardenLangLabel) : '';
     const mathRow = catRow('math', '📊', 'Math', mix, total, mathTiles);
     const langRow = catRow('language', '🔤', gardenLangLabel, mix, total, langTiles);
-    const chalRow = catRow('challenges', '🧠', 'Challenges', mix, total, challengeTiles);
+    const iqRow = catRow('challenges', '🧠', 'Challenges / IQ Test', mix, total, iqTiles);
+    const gamesRow = '<div class="cat-row cat-row-lite" data-cat="games">' +
+      '<div class="cat-main">' +
+        '<div class="cat-head">' +
+          '<span class="cat-icon">🎮</span>' +
+          '<span class="cat-name">Games</span>' +
+        '</div>' +
+        '<div class="cat-tiles">' + gameTiles + '</div>' +
+      '</div>' +
+    '</div>';
 
     const gamesHTML = `
       ${gardenSummary}
@@ -1017,7 +1039,8 @@
       <div class="games-heading">Choose a Game</div>
       ${mathRow}
       ${langRow}
-      ${chalRow}
+      ${iqRow}
+      ${gamesRow}
       <div class="exam-row">
         <a class="exam-btn ${np ? 'needs-player' : ''}" ${np ? '' : 'href="Exam.html?player=' + encodeURIComponent(selectedPlayer) + '"'} ${oc}>⏱️ 5-Minute Exam — score 75%+ for bonus points!</a>
       </div>`;
