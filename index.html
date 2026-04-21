@@ -1002,7 +1002,8 @@
     const challengeTiles = `
       <a class="${cls}" ${href('Patterns.html')} ${oc}><span class="game-tile-icon">🧩</span><div class="game-tile-info"><div class="game-tile-name">Shape Patterns</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
       <a class="${cls}" ${href('Matrix.html')} ${oc}><span class="game-tile-icon">🧠</span><div class="game-tile-info"><div class="game-tile-name">Matrix Puzzles</div><div class="game-tile-pts hot">🔥 3-9 pts</div></div></a>
-      <a class="${cls} shrine-glow" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-30 pts</div></div></a>`;
+      <a class="${cls} shrine-glow" ${href('shrines.html')} ${oc}><span class="game-tile-icon">🗡️</span><div class="game-tile-info"><div class="game-tile-name">Shrine Quest</div><div class="game-tile-pts hot">🔥 10-30 pts</div></div></a>
+      <a class="${cls} shrine-glow" ${href('SnakeQuest.html')} ${oc}><span class="game-tile-icon">🐍</span><div class="game-tile-info"><div class="game-tile-name">Snake Quest</div><div class="game-tile-pts hot">🔥 5-25 pts</div></div></a>`;
 
     const gardenSummary = renderGardenSummary(total);
     const gardenNudge = (!isGuest && selectedPlayer) ? renderGardenNudge(mix, total, gardenLangLabel) : '';
