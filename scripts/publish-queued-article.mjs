@@ -13,8 +13,14 @@
 
 import { readdir, readFile, writeFile, unlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { rebuildIndex } from './rebuild-blog-index.mjs';
+
+// Run git with argv directly so titles with quotes / $ / etc. can't
+// break out of the shell (the whole reason this workflow was failing daily).
+function git(...args) {
+  execFileSync('git', args, { stdio: 'inherit' });
+}
 
 const BLOG_DIR = join(process.cwd(), 'blog');
 const QUEUE_DIR = join(BLOG_DIR, 'queue');
@@ -83,15 +89,15 @@ async function main() {
 
   // 6. Commit + push.
   try {
-    execSync('git config user.name "3 Jars Bot"', { stdio: 'inherit' });
-    execSync('git config user.email "noreply@3jars.ai"', { stdio: 'inherit' });
-    execSync(`git add "blog/${destFilename}" "blog/queue/${nextFile}" "blog/index.html"`, { stdio: 'inherit' });
+    git('config', 'user.name', '3 Jars Bot');
+    git('config', 'user.email', 'noreply@3jars.ai');
+    git('add', `blog/${destFilename}`, `blog/queue/${nextFile}`, 'blog/index.html');
 
     // Extract title for commit message.
     const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
     const title = titleMatch ? titleMatch[1].trim() : slug;
-    execSync(`git commit -m "Add blog article: ${title}"`, { stdio: 'inherit' });
-    execSync('git push', { stdio: 'inherit' });
+    git('commit', '-m', `Add blog article: ${title}`);
+    git('push');
     console.log('Committed and pushed.');
   } catch (e) {
     console.error('Git operations failed:', e.message);

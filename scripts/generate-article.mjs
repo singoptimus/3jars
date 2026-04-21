@@ -12,7 +12,13 @@
 
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
+
+// Run git with argv directly so titles with quotes / $ / etc. can't
+// break out of the shell.
+function git(...args) {
+  execFileSync('git', args, { stdio: 'inherit' });
+}
 
 const BLOG_DIR = join(process.cwd(), 'blog');
 const SITE_URL = 'https://3jars.ai';
@@ -362,11 +368,11 @@ async function main() {
 
   // 5. Git commit + push.
   try {
-    execSync('git config user.name "3 Jars Bot"', { stdio: 'inherit' });
-    execSync('git config user.email "noreply@3jars.ai"', { stdio: 'inherit' });
-    execSync(`git add "blog/${filename}"`, { stdio: 'inherit' });
-    execSync(`git commit -m "Add blog article: ${data.title}"`, { stdio: 'inherit' });
-    execSync('git push', { stdio: 'inherit' });
+    git('config', 'user.name', '3 Jars Bot');
+    git('config', 'user.email', 'noreply@3jars.ai');
+    git('add', `blog/${filename}`);
+    git('commit', '-m', `Add blog article: ${data.title}`);
+    git('push');
     console.log('Committed and pushed to main.');
   } catch (e) {
     console.error('Git commit/push failed:', e.message);
